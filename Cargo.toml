@@ -1,0 +1,11 @@
+[package]
+name = "hex"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.58"
+cgmath = "0.18.0"
+glium = "0.31.0"
+glutin = "0.28.0"
+hecs = { path = "./hecs" }
