@@ -1,5 +1,5 @@
-use std::{any::Any, sync::Arc};
+use std::{any::Any, rc::Rc};
 
-pub trait AsAny: Send + Sync + 'static {
-    fn as_any(self: Arc<Self>) -> Arc<dyn Any + Send + Sync + 'static>;
+pub trait AsAny: 'static {
+    fn as_any(self: Rc<Self>) -> Rc<dyn Any + 'static>;
 }

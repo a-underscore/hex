@@ -1,104 +1,90 @@
-use crate::{self as ecs, as_any::AsAny, Component};
-use std::{
-    any::Any,
-    sync::{Arc, RwLock},
-};
+use crate::{self as ecs, AsAny, Component};
+use std::{any::Any, cell::RefCell, rc::Rc};
 
 pub const ENTITY_ID: &str = "entity";
 
 pub struct EntityData {
-    components: Vec<Arc<dyn Component>>,
+    pub id: Rc<String>,
+    pub tid: Rc<String>,
+    components: Vec<Rc<dyn Component>>,
 }
 
 impl EntityData {
-    fn new() -> Arc<RwLock<Self>> {
-        Arc::new(RwLock::new(Self {
+    fn new(id: Rc<String>, tid: Rc<String>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self {
+            id,
+            tid,
             components: Vec::new(),
         }))
     }
 }
 
+#[derive(hecs_derive::Component)]
 pub struct Entity {
-    pub id: Arc<String>,
-    pub tid: Arc<String>,
-    pub data: Arc<RwLock<EntityData>>,
+    pub data: Rc<RefCell<EntityData>>,
 }
 
 impl Entity {
-    pub fn new(id: Arc<String>) -> Arc<Self> {
-        Arc::new(Self {
-            id,
-            tid: ecs::id(ENTITY_ID),
-            data: EntityData::new(),
+    pub fn new(id: Rc<String>) -> Rc<Self> {
+        Rc::new(Self {
+            data: EntityData::new(id, ecs::id(ENTITY_ID)),
         })
     }
 
-    pub fn add<C>(self: Arc<Self>, component: Arc<C>)
+    pub fn add<C>(&self, component: Rc<C>)
+    where
+        C: Component,
+    {
+        self.data.borrow_mut().components.push(component.clone());
+    }
+
+    pub fn get<C>(&self, id: Rc<String>, tid: Rc<String>) -> Option<Rc<C>>
     where
         C: Component,
     {
         self.data
-            .write()
-            .unwrap()
-            .components
-            .push(component.clone());
-    }
-
-    pub fn add_all<C>(self: Arc<Self>, components: &[Arc<C>])
-    where
-        C: Component,
-    {
-        components.into_iter().for_each(|c| {
-            self.clone().add(c.clone());
-        });
-    }
-
-    pub fn get<C>(self: Arc<Self>, id: Arc<String>, tid: Arc<String>) -> Option<Arc<C>>
-    where
-        C: Component + AsAny,
-    {
-        match self
-            .data
-            .read()
-            .unwrap()
+            .borrow()
             .components
             .iter()
             .filter_map(|c| {
-                if *c.clone().id() == *id && c.clone().tid() == tid {
+                if *c.id() == *id && c.tid() == tid {
                     Some(c)
                 } else {
                     None
                 }
             })
             .next()
-        {
-            Some(component) => component.clone().as_any().downcast::<C>().ok(),
-            None => None,
-        }
+            .and_then(|c| c.clone().as_any().downcast::<C>().ok())
     }
 
-    pub fn get_first<C>(self: Arc<Self>, tid: Arc<String>) -> Option<Arc<C>>
+    pub fn get_first<C>(&self, tid: Rc<String>) -> Option<Rc<C>>
     where
-        C: Component + AsAny,
-    {
-        match self.get_type::<C>(tid).first() {
-            Some(component) => Some(component.clone()),
-
-            None => None,
-        }
-    }
-
-    pub fn get_type<C>(self: Arc<Self>, tid: Arc<String>) -> Vec<Arc<C>>
-    where
-        C: Component + AsAny,
+        C: Component,
     {
         self.data
-            .read()
-            .unwrap()
+            .borrow()
+            .components
+            .iter()
+            .find_map(|c| {
+                if *c.tid() == *tid {
+                    c.clone().as_any().downcast::<C>().ok()
+                } else {
+                    None
+                }
+            })
+            .and_then(|c| Some(c.clone()))
+    }
+
+    pub fn get_all<C>(&self, tid: Rc<String>) -> Vec<Rc<C>>
+    where
+        C: Component,
+    {
+        self.data
+            .borrow()
             .components
             .iter()
             .filter_map(|c| {
-                if *c.clone().tid() == *tid {
+                if *c.tid() == *tid {
                     c.clone().as_any().downcast::<C>().ok()
                 } else {
                     None
@@ -107,65 +93,58 @@ impl Entity {
             .collect()
     }
 
-    pub fn remove<C>(self: Arc<Self>, component: Arc<C>)
+    pub fn remove<C>(&self, component: Rc<C>)
     where
         C: Component + ?Sized,
     {
-        self.data.write().unwrap().components.retain(|c| {
-            if *c.clone().id() == *component.clone().id()
-                && *c.clone().tid() == *component.clone().tid()
-            {
-                c.clone().on_remove(Some(self.clone()));
+        let mut data = self.data.borrow_mut();
 
-                false
-            } else {
-                true
-            }
-        });
-    }
+        data.components = data
+            .components
+            .iter()
+            .filter_map(|c| {
+                if *c.id() == *component.id() && *c.tid() == *component.tid() {
+                    c.on_remove(Some(self));
 
-    pub fn remove_all<C>(self: Arc<Self>, components: Vec<Arc<C>>)
-    where
-        C: Component,
-    {
-        components.into_iter().for_each(|c| {
-            self.clone().remove(c.clone());
-        });
+                    None
+                } else {
+                    Some(c.clone())
+                }
+            })
+            .collect();
     }
 }
 
 impl Component for Entity {
-    fn id(self: Arc<Self>) -> Arc<String> {
-        self.id.clone()
+    fn id(&self) -> Rc<String> {
+        self.data.borrow().id.clone()
     }
 
-    fn tid(self: Arc<Self>) -> Arc<String> {
-        self.tid.clone()
+    fn tid(&self) -> Rc<String> {
+        self.data.borrow().tid.clone()
     }
 
-    fn on_init(self: Arc<Self>, _owner: Option<Arc<Self>>) {
-        for component in &self.data.read().unwrap().components {
-            component.clone().on_init(Some(self.clone()));
+    fn on_init(&self, _owner: Option<&Self>) {
+        let components = { self.data.borrow().components.clone() };
+
+        for component in components {
+            component.on_init(Some(self));
         }
     }
 
-    fn on_update(self: Arc<Self>, _owner: Option<Arc<Self>>) {
-        for component in &self.data.read().unwrap().components {
-            component.clone().on_update(Some(self.clone()));
+    fn on_update(&self, _owner: Option<&Self>) {
+        let components = { self.data.borrow().components.clone() };
+
+        for component in components {
+            component.on_update(Some(self));
         }
     }
 
-    fn on_remove(self: Arc<Self>, _owner: Option<Arc<Self>>) {
-        let components = { self.data.read().unwrap().components.clone() };
+    fn on_remove(&self, _owner: Option<&Self>) {
+        let components = { self.data.borrow().components.clone() };
 
         for component in components {
             self.clone().remove(component);
         }
-    }
-}
-
-impl AsAny for Entity {
-    fn as_any(self: Arc<Self>) -> Arc<dyn Any + Send + Sync + 'static> {
-        self.clone() as Arc<dyn Any + Send + Sync + 'static>
     }
 }
