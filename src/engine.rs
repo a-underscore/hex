@@ -1,26 +1,39 @@
 use crate::{
     assets::Scene,
     components::{event_handler::EVENT_HANDLER_ID, sprite::SPRITE_ID, EventHandler, Sprite},
-    ecs::{self, entity::ENTITY_ID, Component, Entity},
+    ecs::{self, entity::ENTITY_ID, Entity},
 };
 use glium::{
-    draw_parameters::Blend,
+    draw_parameters::{Blend, DepthTest},
     glutin::{
         event::{Event, WindowEvent},
         event_loop::{ControlFlow, EventLoop},
         window::WindowBuilder,
         ContextBuilder, NotCurrent,
     },
-    Display, DrawParameters, Frame, Surface,
+    Depth, Display, DrawParameters, Frame, Surface,
 };
 use std::rc::Rc;
 
-pub struct Engine {
+pub struct Engine<'a> {
     pub display: Display,
     pub scene: Rc<Scene>,
+    pub draw_parameters: Rc<DrawParameters<'a>>,
 }
 
-impl Engine {
+impl<'a> Engine<'a> {
+    pub fn new(
+        display: Display,
+        scene: Rc<Scene>,
+        draw_parameters: Rc<DrawParameters<'a>>,
+    ) -> anyhow::Result<Rc<Self>> {
+        Ok(Rc::new(Self {
+            display,
+            scene,
+            draw_parameters,
+        }))
+    }
+
     pub fn display(
         wb: WindowBuilder,
         cb: ContextBuilder<'_, NotCurrent>,
@@ -31,37 +44,63 @@ impl Engine {
         Ok((event_loop, display))
     }
 
-    pub fn new(display: Display, scene: Rc<Scene>) -> anyhow::Result<Rc<Self>> {
-        Ok(Rc::new(Self { display, scene }))
+    pub fn default_display() -> anyhow::Result<(EventLoop<()>, Display)> {
+        let cb = ContextBuilder::new();
+
+        Self::display(Default::default(), cb)
     }
 
-    pub fn init(self: &Rc<Self>, event_loop: EventLoop<()>) {
-        self.scene.root.on_init(None);
+    pub fn basic_display(
+        name: &String,
+        sample_count: u16,
+    ) -> anyhow::Result<(EventLoop<()>, Display)> {
+        let wb = WindowBuilder::new().with_title(name);
+        let cb = ContextBuilder::new().with_multisampling(sample_count);
+
+        Self::display(wb, cb)
+    }
+
+    pub fn default_draw_parameters() -> Rc<DrawParameters<'static>> {
+        let draw_parameters = Rc::new(DrawParameters {
+            depth: Depth {
+                test: DepthTest::IfLess,
+                write: true,
+                ..Default::default()
+            },
+            blend: Blend::alpha_blending(),
+            ..Default::default()
+        });
+
+        draw_parameters
+    }
+
+    pub fn init(self: &Rc<Self>, event_loop: EventLoop<()>)
+    where
+        'a: 'static,
+    {
+        self.scene.init();
 
         self.clone().run_event_loop(event_loop);
     }
 
-    fn run_event_loop(self: Rc<Engine>, event_loop: EventLoop<()>) {
+    fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>)
+    where
+        'a: 'static,
+    {
         event_loop.run(move |ev, _, control_flow| {
-            self.scene.root.on_update(None);
+            self.scene.update();
 
             let mut target = self.display.draw();
 
-            target.clear_color_and_depth(self.scene.bg.into(), 1.0);
+            target.clear_color_and_depth(self.scene.data.borrow().bg.into(), 1.0);
 
-            let draw_params = DrawParameters {
-                depth: glium::Depth {
-                    test: glium::draw_parameters::DepthTest::IfLess,
-                    write: true,
-                    ..Default::default()
-                },
-
-                blend: Blend::alpha_blending(),
-                ..Default::default()
-            };
-
-            Self::handle_events(self.scene.root.as_ref(), &ev);
-            Self::draw_sprites(self.scene.root.as_ref(), &mut target, &draw_params).unwrap();
+            Self::handle_events(self.scene.data.borrow().root.as_ref(), &ev);
+            self.draw_sprites(
+                self.scene.data.borrow().root.as_ref(),
+                &mut target,
+                &self.draw_parameters,
+            )
+            .unwrap();
 
             target.finish().unwrap();
 
@@ -82,16 +121,17 @@ impl Engine {
     }
 
     fn draw_sprites(
+        &self,
         entity: &Entity,
         target: &mut Frame,
         draw_params: &DrawParameters,
     ) -> anyhow::Result<()> {
         for sprite in entity.get_all::<Sprite>(ecs::id(SPRITE_ID)) {
-            sprite.draw(target, draw_params)?;
+            sprite.draw(self, target)?;
         }
 
         for entity in entity.get_all::<Entity>(ecs::id(ENTITY_ID)) {
-            Self::draw_sprites(entity.as_ref(), target, draw_params)?;
+            self.draw_sprites(entity.as_ref(), target, draw_params)?;
         }
 
         Ok(())

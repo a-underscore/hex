@@ -2,38 +2,45 @@ use crate::ecs::{self, AsAny, Component, Entity};
 use glium::glutin::event::Event;
 use std::{any::Any, cell::RefCell, rc::Rc};
 
-pub const EVENT_HANDLER_ID: &str = "event handler";
+pub const EVENT_HANDLER_ID: &str = "event_handler";
 
 pub trait Handler: Send + Sync {
     fn handle<'a>(&self, owner: Option<&Entity>, event: &Event<'a, ()>);
 }
 
+pub struct EventHandlerData {
+    pub id: Rc<String>,
+    pub handler: Rc<dyn Handler>,
+}
+
+impl EventHandlerData {
+    pub fn new(id: Rc<String>, handler: Rc<dyn Handler>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { id, handler }))
+    }
+}
+
 #[derive(ecs::derive::Component)]
 pub struct EventHandler {
-    pub id: Rc<String>,
     pub tid: Rc<String>,
-    pub handler: Rc<RefCell<Rc<dyn Handler>>>,
+    data: Rc<RefCell<EventHandlerData>>,
 }
 
 impl EventHandler {
     pub fn new<'a>(id: Rc<String>, handler: Rc<dyn Handler>) -> Rc<Self> {
-        let event_handler = Rc::new(Self {
-            id,
+        Rc::new(Self {
             tid: ecs::id(EVENT_HANDLER_ID),
-            handler: Rc::new(RefCell::new(handler.clone())),
-        });
-
-        event_handler
+            data: EventHandlerData::new(id, handler),
+        })
     }
 
     pub fn handle(&self, owner: Option<&Entity>, event: &Event<()>) {
-        self.handler.borrow().handle(owner, event);
+        self.data.borrow().handler.handle(owner, event);
     }
 }
 
 impl Component for EventHandler {
     fn id(&self) -> Rc<String> {
-        self.id.clone()
+        self.data.borrow().id.clone()
     }
 
     fn tid(&self) -> Rc<String> {

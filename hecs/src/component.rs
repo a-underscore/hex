@@ -6,9 +6,7 @@ pub trait Component: AsAny {
 
     fn tid(&self) -> Rc<String>;
 
-    fn on_update(&self, _owner: Option<&Entity>) {}
+    fn update(&self, _owner: Option<&Entity>) {}
 
-    fn on_init(&self, _owner: Option<&Entity>) {}
-
-    fn on_remove(&self, _owner: Option<&Entity>) {}
+    fn init(&self, _owner: Option<&Entity>) {}
 }

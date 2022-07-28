@@ -5,15 +5,13 @@ pub const ENTITY_ID: &str = "entity";
 
 pub struct EntityData {
     pub id: Rc<String>,
-    pub tid: Rc<String>,
     components: Vec<Rc<dyn Component>>,
 }
 
 impl EntityData {
-    fn new(id: Rc<String>, tid: Rc<String>) -> Rc<RefCell<Self>> {
+    fn new(id: Rc<String>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             id,
-            tid,
             components: Vec::new(),
         }))
     }
@@ -21,13 +19,15 @@ impl EntityData {
 
 #[derive(hecs_derive::Component)]
 pub struct Entity {
+    pub tid: Rc<String>,
     pub data: Rc<RefCell<EntityData>>,
 }
 
 impl Entity {
     pub fn new(id: Rc<String>) -> Rc<Self> {
         Rc::new(Self {
-            data: EntityData::new(id, ecs::id(ENTITY_ID)),
+            tid: ecs::id(ENTITY_ID),
+            data: EntityData::new(id),
         })
     }
 
@@ -104,8 +104,6 @@ impl Entity {
             .iter()
             .filter_map(|c| {
                 if *c.id() == *component.id() && *c.tid() == *component.tid() {
-                    c.on_remove(Some(self));
-
                     None
                 } else {
                     Some(c.clone())
@@ -121,30 +119,22 @@ impl Component for Entity {
     }
 
     fn tid(&self) -> Rc<String> {
-        self.data.borrow().tid.clone()
+        self.tid.clone()
     }
 
-    fn on_init(&self, _owner: Option<&Self>) {
+    fn init(&self, _owner: Option<&Self>) {
         let components = { self.data.borrow().components.clone() };
 
         for component in components {
-            component.on_init(Some(self));
+            component.init(Some(self));
         }
     }
 
-    fn on_update(&self, _owner: Option<&Self>) {
+    fn update(&self, _owner: Option<&Self>) {
         let components = { self.data.borrow().components.clone() };
 
         for component in components {
-            component.on_update(Some(self));
-        }
-    }
-
-    fn on_remove(&self, _owner: Option<&Self>) {
-        let components = { self.data.borrow().components.clone() };
-
-        for component in components {
-            self.clone().remove(component);
+            component.update(Some(self));
         }
     }
 }
