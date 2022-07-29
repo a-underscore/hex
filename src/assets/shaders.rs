@@ -1,16 +1,16 @@
 use glium::{Display, Program};
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Shaders {
     pub program: Program,
 }
 
 impl Shaders {
-    pub fn new(program: Program) -> Rc<Self> {
-        Rc::new(Self { program })
+    pub fn new(program: Program) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { program }))
     }
 
-    pub fn default(display: &Display) -> anyhow::Result<Rc<Self>> {
+    pub fn default(display: &Display) -> anyhow::Result<Rc<RefCell<Self>>> {
         let vertex_src = r#"
             #version 140
 

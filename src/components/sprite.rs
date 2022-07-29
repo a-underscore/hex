@@ -12,10 +12,10 @@ pub const SPRITE_ID: &str = "sprite";
 pub struct SpriteData {
     pub id: Rc<String>,
     pub color: Vector4<f32>,
-    pub shape: Rc<Shape>,
-    pub texture: Rc<Texture>,
-    pub shaders: Rc<Shaders>,
-    pub transform: Rc<Transform>,
+    pub shape: Rc<RefCell<Shape>>,
+    pub texture: Rc<RefCell<Texture>>,
+    pub shaders: Rc<RefCell<Shaders>>,
+    pub transform: Rc<RefCell<Transform>>,
     pub z: f32,
 }
 
@@ -23,10 +23,10 @@ impl SpriteData {
     fn new(
         id: Rc<String>,
         color: Vector4<f32>,
-        shape: Rc<Shape>,
-        texture: Rc<Texture>,
-        shaders: Rc<Shaders>,
-        transform: Rc<Transform>,
+        shape: Rc<RefCell<Shape>>,
+        texture: Rc<RefCell<Texture>>,
+        shaders: Rc<RefCell<Shaders>>,
+        transform: Rc<RefCell<Transform>>,
         z: f32,
     ) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
@@ -51,10 +51,10 @@ impl Sprite {
     pub fn new(
         id: Rc<String>,
         color: Vector4<f32>,
-        shape: Rc<Shape>,
-        texture: Rc<Texture>,
-        shaders: Rc<Shaders>,
-        transform: Rc<Transform>,
+        shape: Rc<RefCell<Shape>>,
+        texture: Rc<RefCell<Texture>>,
+        shaders: Rc<RefCell<Shaders>>,
+        transform: Rc<RefCell<Transform>>,
         layer: f32,
     ) -> Rc<Self> {
         Rc::new(Self {
@@ -65,28 +65,32 @@ impl Sprite {
 
     pub fn draw(&self, engine: &Engine, target: &mut Frame) -> anyhow::Result<()> {
         let data = self.data.borrow();
-        let transform_data = data.transform.data.borrow();
-        let scene_data = engine.scene.data.borrow();
+        let scene_data = engine.scene.borrow();
         let camera_data = scene_data.camera.data.borrow();
-        let camera_transform_data = camera_data.transform.data.borrow();
         let color: [f32; 4] = data.color.into();
-        let translation: [[f32; 3]; 3] = Matrix3::from_translation(transform_data.position).into();
-        let rotation: [[f32; 2]; 2] = Matrix2::from_angle(Rad(transform_data.rotation)).into();
-        let scale: [[f32; 3]; 3] =
-            Matrix3::from_nonuniform_scale(transform_data.scale.x, transform_data.scale.y).into();
+        let translation: [[f32; 3]; 3] =
+            Matrix3::from_translation(data.transform.borrow().position).into();
+        let rotation: [[f32; 2]; 2] =
+            Matrix2::from_angle(Rad(data.transform.borrow().rotation)).into();
+        let scale: [[f32; 3]; 3] = Matrix3::from_nonuniform_scale(
+            data.transform.borrow().scale.x,
+            data.transform.borrow().scale.y,
+        )
+        .into();
         let camera_translation: [[f32; 3]; 3] =
-            Matrix3::from_translation(camera_transform_data.position).into();
+            Matrix3::from_translation(camera_data.transform.borrow().position).into();
         let camera_rotation: [[f32; 2]; 2] =
-            Matrix2::from_angle(Rad(camera_transform_data.rotation)).into();
+            Matrix2::from_angle(Rad(camera_data.transform.borrow().rotation)).into();
         let camera_view: [[f32; 4]; 4] = cgmath::ortho(
-            -camera_transform_data.scale.x,
-            camera_transform_data.scale.x,
-            -camera_transform_data.scale.y,
-            camera_transform_data.scale.y,
+            -camera_data.transform.borrow().scale.x,
+            camera_data.transform.borrow().scale.x,
+            -camera_data.transform.borrow().scale.y,
+            camera_data.transform.borrow().scale.y,
             -1.0,
             1.0,
         )
         .into();
+        let texture = data.texture.borrow();
         let uniforms = uniform! {
             translation: translation,
             rotation: rotation,
@@ -96,13 +100,13 @@ impl Sprite {
             camera_rotation: camera_rotation,
             camera_view: camera_view,
             color: color,
-            texture: &data.texture.texture,
+            texture: &texture.texture,
         };
 
         target.draw(
-            &data.shape.vertices,
-            &data.shape.indices,
-            &data.shaders.program,
+            &data.shape.borrow().vertices,
+            &data.shape.borrow().indices,
+            &data.shaders.borrow().program,
             &uniforms,
             &engine.draw_parameters,
         )?;

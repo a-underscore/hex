@@ -8,11 +8,11 @@ pub const CAMERA_ID: &str = "camera";
 
 pub struct CameraData {
     pub id: Rc<String>,
-    pub transform: Rc<Transform>,
+    pub transform: Rc<RefCell<Transform>>,
 }
 
 impl CameraData {
-    fn new(id: Rc<String>, transform: Rc<Transform>) -> Rc<RefCell<Self>> {
+    fn new(id: Rc<String>, transform: Rc<RefCell<Transform>>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self { id, transform }))
     }
 }
@@ -24,7 +24,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(id: Rc<String>, transform: Rc<Transform>) -> Rc<Self> {
+    pub fn new(id: Rc<String>, transform: Rc<RefCell<Transform>>) -> Rc<Self> {
         Rc::new(Self {
             tid: ecs::id(CAMERA_ID),
             data: CameraData::new(id, transform),

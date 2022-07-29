@@ -13,18 +13,18 @@ use glium::{
     },
     Depth, Display, DrawParameters, Frame, Surface,
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Engine<'a> {
     pub display: Display,
-    pub scene: Rc<Scene>,
+    pub scene: Rc<RefCell<Scene>>,
     pub draw_parameters: Rc<DrawParameters<'a>>,
 }
 
 impl<'a> Engine<'a> {
     pub fn new(
         display: Display,
-        scene: Rc<Scene>,
+        scene: Rc<RefCell<Scene>>,
         draw_parameters: Rc<DrawParameters<'a>>,
     ) -> anyhow::Result<Rc<Self>> {
         Ok(Rc::new(Self {
@@ -78,7 +78,7 @@ impl<'a> Engine<'a> {
     where
         'a: 'static,
     {
-        self.scene.init();
+        self.scene.borrow().init();
 
         self.clone().run_event_loop(event_loop);
     }
@@ -88,15 +88,15 @@ impl<'a> Engine<'a> {
         'a: 'static,
     {
         event_loop.run(move |ev, _, control_flow| {
-            self.scene.update();
+            self.scene.borrow().update();
 
             let mut target = self.display.draw();
 
-            target.clear_color_and_depth(self.scene.data.borrow().bg.into(), 1.0);
+            target.clear_color_and_depth(self.scene.borrow().bg.into(), 1.0);
 
-            Self::handle_events(self.scene.data.borrow().root.as_ref(), &ev);
+            Self::handle_events(self.scene.borrow().root.as_ref(), &ev);
             self.draw_sprites(
-                self.scene.data.borrow().root.as_ref(),
+                self.scene.borrow().root.as_ref(),
                 &mut target,
                 &self.draw_parameters,
             )

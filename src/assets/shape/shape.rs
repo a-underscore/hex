@@ -1,6 +1,6 @@
 use super::vertex::Vertex;
 use glium::{index::PrimitiveType, Display, IndexBuffer, VertexBuffer};
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Shape {
     pub vertices: VertexBuffer<Vertex>,
@@ -12,10 +12,10 @@ impl Shape {
         display: &Display,
         vertices: &[Vertex],
         indices: &[u32],
-    ) -> anyhow::Result<Rc<Self>> {
-        Ok(Rc::new(Self {
+    ) -> anyhow::Result<Rc<RefCell<Self>>> {
+        Ok(Rc::new(RefCell::new(Self {
             vertices: VertexBuffer::new(display, vertices)?,
             indices: IndexBuffer::immutable(display, PrimitiveType::TrianglesList, &indices)?,
-        }))
+        })))
     }
 }
