@@ -65,8 +65,8 @@ impl Sprite {
 
     pub fn draw(&self, engine: &Engine, target: &mut Frame) -> anyhow::Result<()> {
         let data = self.data.borrow();
-        let scene_data = engine.scene.borrow();
-        let camera_data = scene_data.camera.data.borrow();
+        let scene = engine.scene.borrow();
+        let camera = scene.camera.data.borrow();
         let color: [f32; 4] = data.color.into();
         let translation: [[f32; 3]; 3] =
             Matrix3::from_translation(data.transform.borrow().position).into();
@@ -78,14 +78,14 @@ impl Sprite {
         )
         .into();
         let camera_translation: [[f32; 3]; 3] =
-            Matrix3::from_translation(camera_data.transform.borrow().position).into();
+            Matrix3::from_translation(camera.transform.borrow().position).into();
         let camera_rotation: [[f32; 2]; 2] =
-            Matrix2::from_angle(Rad(camera_data.transform.borrow().rotation)).into();
+            Matrix2::from_angle(Rad(camera.transform.borrow().rotation)).into();
         let camera_view: [[f32; 4]; 4] = cgmath::ortho(
-            -camera_data.transform.borrow().scale.x,
-            camera_data.transform.borrow().scale.x,
-            -camera_data.transform.borrow().scale.y,
-            camera_data.transform.borrow().scale.y,
+            -camera.transform.borrow().scale.x,
+            camera.transform.borrow().scale.x,
+            -camera.transform.borrow().scale.y,
+            camera.transform.borrow().scale.y,
             -1.0,
             1.0,
         )
