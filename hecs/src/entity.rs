@@ -1,7 +1,9 @@
-use crate::{self as ecs, AsAny, Component};
+use crate::{AsAny, Component, self as ecs};
 use std::{any::Any, cell::RefCell, rc::Rc};
 
-pub const ENTITY_ID: &str = "entity";
+thread_local! {
+    pub static ENTITY_ID: Rc<String> = ecs::id("entity");
+}
 
 pub struct EntityData {
     pub id: Rc<String>,
@@ -26,7 +28,7 @@ pub struct Entity {
 impl Entity {
     pub fn new(id: Rc<String>) -> Rc<Self> {
         Rc::new(Self {
-            tid: ecs::id(ENTITY_ID),
+            tid: ENTITY_ID.with(|id| id.clone()),
             data: EntityData::new(id),
         })
     }

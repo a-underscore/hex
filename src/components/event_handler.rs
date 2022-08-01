@@ -2,7 +2,9 @@ use crate::ecs::{self, AsAny, Component, Entity};
 use glium::glutin::event::Event;
 use std::{any::Any, cell::RefCell, rc::Rc};
 
-pub const EVENT_HANDLER_ID: &str = "event_handler";
+thread_local! {
+    pub static EVENT_HANDLER_ID: Rc<String> = ecs::id("event_handler");
+}
 
 pub trait Handler: Send + Sync {
     fn handle<'a>(&self, owner: Option<&Entity>, event: &Event<'a, ()>);
@@ -28,7 +30,7 @@ pub struct EventHandler {
 impl EventHandler {
     pub fn new<'a>(id: Rc<String>, handler: Rc<dyn Handler>) -> Rc<Self> {
         Rc::new(Self {
-            tid: ecs::id(EVENT_HANDLER_ID),
+            tid: EVENT_HANDLER_ID.with(|id| id.clone()),
             data: EventHandlerData::new(id, handler),
         })
     }

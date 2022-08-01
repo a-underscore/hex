@@ -1,7 +1,7 @@
 use crate::{
     assets::Scene,
     components::{event_handler::EVENT_HANDLER_ID, sprite::SPRITE_ID, EventHandler, Sprite},
-    ecs::{self, entity::ENTITY_ID, Entity},
+    ecs::{entity::ENTITY_ID, Entity},
 };
 use glium::{
     draw_parameters::{Blend, DepthTest},
@@ -74,19 +74,42 @@ impl<'a> Engine<'a> {
         draw_parameters
     }
 
-    pub fn init(self: &Rc<Self>, event_loop: EventLoop<()>)
-    where
-        'a: 'static,
-    {
+    fn draw_sprites(
+        &self,
+        entity: &Entity,
+        target: &mut Frame,
+        draw_params: &DrawParameters,
+    ) -> anyhow::Result<()> {
+        for sprite in entity.get_all::<Sprite>(SPRITE_ID.with(|id| id.clone())) {
+            sprite.draw(self, target)?;
+        }
+
+        for entity in entity.get_all::<Entity>(ENTITY_ID.with(|id| id.clone())) {
+            self.draw_sprites(entity.as_ref(), target, draw_params)?;
+        }
+
+        Ok(())
+    }
+
+    fn handle_events(entity: &Entity, event: &Event<()>) {
+        for handler in entity.get_all::<EventHandler>(EVENT_HANDLER_ID.with(|id| id.clone())) {
+            handler.handle(Some(entity), event);
+        }
+
+        for entity in entity.get_all::<Entity>(ENTITY_ID.with(|id| id.clone())) {
+            Self::handle_events(entity.as_ref(), event);
+        }
+    }
+}
+
+impl Engine<'static> {
+    pub fn init(self: &Rc<Self>, event_loop: EventLoop<()>) {
         self.scene.borrow().init();
 
         self.clone().run_event_loop(event_loop);
     }
 
-    fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>)
-    where
-        'a: 'static,
-    {
+    fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>) {
         event_loop.run(move |ev, _, control_flow| {
             self.scene.borrow().update();
 
@@ -118,32 +141,5 @@ impl<'a> Engine<'a> {
                 _ => (),
             }
         });
-    }
-
-    fn draw_sprites(
-        &self,
-        entity: &Entity,
-        target: &mut Frame,
-        draw_params: &DrawParameters,
-    ) -> anyhow::Result<()> {
-        for sprite in entity.get_all::<Sprite>(ecs::id(SPRITE_ID)) {
-            sprite.draw(self, target)?;
-        }
-
-        for entity in entity.get_all::<Entity>(ecs::id(ENTITY_ID)) {
-            self.draw_sprites(entity.as_ref(), target, draw_params)?;
-        }
-
-        Ok(())
-    }
-
-    fn handle_events(entity: &Entity, event: &Event<()>) {
-        for handler in entity.get_all::<EventHandler>(ecs::id(EVENT_HANDLER_ID)) {
-            handler.handle(Some(entity), event);
-        }
-
-        for entity in entity.get_all::<Entity>(ecs::id(ENTITY_ID)) {
-            Self::handle_events(entity.as_ref(), event);
-        }
     }
 }

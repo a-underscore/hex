@@ -7,7 +7,9 @@ use cgmath::{Matrix2, Matrix3, Rad, Vector4};
 use glium::{uniform, Frame, Surface};
 use std::{any::Any, cell::RefCell, rc::Rc};
 
-pub const SPRITE_ID: &str = "sprite";
+thread_local! {
+    pub static SPRITE_ID: Rc<String> = ecs::id("sprite");
+}
 
 pub struct SpriteData {
     pub id: Rc<String>,
@@ -58,7 +60,7 @@ impl Sprite {
         layer: f32,
     ) -> Rc<Self> {
         Rc::new(Self {
-            tid: ecs::id(SPRITE_ID),
+            tid: SPRITE_ID.with(|id| id.clone()),
             data: SpriteData::new(id, color, shape, texture, shaders, transform, layer),
         })
     }

@@ -4,7 +4,9 @@ use crate::{
 };
 use std::{any::Any, cell::RefCell, rc::Rc};
 
-pub const CAMERA_ID: &str = "camera";
+thread_local! {
+    pub static CAMERA_ID: Rc<String> = ecs::id("camera");
+}
 
 pub struct CameraData {
     pub id: Rc<String>,
@@ -26,7 +28,7 @@ pub struct Camera {
 impl Camera {
     pub fn new(id: Rc<String>, transform: Rc<RefCell<Transform>>) -> Rc<Self> {
         Rc::new(Self {
-            tid: ecs::id(CAMERA_ID),
+            tid: CAMERA_ID.with(|id| id.clone()),
             data: CameraData::new(id, transform),
         })
     }
