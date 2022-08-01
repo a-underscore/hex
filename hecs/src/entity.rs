@@ -30,7 +30,7 @@ impl Entity {
         Rc::new(Self {
             id,
             tid: ecs::tid(&ENTITY_ID),
-            parent: ecs::parent(&None),
+            parent: Rc::new(RefCell::new(None)),
             data: EntityData::new(),
         })
     }

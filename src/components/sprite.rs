@@ -62,7 +62,7 @@ impl Sprite {
         Rc::new(Self {
             id,
             tid: ecs::tid(&SPRITE_ID),
-            parent: ecs::parent(&None),
+            parent: Rc::new(RefCell::new(None)),
             data: SpriteData::new(color, shape, texture, shaders, layer, draw),
         })
     }
