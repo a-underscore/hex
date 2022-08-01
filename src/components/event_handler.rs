@@ -1,4 +1,4 @@
-use crate::ecs::{self, AsAny, Component, Entity};
+use crate::ecs::{self, derive::Component, AsAny, Component, Entity};
 use glium::glutin::event::Event;
 use std::{any::Any, cell::RefCell, rc::Rc};
 
@@ -11,18 +11,22 @@ pub trait Handler: Send + Sync {
 }
 
 pub struct EventHandlerData {
-    pub id: Rc<String>,
+    pub parent: Option<Rc<Entity>>,
     pub handler: Rc<dyn Handler>,
 }
 
 impl EventHandlerData {
-    pub fn new(id: Rc<String>, handler: Rc<dyn Handler>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self { id, handler }))
+    pub fn new(handler: Rc<dyn Handler>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self {
+            parent: None,
+            handler,
+        }))
     }
 }
 
-#[derive(ecs::derive::Component)]
+#[derive(Component)]
 pub struct EventHandler {
+    pub id: Rc<String>,
     pub tid: Rc<String>,
     data: Rc<RefCell<EventHandlerData>>,
 }
@@ -30,8 +34,9 @@ pub struct EventHandler {
 impl EventHandler {
     pub fn new<'a>(id: Rc<String>, handler: Rc<dyn Handler>) -> Rc<Self> {
         Rc::new(Self {
+            id,
             tid: EVENT_HANDLER_ID.with(|id| id.clone()),
-            data: EventHandlerData::new(id, handler),
+            data: EventHandlerData::new(handler),
         })
     }
 
@@ -42,10 +47,18 @@ impl EventHandler {
 
 impl Component for EventHandler {
     fn id(&self) -> Rc<String> {
-        self.data.borrow().id.clone()
+        self.id.clone()
     }
 
     fn tid(&self) -> Rc<String> {
         self.tid.clone()
+    }
+
+    fn parent(&self) -> Option<Rc<Entity>> {
+        self.data.borrow().parent.clone()
+    }
+
+    fn set_parent(&self, parent: Option<Rc<Entity>>) {
+        self.data.borrow_mut().parent = parent;
     }
 }

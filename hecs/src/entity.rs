@@ -6,14 +6,14 @@ thread_local! {
 }
 
 pub struct EntityData {
-    pub id: Rc<String>,
+    pub parent: Option<Rc<Entity>>,
     components: Vec<Rc<dyn Component>>,
 }
 
 impl EntityData {
-    fn new(id: Rc<String>) -> Rc<RefCell<Self>> {
+    fn new() -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
-            id,
+            parent: None,
             components: Vec::new(),
         }))
     }
@@ -21,6 +21,7 @@ impl EntityData {
 
 #[derive(hecs_derive::Component)]
 pub struct Entity {
+    pub id: Rc<String>,
     pub tid: Rc<String>,
     pub data: Rc<RefCell<EntityData>>,
 }
@@ -28,15 +29,18 @@ pub struct Entity {
 impl Entity {
     pub fn new(id: Rc<String>) -> Rc<Self> {
         Rc::new(Self {
+            id,
             tid: ENTITY_ID.with(|id| id.clone()),
-            data: EntityData::new(id),
+            data: EntityData::new(),
         })
     }
 
-    pub fn add<C>(&self, component: Rc<C>)
+    pub fn add<C>(self: &Rc<Self>, component: Rc<C>)
     where
         C: Component,
     {
+        component.set_parent(Some(self.clone()));
+
         self.data.borrow_mut().components.push(component.clone());
     }
 
@@ -106,6 +110,8 @@ impl Entity {
             .iter()
             .filter_map(|c| {
                 if *c.id() == *component.id() && *c.tid() == *component.tid() {
+                    c.set_parent(None);
+
                     None
                 } else {
                     Some(c.clone())
@@ -117,7 +123,7 @@ impl Entity {
 
 impl Component for Entity {
     fn id(&self) -> Rc<String> {
-        self.data.borrow().id.clone()
+        self.id.clone()
     }
 
     fn tid(&self) -> Rc<String> {
@@ -138,5 +144,13 @@ impl Component for Entity {
         for component in components {
             component.update(Some(self));
         }
+    }
+
+    fn parent(&self) -> Option<Rc<Entity>> {
+        self.data.borrow().parent.clone()
+    }
+
+    fn set_parent(&self, parent: Option<Rc<Entity>> ) {
+        self.data.borrow_mut().parent = parent;
     }
 }

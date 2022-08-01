@@ -1,7 +1,7 @@
 use crate::{
     assets::Scene,
-    components::{event_handler::EVENT_HANDLER_ID, sprite::SPRITE_ID, EventHandler, Sprite},
-    ecs::{entity::ENTITY_ID, Entity},
+    components::{event_handler::EVENT_HANDLER_ID, EventHandler, Sprite, SPRITE_ID},
+    ecs::{Entity, ENTITY_ID},
 };
 use glium::{
     draw_parameters::{Blend, DepthTest},
@@ -81,7 +81,7 @@ impl<'a> Engine<'a> {
         draw_params: &DrawParameters,
     ) -> anyhow::Result<()> {
         for sprite in entity.get_all::<Sprite>(SPRITE_ID.with(|id| id.clone())) {
-            sprite.draw(self, target)?;
+            sprite.draw(entity, self, target)?;
         }
 
         for entity in entity.get_all::<Entity>(ENTITY_ID.with(|id| id.clone())) {
@@ -118,6 +118,7 @@ impl Engine<'static> {
             target.clear_color_and_depth(self.scene.borrow().bg.into(), 1.0);
 
             Self::handle_events(self.scene.borrow().root.as_ref(), &ev);
+
             self.draw_sprites(
                 self.scene.borrow().root.as_ref(),
                 &mut target,

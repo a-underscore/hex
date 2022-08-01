@@ -13,12 +13,6 @@ pub fn component(input: TokenStream) -> TokenStream {
                 self.clone()
             }
         }
-
-        impl #impl_generics PartialEq for #name #ty_generics #where_clause {
-            fn eq(&self, other: &Self) -> bool {
-                *self.tid() == *other.tid() && *self.id() == *other.id()
-            }
-        }
     };
 
     TokenStream::from(expanded)
