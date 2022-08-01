@@ -43,9 +43,9 @@ impl SpriteData {
 
 #[derive(ecs::derive::Component)]
 pub struct Sprite {
-    pub id: Rc<String>,
-    pub tid: Rc<String>,
-    pub parent: Rc<RefCell<Option<Rc<Entity>>>>,
+    id: Rc<String>,
+    tid: Rc<String>,
+    parent: Rc<RefCell<Option<Rc<Entity>>>>,
     pub data: Rc<RefCell<SpriteData>>,
 }
 
@@ -61,8 +61,8 @@ impl Sprite {
     ) -> Rc<Self> {
         Rc::new(Self {
             id,
-            tid: SPRITE_ID.with(|id| id.clone()),
-            parent: Rc::new(RefCell::new(None)),
+            tid: ecs::tid(&SPRITE_ID),
+            parent: ecs::parent(&None),
             data: SpriteData::new(color, shape, texture, shaders, layer, draw),
         })
     }
@@ -74,10 +74,10 @@ impl Sprite {
             let camera = engine.scene.borrow().camera.clone();
 
             if let (Some(transform), Some(camera_transform)) = (
-                parent.get_first::<Transform>(TRANSFORM_ID.with(|id| id.clone())),
-                camera.parent().and_then(|parent| {
-                    parent.get_first::<Transform>(TRANSFORM_ID.with(|id| id.clone()))
-                }),
+                parent.get_first::<Transform>(ecs::tid(&TRANSFORM_ID)),
+                camera
+                    .parent()
+                    .and_then(|parent| parent.get_first::<Transform>(ecs::tid(&TRANSFORM_ID))),
             ) {
                 let color: [f32; 4] = data.color.into();
                 let transform: [[f32; 3]; 3] = transform.get_global_transform().into();

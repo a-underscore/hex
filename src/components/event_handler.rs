@@ -22,9 +22,9 @@ impl EventHandlerData {
 
 #[derive(Component)]
 pub struct EventHandler {
-    pub id: Rc<String>,
-    pub tid: Rc<String>,
-    pub parent: Rc<RefCell<Option<Rc<Entity>>>>,
+    id: Rc<String>,
+    tid: Rc<String>,
+    parent: Rc<RefCell<Option<Rc<Entity>>>>,
     pub data: Rc<RefCell<EventHandlerData>>,
 }
 

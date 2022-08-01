@@ -19,9 +19,9 @@ impl EntityData {
 
 #[derive(hecs_derive::Component)]
 pub struct Entity {
-    pub id: Rc<String>,
-    pub tid: Rc<String>,
-    pub parent: Rc<RefCell<Option<Rc<Entity>>>>,
+    id: Rc<String>,
+    tid: Rc<String>,
+    parent: Rc<RefCell<Option<Rc<Entity>>>>,
     pub data: Rc<RefCell<EntityData>>,
 }
 
@@ -29,8 +29,8 @@ impl Entity {
     pub fn new(id: Rc<String>) -> Rc<Self> {
         Rc::new(Self {
             id,
-            tid: ENTITY_ID.with(|id| id.clone()),
-            parent: Rc::new(RefCell::new(None)),
+            tid: ecs::tid(&ENTITY_ID),
+            parent: ecs::parent(&None),
             data: EntityData::new(),
         })
     }
