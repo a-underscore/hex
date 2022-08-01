@@ -12,5 +12,5 @@ pub trait Component: AsAny {
 
     fn parent(&self) -> Option<Rc<Entity>>;
 
-    fn set_parent(&self, parent: Option<Rc<Entity>> );
+    fn set_parent(&self, parent: Option<Rc<Entity>>);
 }

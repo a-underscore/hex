@@ -18,14 +18,14 @@ use std::{cell::RefCell, rc::Rc};
 pub struct Engine<'a> {
     pub display: Display,
     pub scene: Rc<RefCell<Scene>>,
-    pub draw_parameters: Rc<DrawParameters<'a>>,
+    pub draw_parameters: Rc<RefCell<DrawParameters<'a>>>,
 }
 
 impl<'a> Engine<'a> {
     pub fn new(
         display: Display,
         scene: Rc<RefCell<Scene>>,
-        draw_parameters: Rc<DrawParameters<'a>>,
+        draw_parameters: Rc<RefCell<DrawParameters<'a>>>,
     ) -> anyhow::Result<Rc<Self>> {
         Ok(Rc::new(Self {
             display,
@@ -60,8 +60,8 @@ impl<'a> Engine<'a> {
         Self::display(wb, cb)
     }
 
-    pub fn default_draw_parameters() -> Rc<DrawParameters<'static>> {
-        let draw_parameters = Rc::new(DrawParameters {
+    pub fn default_draw_parameters() -> Rc<RefCell<DrawParameters<'static>>> {
+        Rc::new(RefCell::new(DrawParameters {
             depth: Depth {
                 test: DepthTest::IfLess,
                 write: true,
@@ -69,23 +69,16 @@ impl<'a> Engine<'a> {
             },
             blend: Blend::alpha_blending(),
             ..Default::default()
-        });
-
-        draw_parameters
+        }))
     }
 
-    fn draw_sprites(
-        &self,
-        entity: &Entity,
-        target: &mut Frame,
-        draw_params: &DrawParameters,
-    ) -> anyhow::Result<()> {
+    fn draw_sprites(&self, entity: &Entity, target: &mut Frame) -> anyhow::Result<()> {
         for sprite in entity.get_all::<Sprite>(SPRITE_ID.with(|id| id.clone())) {
             sprite.draw(entity, self, target)?;
         }
 
         for entity in entity.get_all::<Entity>(ENTITY_ID.with(|id| id.clone())) {
-            self.draw_sprites(entity.as_ref(), target, draw_params)?;
+            self.draw_sprites(entity.as_ref(), target)?;
         }
 
         Ok(())
@@ -119,12 +112,8 @@ impl Engine<'static> {
 
             Self::handle_events(self.scene.borrow().root.as_ref(), &ev);
 
-            self.draw_sprites(
-                self.scene.borrow().root.as_ref(),
-                &mut target,
-                &self.draw_parameters,
-            )
-            .unwrap();
+            self.draw_sprites(self.scene.borrow().root.as_ref(), &mut target)
+                .unwrap();
 
             target.finish().unwrap();
 

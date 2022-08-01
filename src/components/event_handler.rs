@@ -11,16 +11,12 @@ pub trait Handler: Send + Sync {
 }
 
 pub struct EventHandlerData {
-    pub parent: Option<Rc<Entity>>,
     pub handler: Rc<dyn Handler>,
 }
 
 impl EventHandlerData {
     pub fn new(handler: Rc<dyn Handler>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
-            parent: None,
-            handler,
-        }))
+        Rc::new(RefCell::new(Self { handler }))
     }
 }
 
@@ -28,7 +24,8 @@ impl EventHandlerData {
 pub struct EventHandler {
     pub id: Rc<String>,
     pub tid: Rc<String>,
-    data: Rc<RefCell<EventHandlerData>>,
+    pub parent: Rc<RefCell<Option<Rc<Entity>>>>,
+    pub data: Rc<RefCell<EventHandlerData>>,
 }
 
 impl EventHandler {
@@ -36,6 +33,7 @@ impl EventHandler {
         Rc::new(Self {
             id,
             tid: EVENT_HANDLER_ID.with(|id| id.clone()),
+            parent: Rc::new(RefCell::new(None)),
             data: EventHandlerData::new(handler),
         })
     }
@@ -55,10 +53,10 @@ impl Component for EventHandler {
     }
 
     fn parent(&self) -> Option<Rc<Entity>> {
-        self.data.borrow().parent.clone()
+        self.parent.borrow().clone()
     }
 
     fn set_parent(&self, parent: Option<Rc<Entity>>) {
-        self.data.borrow_mut().parent = parent;
+        *self.parent.borrow_mut() = parent;
     }
 }

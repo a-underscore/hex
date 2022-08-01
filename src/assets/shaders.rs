@@ -17,22 +17,17 @@ impl Shaders {
             in vec2 position;
             in vec2 uv;
 
-            uniform mat3 translation;
-            uniform mat2 rotation;
-            uniform mat3 scale;
             uniform float z;
+            uniform mat3 transform;
+            uniform mat3 camera_transform;
             uniform mat4 camera_view;
-            uniform mat3 camera_translation;
-            uniform mat2 camera_rotation;
 
             out vec2 tex_pos;
 
             void main() {
                 tex_pos = uv;
 
-                mat3 global_transform = (inverse(translation) * mat3(rotation)) * (mat3(camera_rotation) * camera_translation);
-
-                vec3 pos = vec3((global_transform * scale * vec3(position, 1.0)).xy, z);
+                vec3 pos = vec3((inverse(camera_transform) * transform * vec3(position, 1.0)).xy, z);
 
                 gl_Position = camera_view * vec4(pos, 1.0);
             }

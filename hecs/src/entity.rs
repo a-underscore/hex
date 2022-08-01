@@ -1,4 +1,4 @@
-use crate::{AsAny, Component, self as ecs};
+use crate::{self as ecs, AsAny, Component};
 use std::{any::Any, cell::RefCell, rc::Rc};
 
 thread_local! {
@@ -6,14 +6,12 @@ thread_local! {
 }
 
 pub struct EntityData {
-    pub parent: Option<Rc<Entity>>,
     components: Vec<Rc<dyn Component>>,
 }
 
 impl EntityData {
     fn new() -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
-            parent: None,
             components: Vec::new(),
         }))
     }
@@ -23,6 +21,7 @@ impl EntityData {
 pub struct Entity {
     pub id: Rc<String>,
     pub tid: Rc<String>,
+    pub parent: Rc<RefCell<Option<Rc<Entity>>>>,
     pub data: Rc<RefCell<EntityData>>,
 }
 
@@ -31,6 +30,7 @@ impl Entity {
         Rc::new(Self {
             id,
             tid: ENTITY_ID.with(|id| id.clone()),
+            parent: Rc::new(RefCell::new(None)),
             data: EntityData::new(),
         })
     }
@@ -147,10 +147,10 @@ impl Component for Entity {
     }
 
     fn parent(&self) -> Option<Rc<Entity>> {
-        self.data.borrow().parent.clone()
+        self.parent.borrow().clone()
     }
 
-    fn set_parent(&self, parent: Option<Rc<Entity>> ) {
-        self.data.borrow_mut().parent = parent;
+    fn set_parent(&self, parent: Option<Rc<Entity>>) {
+        *self.parent.borrow_mut() = parent;
     }
 }

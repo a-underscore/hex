@@ -1,15 +1,18 @@
-use crate::ecs::{Component, Entity};
+use crate::{
+    components::Camera,
+    ecs::{Component, Entity},
+};
 use cgmath::Vector4;
 use std::{cell::RefCell, rc::Rc};
 
 pub struct Scene {
     pub bg: Vector4<f32>,
-    pub camera: Rc<Entity>,
+    pub camera: Rc<Camera>,
     pub root: Rc<Entity>,
 }
 
 impl Scene {
-    pub fn new(bg: Vector4<f32>, camera: Rc<Entity>, root: Rc<Entity>) -> Rc<RefCell<Self>> {
+    pub fn new(bg: Vector4<f32>, camera: Rc<Camera>, root: Rc<Entity>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self { bg, camera, root }))
     }
 
