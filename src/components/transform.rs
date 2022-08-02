@@ -78,21 +78,15 @@ impl Component for Transform {
     fn update(self: Rc<Self>, parent: Option<Rc<Entity>>) {
         let mut data = self.data.borrow_mut();
 
-        match parent
-            .and_then(|p| p.parent())
-            .and_then(|p| p.parent())
-            .and_then(|p| {
-                Some(
-                    p.get_all::<Transform>(ecs::tid(&TRANSFORM_ID))
-                        .iter()
-                        .map(|t| t.transform())
-                        .product::<Matrix3<f32>>(),
-                )
-            }) {
-            Some(transform) => {
-                data.transform = self.calculate_transform() * transform;
-            }
-
+        match parent.and_then(|p| p.parent()).and_then(|p| {
+            Some(
+                p.get_all::<Transform>(ecs::tid(&TRANSFORM_ID))
+                    .iter()
+                    .map(|t| t.transform())
+                    .product::<Matrix3<f32>>(),
+            )
+        }) {
+            Some(transform) => data.transform = self.calculate_transform() * transform,
             None => data.transform = self.calculate_transform(),
         }
     }
