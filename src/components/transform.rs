@@ -90,6 +90,7 @@ impl Component for Transform {
 }
 
 fn calculate_transform(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Matrix3<f32> {
-    (Matrix3::from_translation(position) * Matrix3::from(Matrix2::from_angle(Rad(rotation))))
+    Matrix3::from_translation(position)
+        * Matrix3::from(Matrix2::from_angle(Rad(rotation)))
         * Matrix3::from_nonuniform_scale(scale.x, scale.y)
 }
