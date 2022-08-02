@@ -72,26 +72,25 @@ impl<'a> Engine<'a> {
         }))
     }
 
-    fn draw_sprites(&self, entity: &Entity, target: &mut Frame) -> anyhow::Result<()> {
-        for sprite in entity.get_all::<Sprite>(ecs::tid(&SPRITE_ID)) {
-            sprite.draw(entity, self, target)?;
+    fn handle_events(entity: Rc<Entity>, event: &Event<()>) {
+        for handler in entity.get_all::<EventHandler>(ecs::tid(&EVENT_HANDLER_ID)) {
+            handler.handle(Some(entity.clone()), event);
         }
 
         for entity in entity.get_all::<Entity>(ecs::tid(&ENTITY_ID)) {
-            self.draw_sprites(entity.as_ref(), target)?;
+            Self::handle_events(entity.clone(), event);
+        }
+    }
+    fn draw_sprites(self: Rc<Self>, entity: Rc<Entity>, target: &mut Frame) -> anyhow::Result<()> {
+        for sprite in entity.get_all::<Sprite>(ecs::tid(&SPRITE_ID)) {
+            sprite.draw(entity.clone(), self.clone(), target)?;
+        }
+
+        for entity in entity.get_all::<Entity>(ecs::tid(&ENTITY_ID)) {
+            self.clone().draw_sprites(entity.clone(), target)?;
         }
 
         Ok(())
-    }
-
-    fn handle_events(entity: &Entity, event: &Event<()>) {
-        for handler in entity.get_all::<EventHandler>(ecs::tid(&EVENT_HANDLER_ID)) {
-            handler.handle(Some(entity), event);
-        }
-
-        for entity in entity.get_all::<Entity>(ecs::tid(&ENTITY_ID)) {
-            Self::handle_events(entity.as_ref(), event);
-        }
     }
 }
 
@@ -104,15 +103,14 @@ impl Engine<'static> {
 
     fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>) {
         event_loop.run(move |ev, _, control_flow| {
-            self.scene.borrow().update();
+            Self::handle_events(self.scene.borrow().root.clone(), &ev);
 
             let mut target = self.display.draw();
 
             target.clear_color_and_depth(self.scene.borrow().bg.into(), 1.0);
 
-            Self::handle_events(self.scene.borrow().root.as_ref(), &ev);
-
-            self.draw_sprites(self.scene.borrow().root.as_ref(), &mut target)
+            self.clone()
+                .draw_sprites(self.scene.borrow().root.clone(), &mut target)
                 .unwrap();
 
             target.finish().unwrap();

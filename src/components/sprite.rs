@@ -67,7 +67,12 @@ impl Sprite {
         })
     }
 
-    pub fn draw(&self, parent: &Entity, engine: &Engine, target: &mut Frame) -> anyhow::Result<()> {
+    pub fn draw(
+        &self,
+        parent: Rc<Entity>,
+        engine: Rc<Engine>,
+        target: &mut Frame,
+    ) -> anyhow::Result<()> {
         let data = self.data.borrow();
 
         if data.draw {
