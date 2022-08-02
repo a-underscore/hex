@@ -5,24 +5,12 @@ thread_local! {
     pub static ENTITY_ID: Rc<String> = ecs::id("entity");
 }
 
-pub struct EntityData {
-    components: Vec<Rc<dyn Component>>,
-}
-
-impl EntityData {
-    fn new() -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
-            components: Vec::new(),
-        }))
-    }
-}
-
 #[derive(hecs_derive::Component)]
 pub struct Entity {
     id: Rc<String>,
     tid: Rc<String>,
     parent: Rc<RefCell<Option<Rc<Entity>>>>,
-    pub data: Rc<RefCell<EntityData>>,
+    components: Rc<RefCell<Vec<Rc<dyn Component>>>>,
 }
 
 impl Entity {
@@ -31,26 +19,25 @@ impl Entity {
             id,
             tid: ecs::tid(&ENTITY_ID),
             parent: Rc::new(RefCell::new(None)),
-            data: EntityData::new(),
+            components: Rc::new(RefCell::new(Vec::new())),
         })
     }
 
-    pub fn add<C>(self: &Rc<Self>, component: Rc<C>)
+    pub fn add<C>(self: Rc<Self>, component: Rc<C>)
     where
         C: Component,
     {
         component.set_parent(Some(self.clone()));
 
-        self.data.borrow_mut().components.push(component.clone());
+        self.components.borrow_mut().push(component.clone());
     }
 
     pub fn get<C>(&self, id: Rc<String>, tid: Rc<String>) -> Option<Rc<C>>
     where
         C: Component,
     {
-        self.data
+        self.components
             .borrow()
-            .components
             .iter()
             .filter_map(|c| {
                 if *c.id() == *id && c.tid() == tid {
@@ -67,9 +54,8 @@ impl Entity {
     where
         C: Component,
     {
-        self.data
+        self.components
             .borrow()
-            .components
             .iter()
             .find_map(|c| {
                 if *c.tid() == *tid {
@@ -85,9 +71,8 @@ impl Entity {
     where
         C: Component,
     {
-        self.data
+        self.components
             .borrow()
-            .components
             .iter()
             .filter_map(|c| {
                 if *c.tid() == *tid {
@@ -103,10 +88,9 @@ impl Entity {
     where
         C: Component + ?Sized,
     {
-        let mut data = self.data.borrow_mut();
+        let mut components = self.components.borrow_mut();
 
-        data.components = data
-            .components
+        *components = components
             .iter()
             .filter_map(|c| {
                 if *c.id() == *component.id() && *c.tid() == *component.tid() {
@@ -130,19 +114,15 @@ impl Component for Entity {
         self.tid.clone()
     }
 
-    fn init(&self, _owner: Option<&Self>) {
-        let components = { self.data.borrow().components.clone() };
-
-        for component in components {
-            component.init(Some(self));
+    fn init(self: Rc<Self>, _owner: Option<Rc<Self>>) {
+        for component in self.components.borrow().iter().cloned() {
+            component.init(Some(self.clone()));
         }
     }
 
-    fn update(&self, _owner: Option<&Self>) {
-        let components = { self.data.borrow().components.clone() };
-
-        for component in components {
-            component.update(Some(self));
+    fn update(self: Rc<Self>, _owner: Option<Rc<Self>>) {
+        for component in self.components.borrow().iter().cloned() {
+            component.update(Some(self.clone()));
         }
     }
 

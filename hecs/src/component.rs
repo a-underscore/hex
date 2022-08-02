@@ -6,9 +6,9 @@ pub trait Component: AsAny {
 
     fn tid(&self) -> Rc<String>;
 
-    fn update(&self, _owner: Option<&Entity>) {}
+    fn update(self: Rc<Self>, _owner: Option<Rc<Entity>>) {}
 
-    fn init(&self, _owner: Option<&Entity>) {}
+    fn init(self: Rc<Self>, _owner: Option<Rc<Entity>>) {}
 
     fn parent(&self) -> Option<Rc<Entity>>;
 
