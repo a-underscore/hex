@@ -1,7 +1,7 @@
 use crate::{
     assets::Scene,
     components::{event_handler::EVENT_HANDLER_ID, EventHandler, Sprite, SPRITE_ID},
-    ecs::{Entity, ENTITY_ID},
+    ecs::{self, Entity, ENTITY_ID},
 };
 use glium::{
     draw_parameters::{Blend, DepthTest},
@@ -73,11 +73,11 @@ impl<'a> Engine<'a> {
     }
 
     fn draw_sprites(&self, entity: &Entity, target: &mut Frame) -> anyhow::Result<()> {
-        for sprite in entity.get_all::<Sprite>(SPRITE_ID.with(|id| id.clone())) {
+        for sprite in entity.get_all::<Sprite>(ecs::tid(&SPRITE_ID)) {
             sprite.draw(entity, self, target)?;
         }
 
-        for entity in entity.get_all::<Entity>(ENTITY_ID.with(|id| id.clone())) {
+        for entity in entity.get_all::<Entity>(ecs::tid(&ENTITY_ID)) {
             self.draw_sprites(entity.as_ref(), target)?;
         }
 
@@ -85,11 +85,11 @@ impl<'a> Engine<'a> {
     }
 
     fn handle_events(entity: &Entity, event: &Event<()>) {
-        for handler in entity.get_all::<EventHandler>(EVENT_HANDLER_ID.with(|id| id.clone())) {
+        for handler in entity.get_all::<EventHandler>(ecs::tid(&EVENT_HANDLER_ID)) {
             handler.handle(Some(entity), event);
         }
 
-        for entity in entity.get_all::<Entity>(ENTITY_ID.with(|id| id.clone())) {
+        for entity in entity.get_all::<Entity>(ecs::tid(&ENTITY_ID)) {
             Self::handle_events(entity.as_ref(), event);
         }
     }

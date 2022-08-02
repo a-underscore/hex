@@ -32,7 +32,7 @@ impl EventHandler {
     pub fn new<'a>(id: Rc<String>, handler: Rc<dyn Handler>) -> Rc<Self> {
         Rc::new(Self {
             id,
-            tid: EVENT_HANDLER_ID.with(|id| id.clone()),
+            tid: ecs::tid(&EVENT_HANDLER_ID),
             parent: Rc::new(RefCell::new(None)),
             data: EventHandlerData::new(handler),
         })
