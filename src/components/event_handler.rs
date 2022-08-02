@@ -7,7 +7,7 @@ thread_local! {
 }
 
 pub trait Handler: Send + Sync {
-    fn handle<'a>(&self, owner: Option<Rc<Entity>>, event: &Event<'a, ()>);
+    fn handle<'a>(&self, parent: Option<Rc<Entity>>, event: &Event<'a, ()>);
 }
 
 pub struct EventHandlerData {
@@ -38,8 +38,8 @@ impl EventHandler {
         })
     }
 
-    pub fn handle(&self, owner: Option<Rc<Entity>>, event: &Event<()>) {
-        self.data.borrow().handler.handle(owner, event);
+    pub fn handle(&self, parent: Option<Rc<Entity>>, event: &Event<()>) {
+        self.data.borrow().handler.handle(parent, event);
     }
 }
 

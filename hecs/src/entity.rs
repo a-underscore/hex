@@ -114,13 +114,13 @@ impl Component for Entity {
         self.tid.clone()
     }
 
-    fn init(self: Rc<Self>, _owner: Option<Rc<Self>>) {
+    fn init(self: Rc<Self>, _parent: Option<Rc<Self>>) {
         for component in self.components.borrow().iter().cloned() {
             component.init(Some(self.clone()));
         }
     }
 
-    fn update(self: Rc<Self>, _owner: Option<Rc<Self>>) {
+    fn update(self: Rc<Self>, _parent: Option<Rc<Self>>) {
         for component in self.components.borrow().iter().cloned() {
             component.update(Some(self.clone()));
         }
