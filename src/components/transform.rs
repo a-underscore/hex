@@ -1,6 +1,6 @@
 use crate::ecs::{self, derive::Component, AsAny, Component, Entity};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
-use std::{any::Any, cell::RefCell, rc::Rc};
+use std::{any::Any, cell::RefCell, rc::Rc, time::Duration};
 
 thread_local! {
     pub static TRANSFORM_ID: Rc<String> = ecs::id("transform");
@@ -73,7 +73,7 @@ impl Component for Transform {
         *self.parent.borrow_mut() = parent;
     }
 
-    fn update(self: Rc<Self>, parent: Option<Rc<Entity>>) {
+    fn update(self: Rc<Self>, parent: Option<Rc<Entity>>, _delta: Duration) {
         let mut data = self.data.borrow_mut();
 
         match parent

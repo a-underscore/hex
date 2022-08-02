@@ -13,7 +13,7 @@ use glium::{
     },
     Depth, Display, DrawParameters, Frame, Surface,
 };
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, time::Instant};
 
 pub struct Engine<'a> {
     pub display: Display,
@@ -103,8 +103,15 @@ impl Engine<'static> {
     }
 
     fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>) {
+        let mut last_frame_time = Instant::now();
+
         event_loop.run(move |ev, _, control_flow| {
-            self.scene.borrow().root.clone().update(None);
+            let current_frame_time = Instant::now();
+            let delta = current_frame_time.duration_since(last_frame_time);
+
+            last_frame_time = current_frame_time;
+
+            self.scene.borrow().root.clone().update(None, delta);
 
             Self::handle_events(self.scene.borrow().root.clone(), &ev);
 
@@ -123,12 +130,10 @@ impl Engine<'static> {
                 Event::WindowEvent { event, .. } => match event {
                     WindowEvent::CloseRequested => {
                         *control_flow = ControlFlow::Exit;
-
-                        return;
                     }
-                    _ => return,
+                    _ => {}
                 },
-                _ => (),
+                _ => {}
             }
         });
     }

@@ -1,12 +1,12 @@
 use crate::{AsAny, Entity};
-use std::rc::Rc;
+use std::{rc::Rc, time::Duration};
 
 pub trait Component: AsAny {
     fn id(&self) -> Rc<String>;
 
     fn tid(&self) -> Rc<String>;
 
-    fn update(self: Rc<Self>, _parent: Option<Rc<Entity>>) {}
+    fn update(self: Rc<Self>, _parent: Option<Rc<Entity>>, _delta: Duration) {}
 
     fn init(self: Rc<Self>, _parent: Option<Rc<Entity>>) {}
 

@@ -1,5 +1,5 @@
 use crate::{self as ecs, AsAny, Component};
-use std::{any::Any, cell::RefCell, rc::Rc};
+use std::{any::Any, cell::RefCell, rc::Rc, time::Duration};
 
 thread_local! {
     pub static ENTITY_ID: Rc<String> = ecs::id("entity");
@@ -120,9 +120,9 @@ impl Component for Entity {
         }
     }
 
-    fn update(self: Rc<Self>, _parent: Option<Rc<Self>>) {
+    fn update(self: Rc<Self>, _parent: Option<Rc<Self>>, delta: Duration) {
         for component in self.components.borrow().iter().cloned() {
-            component.update(Some(self.clone()));
+            component.update(Some(self.clone()), delta);
         }
     }
 
