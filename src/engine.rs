@@ -1,7 +1,7 @@
 use crate::{
     assets::Scene,
     components::{event_handler::EVENT_HANDLER_ID, EventHandler, Sprite, SPRITE_ID},
-    ecs::{self, Entity, ENTITY_ID},
+    ecs::{self, Component, Entity, ENTITY_ID},
 };
 use glium::{
     draw_parameters::{Blend, DepthTest},
@@ -97,13 +97,15 @@ impl<'a> Engine<'a> {
 
 impl Engine<'static> {
     pub fn init(self: &Rc<Self>, event_loop: EventLoop<()>) {
-        self.scene.borrow().init();
+        self.scene.borrow().root.clone().init(None);
 
         self.clone().run_event_loop(event_loop);
     }
 
     fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>) {
         event_loop.run(move |ev, _, control_flow| {
+            self.scene.borrow().root.clone().update(None);
+
             Self::handle_events(self.scene.borrow().root.clone(), &ev);
 
             let mut target = self.display.draw();

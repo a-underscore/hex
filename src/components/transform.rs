@@ -22,6 +22,10 @@ impl TransformData {
             scale,
         }))
     }
+
+    pub fn update_transform(&mut self) {
+        self.transform = calculate_transform(self.position, self.rotation, self.scale);
+    }
 }
 
 #[derive(Component)]
@@ -50,12 +54,6 @@ impl Transform {
     pub fn transform(&self) -> Matrix3<f32> {
         self.data.borrow().transform
     }
-
-    fn calculate_transform(&self) -> Matrix3<f32> {
-        let data = self.data.borrow();
-
-        calculate_transform(data.position, data.rotation, data.scale)
-    }
 }
 
 impl Component for Transform {
@@ -78,22 +76,20 @@ impl Component for Transform {
     fn update(self: Rc<Self>, parent: Option<Rc<Entity>>) {
         let mut data = self.data.borrow_mut();
 
-        match parent.and_then(|p| p.parent()).and_then(|p| {
-            Some(
-                p.get_all::<Transform>(ecs::tid(&TRANSFORM_ID))
-                    .iter()
-                    .map(|t| t.transform())
-                    .product::<Matrix3<f32>>(),
-            )
-        }) {
-            Some(transform) => data.transform = self.calculate_transform() * transform,
-            None => data.transform = self.calculate_transform(),
+        match parent
+            .and_then(|p| p.parent())
+            .and_then(|p| p.get_first::<Transform>(ecs::tid(&TRANSFORM_ID)))
+        {
+            Some(transform) => {
+                data.transform = calculate_transform(data.position, data.rotation, data.scale)
+                    * transform.data.borrow().transform;
+            }
+            None => data.update_transform(),
         }
     }
 }
 
 fn calculate_transform(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Matrix3<f32> {
-    Matrix3::from_translation(position)
-        * Matrix3::from(Matrix2::from_angle(Rad(rotation)))
+    (Matrix3::from_translation(position) * Matrix3::from(Matrix2::from_angle(Rad(rotation))))
         * Matrix3::from_nonuniform_scale(scale.x, scale.y)
 }
