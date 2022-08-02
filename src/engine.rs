@@ -81,13 +81,14 @@ impl<'a> Engine<'a> {
             Self::handle_events(entity.clone(), event);
         }
     }
-    fn draw_sprites(self: Rc<Self>, entity: Rc<Entity>, target: &mut Frame) -> anyhow::Result<()> {
+
+    fn draw_sprites(&self, entity: &Entity, target: &mut Frame) -> anyhow::Result<()> {
         for sprite in entity.get_all::<Sprite>(ecs::tid(&SPRITE_ID)) {
             sprite.draw(entity.clone(), self.clone(), target)?;
         }
 
         for entity in entity.get_all::<Entity>(ecs::tid(&ENTITY_ID)) {
-            self.clone().draw_sprites(entity.clone(), target)?;
+            self.clone().draw_sprites(entity.as_ref(), target)?;
         }
 
         Ok(())
@@ -109,8 +110,7 @@ impl Engine<'static> {
 
             target.clear_color_and_depth(self.scene.borrow().bg.into(), 1.0);
 
-            self.clone()
-                .draw_sprites(self.scene.borrow().root.clone(), &mut target)
+            self.draw_sprites(self.scene.borrow().root.as_ref(), &mut target)
                 .unwrap();
 
             target.finish().unwrap();
