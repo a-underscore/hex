@@ -1,14 +1,24 @@
 use crate::{self as ecs, AsAny, Component};
-use std::{
-    any::Any,
-    cell::{Ref, RefCell},
-    collections::HashMap,
-    rc::Rc,
-    time::Duration,
-};
+use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
 
 thread_local! {
     pub static ENTITY_ID: Rc<String> = ecs::id("entity");
+}
+
+pub struct EntityData {
+    components: HashMap<(Rc<String>, Rc<String>), Rc<dyn Component>>,
+}
+
+impl EntityData {
+    fn new() -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self {
+            components: HashMap::new(),
+        }))
+    }
+
+    pub fn components<'a>(&'a self) -> &'a HashMap<(Rc<String>, Rc<String>), Rc<dyn Component>> {
+        &self.components
+    }
 }
 
 #[derive(hecs_derive::Component)]
@@ -16,7 +26,7 @@ pub struct Entity {
     id: Rc<String>,
     tid: Rc<String>,
     parent: Rc<RefCell<Option<Rc<Entity>>>>,
-    components: Rc<RefCell<HashMap<(Rc<String>, Rc<String>), Rc<dyn Component>>>>,
+    pub data: Rc<RefCell<EntityData>>,
 }
 
 impl Entity {
@@ -25,44 +35,51 @@ impl Entity {
             id,
             tid: ecs::tid(&ENTITY_ID),
             parent: Rc::new(RefCell::new(None)),
-            components: Rc::new(RefCell::new(HashMap::new())),
+            data: EntityData::new(),
         })
     }
 
-    pub fn add<C>(self: Rc<Self>, component: Rc<C>)
+    pub fn add<C>(self: &Rc<Self>, component: &Rc<C>)
     where
         C: Component,
     {
-        self.components
+        self.data
             .borrow_mut()
+            .components
             .insert(
                 (component.id(), component.tid()),
                 component.clone() as Rc<dyn Component>,
             )
-            .and_then(|c| Some(c.set_parent(None)));
+            .and_then(|c| {
+                c.set_parent(None);
+
+                Some(())
+            });
 
         component.set_parent(Some(self.clone()));
     }
 
-    pub fn get<C>(&self, id: Rc<String>, tid: Rc<String>) -> Option<Rc<C>>
+    pub fn get<C>(&self, id: &Rc<String>, tid: &Rc<String>) -> Option<Rc<C>>
     where
         C: Component,
     {
-        self.components
+        self.data
             .borrow()
-            .get(&(id, tid))
+            .components
+            .get(&(id.clone(), tid.clone()))
             .and_then(|c| c.clone().as_any().downcast::<C>().ok())
     }
 
-    pub fn get_all<C>(&self, tid: Rc<String>) -> Vec<Rc<C>>
+    pub fn get_all<C>(&self, tid: &Rc<String>) -> Vec<Rc<C>>
     where
         C: Component,
     {
-        self.components
+        self.data
             .borrow()
+            .components
             .values()
             .filter_map(|c| {
-                if *c.tid() == *tid {
+                if *c.tid() == **tid {
                     c.clone().as_any().downcast::<C>().ok()
                 } else {
                     None
@@ -71,32 +88,39 @@ impl Entity {
             .collect()
     }
 
-    pub fn get_first<C>(&self, tid: Rc<String>) -> Option<Rc<C>>
+    pub fn get_first<C>(&self, tid: &Rc<String>) -> Option<Rc<C>>
     where
         C: Component,
     {
-        self.components
+        self.data
             .borrow()
+            .components
             .values()
             .cloned()
-            .find(|c| *c.tid() == *tid)
+            .find(|c| *c.tid() == **tid)
             .and_then(|c| c.clone().as_any().downcast::<C>().ok())
     }
 
-    pub fn remove(&self, id: Rc<String>, tid: Rc<String>) {
-        self.components
+    pub fn remove(&self, id: &Rc<String>, tid: &Rc<String>) {
+        self.data
             .borrow_mut()
-            .remove(&(id, tid))
-            .and_then(|c| Some(c.set_parent(None)));
+            .components
+            .remove(&(id.clone(), tid.clone()))
+            .and_then(|c| {
+                c.set_parent(None);
+
+                Some(())
+            });
     }
 
-    pub fn remove_all(&self, tid: Rc<String>) {
-        let mut components = self.components.borrow_mut();
+    pub fn remove_all(&self, tid: &Rc<String>) {
+        let mut data = self.data.borrow_mut();
 
-        *components = components
+        data.components = data
+            .components
             .iter()
             .filter_map(|(k, c)| {
-                if *c.tid() == *tid {
+                if *c.tid() == **tid {
                     c.set_parent(None);
 
                     None
@@ -107,13 +131,13 @@ impl Entity {
             .collect();
     }
 
-    pub fn remove_first(&self, tid: Rc<String>) {
-        let mut components = self.components.borrow_mut();
+    pub fn remove_first(&self, tid: &Rc<String>) {
+        let mut data = self.data.borrow_mut();
 
-        components
+        data.components
             .iter()
             .find_map(|(k, c)| {
-                if *c.tid() == *tid {
+                if *c.tid() == **tid {
                     Some((k.clone(), c.clone()))
                 } else {
                     None
@@ -122,18 +146,17 @@ impl Entity {
             .and_then(|(k, c)| {
                 c.set_parent(None);
 
-                components.remove(&k);
+                data.components.remove(&k);
 
-                Some(c)
+                Some(())
             });
     }
 
-    pub fn remove_struct(&self, component: Rc<dyn Component>) {
-        self.remove(component.id(), component.tid());
-    }
-
-    pub fn components(&self) -> Ref<HashMap<(Rc<String>, Rc<String>), Rc<dyn Component>>> {
-        self.components.borrow()
+    pub fn remove_struct<C>(&self, component: &Rc<C>)
+    where
+        C: Component,
+    {
+        self.remove(&component.id(), &component.tid());
     }
 }
 
@@ -155,13 +178,13 @@ impl Component for Entity {
     }
 
     fn init(self: Rc<Self>, _parent: Option<Rc<Self>>) {
-        for component in self.components.borrow().values().cloned() {
+        for component in self.data.borrow().components.values().cloned() {
             component.init(Some(self.clone()));
         }
     }
 
     fn update(self: Rc<Self>, _parent: Option<Rc<Self>>, delta: Duration) {
-        for component in self.components.borrow().values().cloned() {
+        for component in self.data.borrow().components.values().cloned() {
             component.update(Some(self.clone()), delta);
         }
     }

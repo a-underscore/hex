@@ -44,20 +44,12 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(
-        id: Rc<String>,
-        left: f32,
-        right: f32,
-        bottom: f32,
-        top: f32,
-        near: f32,
-        far: f32,
-    ) -> Rc<Self> {
+    pub fn new(id: Rc<String>, data: Rc<RefCell<CameraData>>) -> Rc<Self> {
         Rc::new(Self {
             id,
             tid: ecs::tid(&CAMERA_ID),
             parent: Rc::new(RefCell::new(None)),
-            data: CameraData::new(left, right, bottom, top, near, far),
+            data,
         })
     }
 

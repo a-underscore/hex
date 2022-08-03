@@ -22,7 +22,7 @@ pub struct SpriteData {
 }
 
 impl SpriteData {
-    fn new(
+    pub fn new(
         color: Vector4<f32>,
         shape: Rc<RefCell<Shape>>,
         texture: Rc<RefCell<Texture>>,
@@ -50,20 +50,12 @@ pub struct Sprite {
 }
 
 impl Sprite {
-    pub fn new(
-        id: Rc<String>,
-        color: Vector4<f32>,
-        shape: Rc<RefCell<Shape>>,
-        texture: Rc<RefCell<Texture>>,
-        shaders: Rc<RefCell<Shaders>>,
-        layer: f32,
-        draw: bool,
-    ) -> Rc<Self> {
+    pub fn new(id: Rc<String>, data: Rc<RefCell<SpriteData>>) -> Rc<Self> {
         Rc::new(Self {
             id,
             tid: ecs::tid(&SPRITE_ID),
             parent: Rc::new(RefCell::new(None)),
-            data: SpriteData::new(color, shape, texture, shaders, layer, draw),
+            data,
         })
     }
 
@@ -74,10 +66,10 @@ impl Sprite {
             let camera = engine.scene.borrow().camera.clone();
 
             if let (Some(transform), Some(camera_transform)) = (
-                parent.get_first::<Transform>(ecs::tid(&TRANSFORM_ID)),
+                parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)),
                 camera
                     .parent()
-                    .and_then(|parent| parent.get_first::<Transform>(ecs::tid(&TRANSFORM_ID))),
+                    .and_then(|parent| parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID))),
             ) {
                 let color: [f32; 4] = data.color.into();
                 let transform: [[f32; 3]; 3] = transform.transform().into();

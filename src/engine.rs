@@ -73,21 +73,21 @@ impl<'a> Engine<'a> {
     }
 
     fn handle_events(entity: Rc<Entity>, event: &Event<()>) {
-        for handler in entity.get_all::<EventHandler>(ecs::tid(&EVENT_HANDLER_ID)) {
+        for handler in entity.get_all::<EventHandler>(&ecs::tid(&EVENT_HANDLER_ID)) {
             handler.handle(Some(entity.clone()), event);
         }
 
-        for entity in entity.get_all::<Entity>(ecs::tid(&ENTITY_ID)) {
+        for entity in entity.get_all::<Entity>(&ecs::tid(&ENTITY_ID)) {
             Self::handle_events(entity.clone(), event);
         }
     }
 
     fn draw_sprites(&self, entity: &Entity, target: &mut Frame) -> anyhow::Result<()> {
-        for sprite in entity.get_all::<Sprite>(ecs::tid(&SPRITE_ID)) {
+        for sprite in entity.get_all::<Sprite>(&ecs::tid(&SPRITE_ID)) {
             sprite.draw(entity.clone(), self.clone(), target)?;
         }
 
-        for entity in entity.get_all::<Entity>(ecs::tid(&ENTITY_ID)) {
+        for entity in entity.get_all::<Entity>(&ecs::tid(&ENTITY_ID)) {
             self.clone().draw_sprites(entity.as_ref(), target)?;
         }
 

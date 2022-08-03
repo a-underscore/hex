@@ -4,7 +4,7 @@ pub mod entity;
 
 pub use as_any::AsAny;
 pub use component::Component;
-pub use entity::{Entity, ENTITY_ID};
+pub use entity::{Entity, EntityData, ENTITY_ID};
 pub use hecs_derive as derive;
 
 use std::{rc::Rc, thread::LocalKey};

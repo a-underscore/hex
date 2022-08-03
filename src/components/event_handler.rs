@@ -29,12 +29,12 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
-    pub fn new<'a>(id: Rc<String>, handler: Rc<dyn Handler>) -> Rc<Self> {
+    pub fn new<'a>(id: Rc<String>, data: Rc<RefCell<EventHandlerData>>) -> Rc<Self> {
         Rc::new(Self {
             id,
             tid: ecs::tid(&EVENT_HANDLER_ID),
             parent: Rc::new(RefCell::new(None)),
-            data: EventHandlerData::new(handler),
+            data,
         })
     }
 

@@ -37,17 +37,12 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn new(
-        id: Rc<String>,
-        position: Vector2<f32>,
-        rotation: f32,
-        scale: Vector2<f32>,
-    ) -> Rc<Self> {
+    pub fn new(id: Rc<String>, data: Rc<RefCell<TransformData>>) -> Rc<Self> {
         Rc::new(Self {
             id,
             tid: ecs::tid(&TRANSFORM_ID),
             parent: Rc::new(RefCell::new(None)),
-            data: TransformData::new(position, rotation, scale),
+            data,
         })
     }
 
@@ -78,7 +73,7 @@ impl Component for Transform {
 
         match parent
             .and_then(|p| p.parent())
-            .and_then(|p| p.get_first::<Transform>(ecs::tid(&TRANSFORM_ID)))
+            .and_then(|p| p.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)))
         {
             Some(transform) => {
                 data.transform = calculate_transform(data.position, data.rotation, data.scale)
