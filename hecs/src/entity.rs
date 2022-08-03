@@ -1,5 +1,11 @@
 use crate::{self as ecs, AsAny, Component};
-use std::{any::Any, cell::{Ref, RefCell}, collections::HashMap, rc::Rc, time::Duration};
+use std::{
+    any::Any,
+    cell::{Ref, RefCell},
+    collections::HashMap,
+    rc::Rc,
+    time::Duration,
+};
 
 thread_local! {
     pub static ENTITY_ID: Rc<String> = ecs::id("entity");
@@ -72,6 +78,7 @@ impl Entity {
         self.components
             .borrow()
             .values()
+            .cloned()
             .find(|c| *c.tid() == *tid)
             .and_then(|c| c.clone().as_any().downcast::<C>().ok())
     }
@@ -84,19 +91,41 @@ impl Entity {
     }
 
     pub fn remove_all(&self, tid: Rc<String>) {
-        for c in self.components.borrow_mut().values() {
-            if *c.tid() == *tid {
-                self.remove_struct(c.clone());
-            }
-        }
+        let mut components = self.components.borrow_mut();
+
+        *components = components
+            .iter()
+            .filter_map(|(k, c)| {
+                if *c.tid() == *tid {
+                    c.set_parent(None);
+
+                    None
+                } else {
+                    Some((k.clone(), c.clone()))
+                }
+            })
+            .collect();
     }
 
     pub fn remove_first(&self, tid: Rc<String>) {
-        self.components
-            .borrow()
-            .values()
-            .find(|c| *c.tid() == *tid)
-            .and_then(|c| Some(self.remove_struct(c.clone())));
+        let mut components = self.components.borrow_mut();
+
+        components
+            .iter()
+            .find_map(|(k, c)| {
+                if *c.tid() == *tid {
+                    Some((k.clone(), c.clone()))
+                } else {
+                    None
+                }
+            })
+            .and_then(|(k, c)| {
+                c.set_parent(None);
+
+                components.remove(&k);
+
+                Some(c)
+            });
     }
 
     pub fn remove_struct(&self, component: Rc<dyn Component>) {
