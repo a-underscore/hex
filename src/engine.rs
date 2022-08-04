@@ -1,6 +1,6 @@
 use crate::{
     assets::Scene,
-    components::{event_handler::EVENT_HANDLER_ID, EventHandler, Sprite, SPRITE_ID},
+    components::{Sprite, SPRITE_ID},
     ecs::{self, Component, Entity, ENTITY_ID},
 };
 use glium::{
@@ -72,16 +72,6 @@ impl<'a> Engine<'a> {
         }))
     }
 
-    fn handle_events(entity: Rc<Entity>, event: &Event<()>) {
-        for handler in entity.get_all::<EventHandler>(&ecs::tid(&EVENT_HANDLER_ID)) {
-            handler.handle(Some(entity.clone()), event);
-        }
-
-        for entity in entity.get_all::<Entity>(&ecs::tid(&ENTITY_ID)) {
-            Self::handle_events(entity.clone(), event);
-        }
-    }
-
     fn draw_sprites(&self, entity: &Entity, target: &mut Frame) -> anyhow::Result<()> {
         for sprite in entity.get_all::<Sprite>(&ecs::tid(&SPRITE_ID)) {
             sprite.draw(entity.clone(), self.clone(), target)?;
@@ -105,15 +95,13 @@ impl Engine<'static> {
     fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>) {
         let mut last_frame_time = Instant::now();
 
-        event_loop.run(move |ev, _, control_flow| {
+        event_loop.run(move |event, _, control_flow| {
             let current_frame_time = Instant::now();
             let delta = current_frame_time.duration_since(last_frame_time);
 
             last_frame_time = current_frame_time;
 
-            self.scene.borrow().root.clone().update(None, delta);
-
-            Self::handle_events(self.scene.borrow().root.clone(), &ev);
+            self.scene.borrow().root.clone().update(None, &event, delta);
 
             let mut target = self.display.draw();
 
@@ -126,7 +114,7 @@ impl Engine<'static> {
 
             *control_flow = ControlFlow::Wait;
 
-            match ev {
+            match event {
                 Event::WindowEvent { event, .. } => match event {
                     WindowEvent::CloseRequested => {
                         *control_flow = ControlFlow::Exit;

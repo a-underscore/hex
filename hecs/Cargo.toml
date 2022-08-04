@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+glium = "0.31.0"
 hecs_derive = { path = "../hecs_derive" }

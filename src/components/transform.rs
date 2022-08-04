@@ -1,5 +1,6 @@
 use crate::ecs::{self, derive::Component, AsAny, Component, Entity};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
+use glium::glutin::event::Event;
 use std::{any::Any, cell::RefCell, rc::Rc, time::Duration};
 
 thread_local! {
@@ -68,7 +69,7 @@ impl Component for Transform {
         *self.parent.borrow_mut() = parent;
     }
 
-    fn update(self: Rc<Self>, parent: Option<Rc<Entity>>, _delta: Duration) {
+    fn update(self: Rc<Self>, parent: Option<Rc<Entity>>, _event: &Event<()>, _delta: Duration) {
         let mut data = self.data.borrow_mut();
 
         match parent

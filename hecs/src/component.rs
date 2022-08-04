@@ -1,4 +1,5 @@
 use crate::{AsAny, Entity};
+use glium::glutin::event::Event;
 use std::{rc::Rc, time::Duration};
 
 pub trait Component: AsAny {
@@ -6,9 +7,9 @@ pub trait Component: AsAny {
 
     fn tid(&self) -> Rc<String>;
 
-    fn update(self: Rc<Self>, _parent: Option<Rc<Entity>>, _delta: Duration) {}
-
     fn init(self: Rc<Self>, _parent: Option<Rc<Entity>>) {}
+
+    fn update(self: Rc<Self>, _parent: Option<Rc<Entity>>, _event: &Event<()>, _delta: Duration) {}
 
     fn parent(&self) -> Option<Rc<Entity>>;
 

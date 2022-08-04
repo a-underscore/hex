@@ -1,4 +1,5 @@
 use crate::{self as ecs, AsAny, Component};
+use glium::glutin::event::Event;
 use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
 
 thread_local! {
@@ -183,9 +184,9 @@ impl Component for Entity {
         }
     }
 
-    fn update(self: Rc<Self>, _parent: Option<Rc<Self>>, delta: Duration) {
+    fn update(self: Rc<Self>, _parent: Option<Rc<Self>>, event: &Event<()>, delta: Duration) {
         for component in self.data.borrow().components.values().cloned() {
-            component.update(Some(self.clone()), delta);
+            component.update(Some(self.clone()), event, delta);
         }
     }
 }

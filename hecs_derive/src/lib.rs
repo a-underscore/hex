@@ -9,7 +9,7 @@ pub fn component(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     let expanded = quote! {
         impl #impl_generics AsAny for #name #ty_generics #where_clause {
-            fn as_any(self: Rc<Self>) -> Rc<dyn Any + 'static> {
+            fn as_any(self: Rc<Self>) -> Rc<dyn Any> {
                 self.clone()
             }
         }
