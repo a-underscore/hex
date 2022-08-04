@@ -7,11 +7,11 @@ pub trait Component: AsAny {
 
     fn tid(&self) -> Rc<String>;
 
-    fn init(self: Rc<Self>, _parent: Option<Rc<Entity>>) {}
-
-    fn update(self: Rc<Self>, _parent: Option<Rc<Entity>>, _event: &Event<()>, _delta: Duration) {}
-
     fn parent(&self) -> Option<Rc<Entity>>;
 
     fn set_parent(&self, parent: Option<Rc<Entity>>);
+
+    fn init(self: Rc<Self>, _parent: Option<Rc<Entity>>) {}
+
+    fn update(self: Rc<Self>, _parent: Option<Rc<Entity>>, _event: &Event<()>, _delta: Duration) {}
 }
