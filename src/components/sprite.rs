@@ -45,7 +45,7 @@ impl SpriteData {
 pub struct Sprite {
     id: Id,
     tid: Id,
-    parent: Parent,
+    parent: Rc<RefCell<Parent>>,
     pub data: Rc<RefCell<SpriteData>>,
 }
 
@@ -68,9 +68,7 @@ impl Sprite {
             if let (Some(transform), Some(camera_transform)) = (
                 parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)),
                 camera
-                    .parent()
-                    .borrow()
-                    .clone()
+                    .get_parent()
                     .and_then(|parent| parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID))),
             ) {
                 let color: [f32; 4] = data.color.into();
@@ -112,7 +110,11 @@ impl Component for Sprite {
         self.tid.clone()
     }
 
-    fn parent(&self) -> Parent {
-        self.parent.clone()
+    fn get_parent(&self) -> Parent {
+        self.parent.borrow().clone()
+    }
+
+    fn set_parent(&self, parent: Option<Rc<Entity>>) {
+        *self.parent.borrow_mut() = parent;
     }
 }

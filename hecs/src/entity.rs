@@ -26,7 +26,7 @@ impl EntityData {
 pub struct Entity {
     id: Id,
     tid: Id,
-    parent: Parent,
+    parent: Rc<RefCell<Parent>>,
     pub data: Rc<RefCell<EntityData>>,
 }
 
@@ -52,12 +52,12 @@ impl Entity {
                 component.clone() as Rc<dyn Component>,
             )
             .and_then(|c| {
-                *c.parent().borrow_mut() = None;
+                c.set_parent(None);
 
                 Some(())
             });
 
-        *component.parent().borrow_mut() = Some(self.clone());
+        component.set_parent(Some(self.clone()));
     }
 
     pub fn get<C>(&self, id: &Id, tid: &Id) -> Option<Rc<C>>
@@ -108,7 +108,7 @@ impl Entity {
             .components
             .remove(&(id.clone(), tid.clone()))
             .and_then(|c| {
-                *c.parent().borrow_mut() = None;
+                c.set_parent(None);
 
                 Some(())
             });
@@ -122,7 +122,7 @@ impl Entity {
             .iter()
             .filter_map(|(k, c)| {
                 if *c.tid() == **tid {
-                    *c.parent().borrow_mut() = None;
+                    c.set_parent(None);
 
                     None
                 } else {
@@ -145,7 +145,7 @@ impl Entity {
                 }
             })
             .and_then(|(k, c)| {
-                *c.parent().borrow_mut() = None;
+                c.set_parent(None);
 
                 data.components.remove(&k);
 
@@ -170,17 +170,21 @@ impl Component for Entity {
         self.tid.clone()
     }
 
-    fn parent(&self) -> Parent {
-        self.parent.clone()
+    fn get_parent(&self) -> Parent {
+        self.parent.borrow().clone()
     }
 
-    fn on_init(self: Rc<Self>, _parent: Option<Rc<Self>>) {
+    fn set_parent(&self, parent: Parent) {
+        *self.parent.borrow_mut() = parent;
+    }
+
+    fn on_init(self: Rc<Self>, _parent: Parent) {
         for component in self.data.borrow().components.values().cloned() {
             component.on_init(Some(self.clone()));
         }
     }
 
-    fn on_update(self: Rc<Self>, _parent: Option<Rc<Self>>, event: &Event<()>, delta: Duration) {
+    fn on_update(self: Rc<Self>, _parent: Parent, event: &Event<()>, delta: Duration) {
         for component in self.data.borrow().components.values().cloned() {
             component.on_update(Some(self.clone()), event, delta);
         }

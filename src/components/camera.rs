@@ -39,7 +39,7 @@ impl CameraData {
 pub struct Camera {
     id: Id,
     tid: Id,
-    parent: Parent,
+    parent: Rc<RefCell<Parent>>,
     pub data: Rc<RefCell<CameraData>>,
 }
 
@@ -76,7 +76,11 @@ impl Component for Camera {
         self.tid.clone()
     }
 
-    fn parent(&self) -> Parent {
-        self.parent.clone()
+    fn get_parent(&self) -> Parent {
+        self.parent.borrow().clone()
+    }
+
+    fn set_parent(&self, parent: Parent) {
+        *self.parent.borrow_mut() = parent;
     }
 }

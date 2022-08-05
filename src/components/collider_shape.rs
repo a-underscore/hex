@@ -1,6 +1,6 @@
 use crate::{
     components::{Transform, TRANSFORM_ID},
-    ecs::{self, derive::AsAny, AsAny, Component, Entity, Id, Parent},
+    ecs::{self, derive::AsAny, AsAny, Component, Id, Parent},
 };
 use cgmath::{Vector2, Vector3, Zero};
 use collider::{
@@ -50,7 +50,7 @@ where
 {
     id: Id,
     tid: Id,
-    parent: Parent,
+    parent: Rc<RefCell<Parent>>,
     pub data: Rc<RefCell<ColliderShapeData<C>>>,
 }
 
@@ -80,11 +80,15 @@ where
         self.tid.clone()
     }
 
-    fn parent(&self) -> Parent {
-        self.parent.clone()
+    fn get_parent(&self) -> Parent {
+        self.parent.borrow().clone()
     }
 
-    fn on_update(self: Rc<Self>, parent: Option<Rc<Entity>>, _event: &Event<()>, _delta: Duration) {
+    fn set_parent(&self, parent: Parent) {
+        *self.parent.borrow_mut() = parent;
+    }
+
+    fn on_update(self: Rc<Self>, parent: Parent, _event: &Event<()>, _delta: Duration) {
         if let Some(transform) =
             parent.and_then(|p| p.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)))
         {

@@ -1,4 +1,4 @@
-use crate::ecs::{self, derive::AsAny, AsAny, Component, Entity, Id, Parent};
+use crate::ecs::{self, derive::AsAny, AsAny, Component, Id, Parent};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
 use glium::glutin::event::Event;
 use std::{any::Any, cell::RefCell, rc::Rc, time::Duration};
@@ -43,7 +43,7 @@ impl TransformData {
 pub struct Transform {
     id: Id,
     tid: Id,
-    parent: Parent,
+    parent: Rc<RefCell<Parent>>,
     pub data: Rc<RefCell<TransformData>>,
 }
 
@@ -71,17 +71,21 @@ impl Component for Transform {
         self.tid.clone()
     }
 
-    fn parent(&self) -> Parent {
-        self.parent.clone()
+    fn get_parent(&self) -> Parent {
+        self.parent.borrow().clone()
     }
 
-    fn on_update(self: Rc<Self>, parent: Option<Rc<Entity>>, _event: &Event<()>, _delta: Duration) {
+    fn set_parent(&self, parent: Parent) {
+        *self.parent.borrow_mut() = parent;
+    }
+
+    fn on_update(self: Rc<Self>, parent: Parent, _event: &Event<()>, _delta: Duration) {
         let mut data = self.data.borrow_mut();
 
         data.update_transform();
 
         if let Some(transform) = parent
-            .and_then(|p| p.parent().borrow().clone())
+            .and_then(|p| p.get_parent())
             .and_then(|p| p.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)))
         {
             data.transform = data.transform * transform.data.borrow().transform;
