@@ -17,7 +17,7 @@ pub struct TransformData {
 impl TransformData {
     pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
-            transform: calculate_transform(position, rotation, scale),
+            transform: Self::calculate_transform(position, rotation, scale),
             position,
             rotation,
             scale,
@@ -25,7 +25,17 @@ impl TransformData {
     }
 
     pub fn update_transform(&mut self) {
-        self.transform = calculate_transform(self.position, self.rotation, self.scale);
+        self.transform = Self::calculate_transform(self.position, self.rotation, self.scale);
+    }
+
+    fn calculate_transform(
+        position: Vector2<f32>,
+        rotation: f32,
+        scale: Vector2<f32>,
+    ) -> Matrix3<f32> {
+        Matrix3::from_translation(position)
+            * Matrix3::from(Matrix2::from_angle(Rad(rotation)))
+            * Matrix3::from_nonuniform_scale(scale.x, scale.y)
     }
 }
 
@@ -72,21 +82,13 @@ impl Component for Transform {
     fn update(self: Rc<Self>, parent: Option<Rc<Entity>>, _event: &Event<()>, _delta: Duration) {
         let mut data = self.data.borrow_mut();
 
-        match parent
+        data.update_transform();
+
+        if let Some(transform) = parent
             .and_then(|p| p.parent())
             .and_then(|p| p.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)))
         {
-            Some(transform) => {
-                data.transform = calculate_transform(data.position, data.rotation, data.scale)
-                    * transform.data.borrow().transform;
-            }
-            None => data.update_transform(),
+            data.transform = data.transform * transform.data.borrow().transform;
         }
     }
-}
-
-fn calculate_transform(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Matrix3<f32> {
-    Matrix3::from_translation(position)
-        * Matrix3::from(Matrix2::from_angle(Rad(rotation)))
-        * Matrix3::from_nonuniform_scale(scale.x, scale.y)
 }
