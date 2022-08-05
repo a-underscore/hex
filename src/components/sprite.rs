@@ -1,7 +1,7 @@
 use crate::{
     assets::{Shaders, Shape, Texture},
     components::{Transform, TRANSFORM_ID},
-    ecs::{self, AsAny, Component, Entity},
+    ecs::{self, derive::AsAny, AsAny, Component, Entity, Id, Parent},
     engine::Engine,
 };
 use cgmath::Vector4;
@@ -9,7 +9,7 @@ use glium::{uniform, Frame, Surface};
 use std::{any::Any, cell::RefCell, rc::Rc};
 
 thread_local! {
-    pub static SPRITE_ID: Rc<String> = ecs::id("sprite");
+    pub static SPRITE_ID: Id = ecs::id("sprite");
 }
 
 pub struct SpriteData {
@@ -41,16 +41,16 @@ impl SpriteData {
     }
 }
 
-#[derive(ecs::derive::Component)]
+#[derive(AsAny)]
 pub struct Sprite {
-    id: Rc<String>,
-    tid: Rc<String>,
-    parent: Rc<RefCell<Option<Rc<Entity>>>>,
+    id: Id,
+    tid: Id,
+    parent: Parent,
     pub data: Rc<RefCell<SpriteData>>,
 }
 
 impl Sprite {
-    pub fn new(id: Rc<String>, data: Rc<RefCell<SpriteData>>) -> Rc<Self> {
+    pub fn new(id: Id, data: Rc<RefCell<SpriteData>>) -> Rc<Self> {
         Rc::new(Self {
             id,
             tid: ecs::tid(&SPRITE_ID),
@@ -69,6 +69,8 @@ impl Sprite {
                 parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)),
                 camera
                     .parent()
+                    .borrow()
+                    .clone()
                     .and_then(|parent| parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID))),
             ) {
                 let color: [f32; 4] = data.color.into();
@@ -102,19 +104,15 @@ impl Sprite {
 }
 
 impl Component for Sprite {
-    fn id(&self) -> Rc<String> {
+    fn id(&self) -> Id {
         self.id.clone()
     }
 
-    fn tid(&self) -> Rc<String> {
+    fn tid(&self) -> Id {
         self.tid.clone()
     }
 
-    fn parent(&self) -> Option<Rc<Entity>> {
-        self.parent.borrow().clone()
-    }
-
-    fn set_parent(&self, parent: Option<Rc<Entity>>) {
-        *self.parent.borrow_mut() = parent;
+    fn parent(&self) -> Parent {
+        self.parent.clone()
     }
 }

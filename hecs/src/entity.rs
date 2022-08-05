@@ -1,13 +1,13 @@
-use crate::{self as ecs, AsAny, Component};
+use crate::{self as ecs, derive::AsAny, AsAny, Component, Id, Parent};
 use glium::glutin::event::Event;
 use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
 
 thread_local! {
-    pub static ENTITY_ID: Rc<String> = ecs::id("entity");
+    pub static ENTITY_ID: Id = ecs::id("entity");
 }
 
 pub struct EntityData {
-    components: HashMap<(Rc<String>, Rc<String>), Rc<dyn Component>>,
+    components: HashMap<(Id, Id), Rc<dyn Component>>,
 }
 
 impl EntityData {
@@ -17,21 +17,21 @@ impl EntityData {
         }))
     }
 
-    pub fn components<'a>(&'a self) -> &'a HashMap<(Rc<String>, Rc<String>), Rc<dyn Component>> {
+    pub fn components<'a>(&'a self) -> &'a HashMap<(Id, Id), Rc<dyn Component>> {
         &self.components
     }
 }
 
-#[derive(hecs_derive::Component)]
+#[derive(AsAny)]
 pub struct Entity {
-    id: Rc<String>,
-    tid: Rc<String>,
-    parent: Rc<RefCell<Option<Rc<Entity>>>>,
+    id: Id,
+    tid: Id,
+    parent: Parent,
     pub data: Rc<RefCell<EntityData>>,
 }
 
 impl Entity {
-    pub fn new(id: Rc<String>) -> Rc<Self> {
+    pub fn new(id: Id) -> Rc<Self> {
         Rc::new(Self {
             id,
             tid: ecs::tid(&ENTITY_ID),
@@ -52,15 +52,15 @@ impl Entity {
                 component.clone() as Rc<dyn Component>,
             )
             .and_then(|c| {
-                c.set_parent(None);
+                *c.parent().borrow_mut() = None;
 
                 Some(())
             });
 
-        component.set_parent(Some(self.clone()));
+        *component.parent().borrow_mut() = Some(self.clone());
     }
 
-    pub fn get<C>(&self, id: &Rc<String>, tid: &Rc<String>) -> Option<Rc<C>>
+    pub fn get<C>(&self, id: &Id, tid: &Id) -> Option<Rc<C>>
     where
         C: Component,
     {
@@ -71,7 +71,7 @@ impl Entity {
             .and_then(|c| c.clone().as_any().downcast::<C>().ok())
     }
 
-    pub fn get_all<C>(&self, tid: &Rc<String>) -> Vec<Rc<C>>
+    pub fn get_all<C>(&self, tid: &Id) -> Vec<Rc<C>>
     where
         C: Component,
     {
@@ -89,7 +89,7 @@ impl Entity {
             .collect()
     }
 
-    pub fn get_first<C>(&self, tid: &Rc<String>) -> Option<Rc<C>>
+    pub fn get_first<C>(&self, tid: &Id) -> Option<Rc<C>>
     where
         C: Component,
     {
@@ -102,19 +102,19 @@ impl Entity {
             .and_then(|c| c.clone().as_any().downcast::<C>().ok())
     }
 
-    pub fn remove(&self, id: &Rc<String>, tid: &Rc<String>) {
+    pub fn remove(&self, id: &Id, tid: &Id) {
         self.data
             .borrow_mut()
             .components
             .remove(&(id.clone(), tid.clone()))
             .and_then(|c| {
-                c.set_parent(None);
+                *c.parent().borrow_mut() = None;
 
                 Some(())
             });
     }
 
-    pub fn remove_all(&self, tid: &Rc<String>) {
+    pub fn remove_all(&self, tid: &Id) {
         let mut data = self.data.borrow_mut();
 
         data.components = data
@@ -122,7 +122,7 @@ impl Entity {
             .iter()
             .filter_map(|(k, c)| {
                 if *c.tid() == **tid {
-                    c.set_parent(None);
+                    *c.parent().borrow_mut() = None;
 
                     None
                 } else {
@@ -132,7 +132,7 @@ impl Entity {
             .collect();
     }
 
-    pub fn remove_first(&self, tid: &Rc<String>) {
+    pub fn remove_first(&self, tid: &Id) {
         let mut data = self.data.borrow_mut();
 
         data.components
@@ -145,7 +145,7 @@ impl Entity {
                 }
             })
             .and_then(|(k, c)| {
-                c.set_parent(None);
+                *c.parent().borrow_mut() = None;
 
                 data.components.remove(&k);
 
@@ -162,31 +162,27 @@ impl Entity {
 }
 
 impl Component for Entity {
-    fn id(&self) -> Rc<String> {
+    fn id(&self) -> Id {
         self.id.clone()
     }
 
-    fn tid(&self) -> Rc<String> {
+    fn tid(&self) -> Id {
         self.tid.clone()
     }
 
-    fn parent(&self) -> Option<Rc<Entity>> {
-        self.parent.borrow().clone()
+    fn parent(&self) -> Parent {
+        self.parent.clone()
     }
 
-    fn set_parent(&self, parent: Option<Rc<Entity>>) {
-        *self.parent.borrow_mut() = parent;
-    }
-
-    fn init(self: Rc<Self>, _parent: Option<Rc<Self>>) {
+    fn on_init(self: Rc<Self>, _parent: Option<Rc<Self>>) {
         for component in self.data.borrow().components.values().cloned() {
-            component.init(Some(self.clone()));
+            component.on_init(Some(self.clone()));
         }
     }
 
-    fn update(self: Rc<Self>, _parent: Option<Rc<Self>>, event: &Event<()>, delta: Duration) {
+    fn on_update(self: Rc<Self>, _parent: Option<Rc<Self>>, event: &Event<()>, delta: Duration) {
         for component in self.data.borrow().components.values().cloned() {
-            component.update(Some(self.clone()), event, delta);
+            component.on_update(Some(self.clone()), event, delta);
         }
     }
 }

@@ -87,7 +87,7 @@ impl<'a> Engine<'a> {
 
 impl Engine<'static> {
     pub fn init(self: &Rc<Self>, event_loop: EventLoop<()>) {
-        self.scene.borrow().root.clone().init(None);
+        self.scene.borrow().root.clone().on_init(None);
 
         self.clone().run_event_loop(event_loop);
     }
@@ -101,7 +101,11 @@ impl Engine<'static> {
 
             last_frame_time = current_frame_time;
 
-            self.scene.borrow().root.clone().update(None, &event, delta);
+            self.scene
+                .borrow()
+                .root
+                .clone()
+                .on_update(None, &event, delta);
 
             let mut target = self.display.draw();
 

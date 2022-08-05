@@ -1,17 +1,21 @@
-use crate::{AsAny, Entity};
+use crate::{AsAny, Entity, Id, Parent};
 use glium::glutin::event::Event;
 use std::{rc::Rc, time::Duration};
 
 pub trait Component: AsAny {
-    fn id(&self) -> Rc<String>;
+    fn id(&self) -> Id;
 
-    fn tid(&self) -> Rc<String>;
+    fn tid(&self) -> Id;
 
-    fn parent(&self) -> Option<Rc<Entity>>;
+    fn parent(&self) -> Parent;
 
-    fn set_parent(&self, parent: Option<Rc<Entity>>);
+    fn on_init(self: Rc<Self>, _parent: Option<Rc<Entity>>) {}
 
-    fn init(self: Rc<Self>, _parent: Option<Rc<Entity>>) {}
-
-    fn update(self: Rc<Self>, _parent: Option<Rc<Entity>>, _event: &Event<()>, _delta: Duration) {}
+    fn on_update(
+        self: Rc<Self>,
+        _parent: Option<Rc<Entity>>,
+        _event: &Event<()>,
+        _delta: Duration,
+    ) {
+    }
 }

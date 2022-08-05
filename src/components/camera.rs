@@ -1,9 +1,9 @@
-use crate::ecs::{self, derive::Component, AsAny, Component, Entity};
+use crate::ecs::{self, derive::AsAny, AsAny, Component, Id, Parent};
 use cgmath::Matrix4;
 use std::{any::Any, cell::RefCell, rc::Rc};
 
 thread_local! {
-    pub static CAMERA_ID: Rc<String> = ecs::id("camera");
+    pub static CAMERA_ID: Id = ecs::id("camera");
 }
 
 pub struct CameraData {
@@ -35,16 +35,16 @@ impl CameraData {
     }
 }
 
-#[derive(Component)]
+#[derive(AsAny)]
 pub struct Camera {
-    id: Rc<String>,
-    tid: Rc<String>,
-    parent: Rc<RefCell<Option<Rc<Entity>>>>,
+    id: Id,
+    tid: Id,
+    parent: Parent,
     pub data: Rc<RefCell<CameraData>>,
 }
 
 impl Camera {
-    pub fn new(id: Rc<String>, data: Rc<RefCell<CameraData>>) -> Rc<Self> {
+    pub fn new(id: Id, data: Rc<RefCell<CameraData>>) -> Rc<Self> {
         Rc::new(Self {
             id,
             tid: ecs::tid(&CAMERA_ID),
@@ -68,19 +68,15 @@ impl Camera {
 }
 
 impl Component for Camera {
-    fn id(&self) -> Rc<String> {
+    fn id(&self) -> Id {
         self.id.clone()
     }
 
-    fn tid(&self) -> Rc<String> {
+    fn tid(&self) -> Id {
         self.tid.clone()
     }
 
-    fn parent(&self) -> Option<Rc<Entity>> {
-        self.parent.borrow().clone()
-    }
-
-    fn set_parent(&self, parent: Option<Rc<Entity>>) {
-        *self.parent.borrow_mut() = parent;
+    fn parent(&self) -> Parent {
+        self.parent.clone()
     }
 }
