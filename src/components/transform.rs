@@ -57,7 +57,7 @@ impl Transform {
         })
     }
 
-    pub fn transform(&self) -> Matrix3<f32> {
+    pub fn get_transform(&self) -> Matrix3<f32> {
         self.data.borrow().transform
     }
 }

@@ -109,10 +109,11 @@ impl Engine<'static> {
 
             let mut target = self.display.draw();
 
-            target.clear_color_and_depth(self.scene.borrow().bg.into(), 1.0);
+            let scene = self.scene.borrow();
 
-            self.draw_sprites(self.scene.borrow().root.as_ref(), &mut target)
-                .unwrap();
+            target.clear_color_and_depth(scene.bg.into(), 1.0);
+
+            self.draw_sprites(scene.root.as_ref(), &mut target).unwrap();
 
             target.finish().unwrap();
 

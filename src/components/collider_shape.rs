@@ -2,7 +2,7 @@ use crate::{
     components::{Transform, TRANSFORM_ID},
     ecs::{self, derive::AsAny, AsAny, Component, Id, Parent},
 };
-use cgmath::{Vector2, Vector3, Zero};
+use cgmath::Vector2;
 use collider::{
     geom::{v2, Shape},
     Collider, HbProfile,
@@ -18,6 +18,7 @@ pub struct ColliderShapeData<P>
 where
     P: HbProfile,
 {
+    added: bool,
     pub profile: P,
     pub collider: Rc<RefCell<Collider<P>>>,
     pub shape: Shape,
@@ -35,6 +36,7 @@ where
         velocity: Vector2<f32>,
     ) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
+            added: false,
             profile,
             collider,
             shape,
@@ -92,14 +94,29 @@ where
         if let Some(transform) =
             parent.and_then(|p| p.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)))
         {
-            let data = self.data.borrow();
-            let position = transform.transform() * Vector3::zero();
-            let hitbox = data
-                .shape
-                .place(v2(position.x as f64, position.y as f64))
-                .moving(v2(data.velocity.x as f64, data.velocity.y as f64));
+            let mut data = self.data.borrow_mut();
+            let collider = data.collider.clone();
+            let collider = collider.borrow();
+            let transform_data = transform.data.clone();
+            let mut transform_data = transform_data.borrow_mut();
 
-            data.collider.borrow_mut().add_hitbox(data.profile, hitbox);
+            if data.added {
+                let hitbox = collider.get_hitbox(data.profile.id());
+
+                data.velocity = Vector2::new(hitbox.vel.value.x as f32, hitbox.vel.value.y as f32);
+                transform_data.position =
+                    Vector2::new(hitbox.value.pos.x as f32, hitbox.value.pos.y as f32);
+            } else {
+                let hitbox = data
+                    .shape
+                    .place(v2(
+                        transform_data.position.x as f64,
+                        transform_data.position.y as f64,
+                    ))
+                    .moving(v2(data.velocity.x as f64, data.velocity.y as f64));
+
+                data.collider.borrow_mut().add_hitbox(data.profile, hitbox);
+            }
         }
     }
 }
