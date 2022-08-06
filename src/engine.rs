@@ -87,7 +87,13 @@ impl<'a> Engine<'a> {
 
 impl Engine<'static> {
     pub fn init(self: &Rc<Self>, event_loop: EventLoop<()>) {
-        self.scene.borrow().root.clone().on_init(None);
+        self.scene
+            .borrow()
+            .world
+            .borrow()
+            .root
+            .clone()
+            .on_init(None);
 
         self.clone().run_event_loop(event_loop);
     }
@@ -101,19 +107,15 @@ impl Engine<'static> {
 
             last_frame_time = current_frame_time;
 
-            self.scene
-                .borrow()
-                .root
-                .clone()
-                .on_update(None, &event, delta);
+            let scene = self.scene.borrow();
+            let world = scene.world.borrow();
+            world.root.clone().on_update(None, &event, delta);
 
             let mut target = self.display.draw();
 
-            let scene = self.scene.borrow();
-
             target.clear_color_and_depth(scene.bg.into(), 1.0);
 
-            self.draw_sprites(scene.root.as_ref(), &mut target).unwrap();
+            self.draw_sprites(world.root.as_ref(), &mut target).unwrap();
 
             target.finish().unwrap();
 
