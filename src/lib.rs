@@ -1,5 +1,4 @@
 pub mod assets;
-pub mod collider_profile;
 pub mod components;
 pub mod engine;
 

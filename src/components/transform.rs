@@ -1,34 +1,65 @@
 use crate::ecs::{self, derive::AsAny, AsAny, Component, Id, Parent};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
-use glium::glutin::event::Event;
-use std::{any::Any, cell::RefCell, rc::Rc, time::Duration};
+use std::{any::Any, cell::RefCell, rc::Rc};
 
 thread_local! {
     pub static TRANSFORM_ID: Id = ecs::id("transform");
 }
 
 pub struct TransformData {
+    position: Vector2<f32>,
+    rotation: f32,
+    scale: Vector2<f32>,
     transform: Matrix3<f32>,
-    pub position: Vector2<f32>,
-    pub rotation: f32,
-    pub scale: Vector2<f32>,
 }
 
 impl TransformData {
     pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
-            transform: Self::calculate_transform(position, rotation, scale),
             position,
             rotation,
             scale,
+            transform: Self::calculate_transform(position, rotation, scale),
         }))
+    }
+
+    pub fn get_position(&self) -> Vector2<f32> {
+        self.position
+    }
+
+    pub fn set_position(&mut self, position: Vector2<f32>) {
+        self.position = position;
+
+        self.update_transform();
+    }
+
+    pub fn get_rotation(&self) -> f32 {
+        self.rotation
+    }
+
+    pub fn set_rotation(&mut self, rotation: f32) {
+        self.rotation = rotation;
+
+        self.update_transform();
+    }
+
+    pub fn get_scale(&self) -> Vector2<f32> {
+        self.scale
+    }
+
+    pub fn set_scale(&mut self, scale: Vector2<f32>) {
+        self.scale = scale;
     }
 
     pub fn update_transform(&mut self) {
         self.transform = Self::calculate_transform(self.position, self.rotation, self.scale);
     }
 
-    fn calculate_transform(
+    pub fn get_transform(&self) -> Matrix3<f32> {
+        self.transform
+    }
+
+    pub fn calculate_transform(
         position: Vector2<f32>,
         rotation: f32,
         scale: Vector2<f32>,
@@ -56,10 +87,6 @@ impl Transform {
             data,
         })
     }
-
-    pub fn get_transform(&self) -> Matrix3<f32> {
-        self.data.borrow().transform
-    }
 }
 
 impl Component for Transform {
@@ -77,18 +104,5 @@ impl Component for Transform {
 
     fn set_parent(&self, parent: Parent) {
         *self.parent.borrow_mut() = parent;
-    }
-
-    fn on_update(self: Rc<Self>, parent: Parent, _event: &Event<()>, _delta: Duration) {
-        let mut data = self.data.borrow_mut();
-
-        data.update_transform();
-
-        if let Some(transform) = parent
-            .and_then(|p| p.get_parent())
-            .and_then(|p| p.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)))
-        {
-            data.transform = data.transform * transform.data.borrow().transform;
-        }
     }
 }

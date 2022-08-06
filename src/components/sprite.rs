@@ -72,9 +72,10 @@ impl Sprite {
                     .and_then(|parent| parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID))),
             ) {
                 let color: [f32; 4] = data.color.into();
-                let transform: [[f32; 3]; 3] = transform.get_transform().into();
+                let transform: [[f32; 3]; 3] = transform.data.borrow().get_transform().into();
                 let camera_view: [[f32; 4]; 4] = camera.view().into();
-                let camera_transform: [[f32; 3]; 3] = camera_transform.get_transform().into();
+                let camera_transform: [[f32; 3]; 3] =
+                    camera_transform.data.borrow().get_transform().into();
                 let texture = data.texture.borrow();
                 let uniforms = uniform! {
                     z: data.z,

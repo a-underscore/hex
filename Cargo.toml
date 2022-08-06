@@ -6,6 +6,5 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.58"
 cgmath = { version = "0.18.0", features = ["swizzle"] }
-collider = "0.3.1"
 glium = "0.31.0"
 hecs = { path = "./hecs" }
