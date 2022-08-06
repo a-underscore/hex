@@ -1,12 +1,14 @@
 pub mod as_any;
 pub mod component;
 pub mod entity;
+pub mod system;
 
 pub use as_any::AsAny;
 pub use component::Component;
 pub use entity::{Entity, EntityData, ENTITY_ID};
 pub use glium;
 pub use hecs_derive as derive;
+pub use system::System;
 
 use std::{rc::Rc, thread::LocalKey};
 
