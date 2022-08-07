@@ -51,7 +51,7 @@ impl World {
             .and_then(|s| s.clone().as_any().downcast::<S>().ok())
     }
 
-    pub fn remove_system<S>(&mut self, id: Id) {
+    pub fn remove_system(&mut self, id: Id) {
         self.systems.remove(id.as_ref());
     }
 
