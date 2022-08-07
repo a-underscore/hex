@@ -4,7 +4,7 @@ use crate::{
     Engine,
 };
 use glium::Surface;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 thread_local! {
     pub static DRAWING_SYSTEM_ID: Id = ecs::id("drawing_system");
@@ -15,8 +15,8 @@ pub struct DrawingSystem<'a> {
 }
 
 impl<'a> DrawingSystem<'a> {
-    pub fn new(engine: Rc<Engine<'a>>) -> Rc<Self> {
-        Rc::new(Self { engine })
+    pub fn new(engine: Rc<Engine<'a>>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { engine }))
     }
 }
 
@@ -27,7 +27,7 @@ impl System for DrawingSystem<'static> {
 
     fn on_update(&self, world: &mut World) {
         if let Some((camera, transform)) = world
-            .entities
+            .entities()
             .iter()
             .filter_map(|e| {
                 let e = e.borrow();
@@ -44,7 +44,7 @@ impl System for DrawingSystem<'static> {
             frame.clear_color_and_depth(self.engine.scene.borrow().bg.into(), 1.0);
 
             for (s, t) in world
-                .entities
+                .entities()
                 .iter()
                 .filter_map(|e| {
                     let e = e.borrow();

@@ -2,8 +2,8 @@ use crate::{Entity, Id, System};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 pub struct World {
-    pub entities: Vec<Rc<RefCell<Entity>>>,
-    pub systems: HashMap<Id, Rc<dyn System>>,
+    entities: Vec<Rc<RefCell<Entity>>>,
+    systems: HashMap<Id, Rc<RefCell<dyn System>>>,
 }
 
 impl World {
@@ -34,21 +34,12 @@ impl World {
             .collect();
     }
 
-    pub fn add_system<S>(&mut self, system: &Rc<S>)
+    pub fn add_system<S>(&mut self, system: &Rc<RefCell<S>>)
     where
         S: System,
     {
         self.systems
-            .insert(system.id(), system.clone() as Rc<dyn System>);
-    }
-
-    pub fn get_system<S>(&self, id: &Id) -> Option<Rc<S>>
-    where
-        S: System,
-    {
-        self.systems
-            .get(id)
-            .and_then(|s| s.clone().as_any().downcast::<S>().ok())
+            .insert(system.borrow().id(), system.clone() as Rc<RefCell<S>>);
     }
 
     pub fn remove_system(&mut self, id: Id) {
@@ -57,13 +48,17 @@ impl World {
 
     pub fn init(&mut self) {
         for s in self.systems.clone().values() {
-            s.on_init(self);
+            s.borrow_mut().on_init(self);
         }
     }
 
     pub fn update(&mut self) {
         for s in self.systems.clone().values() {
-            s.on_update(self);
+            s.borrow_mut().on_update(self);
         }
+    }
+
+    pub fn entities<'a>(&'a self) -> &'a Vec<Rc<RefCell<Entity>>> {
+        &self.entities
     }
 }

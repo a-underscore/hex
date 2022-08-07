@@ -12,7 +12,7 @@ impl Scene {
         Rc::new(RefCell::new(Self { bg, world }))
     }
 
-    pub fn add_system<S>(&self, system: Rc<S>)
+    pub fn add_system<S>(&self, system: Rc<RefCell<S>>)
     where
         S: System,
     {

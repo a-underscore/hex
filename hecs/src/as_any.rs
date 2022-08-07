@@ -1,24 +1,20 @@
-use crate::System;
-use std::{any::Any, cell::RefCell, rc::Rc};
+use std::any::Any;
 
 pub trait AsAny: 'static {
-    fn as_any(self: Rc<Self>) -> Rc<dyn Any>;
+    fn as_any(&self) -> &dyn Any;
+
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
-impl<T> AsAny for RefCell<T>
+impl<T> AsAny for T
 where
-    T: 'static,
+    T: Sized + 'static,
 {
-    fn as_any(self: Rc<Self>) -> Rc<dyn Any> {
-        self as Rc<dyn Any>
+    fn as_any(&self) -> &dyn Any {
+        self
     }
-}
 
-impl<S> AsAny for S
-where
-    S: System,
-{
-    fn as_any(self: Rc<Self>) -> Rc<dyn Any> {
-        self as Rc<dyn Any>
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
