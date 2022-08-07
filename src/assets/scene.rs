@@ -1,4 +1,4 @@
-use crate::{ecs::World, systems::DrawingSystem, Engine};
+use crate::ecs::{System, World};
 use cgmath::Vector4;
 use std::{cell::RefCell, rc::Rc};
 
@@ -12,22 +12,11 @@ impl Scene {
         Rc::new(RefCell::new(Self { bg, world }))
     }
 
-    pub fn default_systems(
-        bg: Vector4<f32>,
-        world: Rc<RefCell<World>>,
-        engine: Rc<RefCell<Engine<'static>>>,
-    ) -> Rc<RefCell<Self>> {
-        let scene = Scene::new(bg, world);
-        let drawing_system = DrawingSystem::new(engine.clone());
-
-        {
-            let scene = scene.borrow();
-            let mut world = scene.world.borrow_mut();
-
-            world.add_system(&drawing_system);
-        }
-
-        scene
+    pub fn add_system<S>(&self, system: Rc<S>)
+    where
+        S: System,
+    {
+        self.world.borrow_mut().add_system(&system);
     }
 
     pub fn init(&self) {

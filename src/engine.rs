@@ -22,12 +22,12 @@ impl<'a> Engine<'a> {
         display: Display,
         scene: Rc<RefCell<Scene>>,
         draw_parameters: Rc<RefCell<DrawParameters<'a>>>,
-    ) -> anyhow::Result<Rc<RefCell<Self>>> {
-        Ok(Rc::new(RefCell::new(Self {
+    ) -> anyhow::Result<Rc<Self>> {
+        Ok(Rc::new(Self {
             display,
             scene,
             draw_parameters,
-        })))
+        }))
     }
 
     pub fn display(

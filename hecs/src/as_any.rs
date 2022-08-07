@@ -1,3 +1,4 @@
+use crate::System;
 use std::{any::Any, cell::RefCell, rc::Rc};
 
 pub trait AsAny: 'static {
@@ -7,6 +8,15 @@ pub trait AsAny: 'static {
 impl<T> AsAny for RefCell<T>
 where
     T: 'static,
+{
+    fn as_any(self: Rc<Self>) -> Rc<dyn Any> {
+        self as Rc<dyn Any>
+    }
+}
+
+impl<S> AsAny for S
+where
+    S: System,
 {
     fn as_any(self: Rc<Self>) -> Rc<dyn Any> {
         self as Rc<dyn Any>

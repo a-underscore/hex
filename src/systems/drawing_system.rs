@@ -4,19 +4,19 @@ use crate::{
     Engine,
 };
 use glium::Surface;
-use std::{cell::RefCell, rc::Rc};
+use std::rc::Rc;
 
 thread_local! {
     pub static DRAWING_SYSTEM_ID: Id = ecs::id("drawing_system");
 }
 
 pub struct DrawingSystem<'a> {
-    pub engine: Rc<RefCell<Engine<'a>>>,
+    pub engine: Rc<Engine<'a>>,
 }
 
 impl<'a> DrawingSystem<'a> {
-    pub fn new(engine: Rc<RefCell<Engine<'a>>>) -> Rc<RefCell<Box<Self>>> {
-        Rc::new(RefCell::new(Box::new(Self { engine })))
+    pub fn new(engine: Rc<Engine<'a>>) -> Rc<Self> {
+        Rc::new(Self { engine })
     }
 }
 
@@ -25,10 +25,10 @@ impl System for DrawingSystem<'static> {
         ecs::tid(&DRAWING_SYSTEM_ID)
     }
 
-    fn on_update(&mut self, world: &mut World) {
+    fn on_update(&self, world: &mut World) {
         if let Some((camera, transform)) = world
             .entities
-            .values()
+            .iter()
             .filter_map(|e| {
                 let e = e.borrow();
 
@@ -39,14 +39,13 @@ impl System for DrawingSystem<'static> {
             })
             .find(|(c, _)| c.borrow().active)
         {
-            let engine = self.engine.borrow();
-            let mut frame = engine.display.draw();
+            let mut frame = self.engine.display.draw();
 
-            frame.clear_color_and_depth(engine.scene.borrow().bg.into(), 1.0);
+            frame.clear_color_and_depth(self.engine.scene.borrow().bg.into(), 1.0);
 
             for (s, t) in world
                 .entities
-                .values()
+                .iter()
                 .filter_map(|e| {
                     let e = e.borrow();
 
@@ -62,7 +61,7 @@ impl System for DrawingSystem<'static> {
                         t.borrow().as_ref(),
                         camera.borrow().as_ref(),
                         transform.borrow().as_ref(),
-                        &self.engine.borrow(),
+                        &self.engine,
                         &mut frame,
                     )
                     .unwrap();
