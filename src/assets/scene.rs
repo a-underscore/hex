@@ -1,43 +1,40 @@
-use crate::{
-    components::Camera,
-    ecs::{Component, World},
-};
+use crate::{ecs::World, systems::DrawingSystem, Engine};
 use cgmath::Vector4;
-use glium::glutin::event::Event;
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Scene {
     pub bg: Vector4<f32>,
-    pub camera: Rc<Camera>,
     pub world: Rc<RefCell<World>>,
 }
 
 impl Scene {
-    pub fn new(
+    pub fn new(bg: Vector4<f32>, world: Rc<RefCell<World>>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { bg, world }))
+    }
+
+    pub fn default_systems(
         bg: Vector4<f32>,
-        camera: Rc<Camera>,
         world: Rc<RefCell<World>>,
+        engine: Rc<RefCell<Engine<'static>>>,
     ) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self { bg, camera, world }))
-    }
+        let scene = Scene::new(bg, world);
+        let drawing_system = DrawingSystem::new(engine.clone());
 
-    pub fn on_init(&self) {
-        let world = self.world.borrow();
+        {
+            let scene = scene.borrow();
+            let mut world = scene.world.borrow_mut();
 
-        for s in world.systems.values() {
-            s.clone().on_init(world.root.clone());
+            world.add_system(&drawing_system);
         }
 
-        world.root.clone().on_init(None);
+        scene
     }
 
-    pub fn on_update(&self, event: &Event<()>, delta: Duration) {
-        let world = self.world.borrow();
+    pub fn init(&self) {
+        self.world.borrow_mut().init();
+    }
 
-        for s in world.systems.values() {
-            s.clone().on_update(world.root.clone(), event, delta);
-        }
-
-        world.root.clone().on_update(None, event, delta);
+    pub fn update(&self) {
+        self.world.borrow_mut().update();
     }
 }

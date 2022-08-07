@@ -1,0 +1,12 @@
+use std::{any::Any, rc::Rc, cell::RefCell};
+
+pub trait AsAny: 'static {
+    fn as_any(&self) -> Rc<RefCell<dyn Any>>;
+}
+
+impl<T> AsAny for Box<T>
+where T: 'static {
+    fn as_any(&self) -> Box<dyn Any> {
+        *self as Box<dyn Any>
+    }
+}

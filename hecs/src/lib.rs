@@ -6,16 +6,13 @@ pub mod world;
 
 pub use as_any::AsAny;
 pub use component::Component;
-pub use entity::{Entity, EntityData, ENTITY_ID};
-pub use glium;
-pub use hecs_derive as derive;
+pub use entity::Entity;
 pub use system::System;
 pub use world::World;
 
 use std::{rc::Rc, thread::LocalKey};
 
 pub type Id = Rc<String>;
-pub type Parent = Option<Rc<Entity>>;
 
 pub fn id(id: &str) -> Id {
     Rc::new(id.to_string())

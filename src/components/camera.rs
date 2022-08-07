@@ -1,21 +1,30 @@
-use crate::ecs::{self, derive::AsAny, AsAny, Component, Id, Parent};
+use crate::ecs::{self, Component, Id};
 use cgmath::Matrix4;
-use std::{any::Any, cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 thread_local! {
     pub static CAMERA_ID: Id = ecs::id("camera");
 }
 
-pub struct CameraData {
+pub struct CameraData {}
+
+impl CameraData {
+    pub fn new() -> Rc<RefCell<Box<Self>>> {
+        Rc::new(RefCell::new(Box::new(Self {})))
+    }
+}
+
+pub struct Camera {
     pub left: f32,
     pub right: f32,
     pub bottom: f32,
     pub top: f32,
     pub near: f32,
     pub far: f32,
+    pub active: bool,
 }
 
-impl CameraData {
+impl Camera {
     pub fn new(
         left: f32,
         right: f32,
@@ -23,64 +32,33 @@ impl CameraData {
         top: f32,
         near: f32,
         far: f32,
-    ) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
+        active: bool,
+    ) -> Rc<RefCell<Box<Self>>> {
+        Rc::new(RefCell::new(Box::new(Self {
             left,
             right,
             bottom,
             top,
             near,
             far,
-        }))
-    }
-}
-
-#[derive(AsAny)]
-pub struct Camera {
-    id: Id,
-    tid: Id,
-    parent: Rc<RefCell<Parent>>,
-    pub data: Rc<RefCell<CameraData>>,
-}
-
-impl Camera {
-    pub fn new(id: Id, data: Rc<RefCell<CameraData>>) -> Rc<Self> {
-        Rc::new(Self {
-            id,
-            tid: ecs::tid(&CAMERA_ID),
-            parent: Rc::new(RefCell::new(None)),
-            data,
-        })
+            active,
+        })))
     }
 
     pub fn view(&self) -> Matrix4<f32> {
-        let data = self.data.borrow();
-
         cgmath::ortho(
-            data.left,
-            data.right,
-            data.bottom,
-            data.top,
-            data.near,
-            data.far,
+            self.left,
+            self.right,
+            self.bottom,
+            self.top,
+            self.near,
+            self.far,
         )
     }
 }
 
 impl Component for Camera {
     fn id(&self) -> Id {
-        self.id.clone()
-    }
-
-    fn tid(&self) -> Id {
-        self.tid.clone()
-    }
-
-    fn get_parent(&self) -> Parent {
-        self.parent.borrow().clone()
-    }
-
-    fn set_parent(&self, parent: Parent) {
-        *self.parent.borrow_mut() = parent;
+        ecs::tid(&CAMERA_ID)
     }
 }

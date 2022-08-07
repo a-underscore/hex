@@ -1,26 +1,30 @@
-use crate::ecs::{self, derive::AsAny, AsAny, Component, Id, Parent};
+use crate::ecs::{self, Component, Id};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
-use std::{any::Any, cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 thread_local! {
     pub static TRANSFORM_ID: Id = ecs::id("transform");
 }
 
-pub struct TransformData {
+pub struct Transform {
     position: Vector2<f32>,
     rotation: f32,
     scale: Vector2<f32>,
     transform: Matrix3<f32>,
 }
 
-impl TransformData {
-    pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
+impl Transform {
+    pub fn new(
+        position: Vector2<f32>,
+        rotation: f32,
+        scale: Vector2<f32>,
+    ) -> Rc<RefCell<Box<Self>>> {
+        Rc::new(RefCell::new(Box::new(Self {
             position,
             rotation,
             scale,
             transform: Self::calculate_transform(position, rotation, scale),
-        }))
+        })))
     }
 
     pub fn get_position(&self) -> Vector2<f32> {
@@ -70,39 +74,8 @@ impl TransformData {
     }
 }
 
-#[derive(AsAny)]
-pub struct Transform {
-    id: Id,
-    tid: Id,
-    parent: Rc<RefCell<Parent>>,
-    pub data: Rc<RefCell<TransformData>>,
-}
-
-impl Transform {
-    pub fn new(id: Id, data: Rc<RefCell<TransformData>>) -> Rc<Self> {
-        Rc::new(Self {
-            id,
-            tid: ecs::tid(&TRANSFORM_ID),
-            parent: Rc::new(RefCell::new(None)),
-            data,
-        })
-    }
-}
-
 impl Component for Transform {
     fn id(&self) -> Id {
-        self.id.clone()
-    }
-
-    fn tid(&self) -> Id {
-        self.tid.clone()
-    }
-
-    fn get_parent(&self) -> Parent {
-        self.parent.borrow().clone()
-    }
-
-    fn set_parent(&self, parent: Parent) {
-        *self.parent.borrow_mut() = parent;
+        ecs::tid(&TRANSFORM_ID)
     }
 }

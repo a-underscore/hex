@@ -1,8 +1,4 @@
-use crate::{
-    assets::Scene,
-    components::{Sprite, SPRITE_ID},
-    ecs::{self, Component, Entity, ENTITY_ID},
-};
+use crate::assets::Scene;
 use glium::{
     draw_parameters::{Blend, DepthTest},
     glutin::{
@@ -11,9 +7,9 @@ use glium::{
         window::WindowBuilder,
         ContextBuilder, NotCurrent,
     },
-    Depth, Display, DrawParameters, Frame, Surface,
+    Depth, Display, DrawParameters,
 };
-use std::{cell::RefCell, rc::Rc, time::Instant};
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Engine<'a> {
     pub display: Display,
@@ -26,12 +22,12 @@ impl<'a> Engine<'a> {
         display: Display,
         scene: Rc<RefCell<Scene>>,
         draw_parameters: Rc<RefCell<DrawParameters<'a>>>,
-    ) -> anyhow::Result<Rc<Self>> {
-        Ok(Rc::new(Self {
+    ) -> anyhow::Result<Rc<RefCell<Self>>> {
+        Ok(Rc::new(RefCell::new(Self {
             display,
             scene,
             draw_parameters,
-        }))
+        })))
     }
 
     pub fn display(
@@ -71,54 +67,18 @@ impl<'a> Engine<'a> {
             ..Default::default()
         }))
     }
-
-    fn draw_sprites(&self, entity: &Entity, target: &mut Frame) -> anyhow::Result<()> {
-        for sprite in entity.get_all::<Sprite>(&ecs::tid(&SPRITE_ID)) {
-            sprite.draw(entity.clone(), self.clone(), target)?;
-        }
-
-        for entity in entity.get_all::<Entity>(&ecs::tid(&ENTITY_ID)) {
-            self.clone().draw_sprites(entity.as_ref(), target)?;
-        }
-
-        Ok(())
-    }
 }
 
 impl Engine<'static> {
     pub fn init(self: &Rc<Self>, event_loop: EventLoop<()>) {
-        self.scene
-            .borrow()
-            .world
-            .borrow()
-            .root
-            .clone()
-            .on_init(None);
+        self.scene.borrow().init();
 
         self.clone().run_event_loop(event_loop);
     }
 
     fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>) {
-        let mut last_frame_time = Instant::now();
-
         event_loop.run(move |event, _, control_flow| {
-            let current_frame_time = Instant::now();
-            let delta = current_frame_time.duration_since(last_frame_time);
-
-            last_frame_time = current_frame_time;
-
-            let scene = self.scene.borrow();
-
-            scene.on_update(&event, delta);
-
-            let mut target = self.display.draw();
-
-            target.clear_color_and_depth(scene.bg.into(), 1.0);
-
-            self.draw_sprites(scene.world.borrow().root.as_ref(), &mut target)
-                .unwrap();
-
-            target.finish().unwrap();
+            self.scene.borrow().update();
 
             *control_flow = ControlFlow::Wait;
 

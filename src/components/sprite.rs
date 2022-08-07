@@ -1,18 +1,18 @@
 use crate::{
     assets::{Shaders, Shape, Texture},
-    components::{Transform, TRANSFORM_ID},
-    ecs::{self, derive::AsAny, AsAny, Component, Entity, Id, Parent},
+    components::{Camera, Transform},
+    ecs::{self, Component, Id},
     engine::Engine,
 };
 use cgmath::Vector4;
 use glium::{uniform, Frame, Surface};
-use std::{any::Any, cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 thread_local! {
     pub static SPRITE_ID: Id = ecs::id("sprite");
 }
 
-pub struct SpriteData {
+pub struct Sprite {
     pub color: Vector4<f32>,
     pub shape: Rc<RefCell<Shape>>,
     pub texture: Rc<RefCell<Texture>>,
@@ -21,7 +21,7 @@ pub struct SpriteData {
     pub draw: bool,
 }
 
-impl SpriteData {
+impl Sprite {
     pub fn new(
         color: Vector4<f32>,
         shape: Rc<RefCell<Shape>>,
@@ -29,73 +29,49 @@ impl SpriteData {
         shaders: Rc<RefCell<Shaders>>,
         z: f32,
         draw: bool,
-    ) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
+    ) -> Rc<RefCell<Box<Self>>> {
+        Rc::new(RefCell::new(Box::new(Self {
             color,
             shape,
             texture,
             shaders,
             z,
             draw,
-        }))
-    }
-}
-
-#[derive(AsAny)]
-pub struct Sprite {
-    id: Id,
-    tid: Id,
-    parent: Rc<RefCell<Parent>>,
-    pub data: Rc<RefCell<SpriteData>>,
-}
-
-impl Sprite {
-    pub fn new(id: Id, data: Rc<RefCell<SpriteData>>) -> Rc<Self> {
-        Rc::new(Self {
-            id,
-            tid: ecs::tid(&SPRITE_ID),
-            parent: Rc::new(RefCell::new(None)),
-            data,
-        })
+        })))
     }
 
-    pub fn draw(&self, parent: &Entity, engine: &Engine, target: &mut Frame) -> anyhow::Result<()> {
-        let data = self.data.borrow();
+    pub fn draw(
+        &self,
+        transform: &Transform,
+        camera: &Camera,
+        camera_transform: &Transform,
+        engine: &Engine,
+        target: &mut Frame,
+    ) -> anyhow::Result<()> {
+        if self.draw {
+            let color: [f32; 4] = self.color.into();
+            let transform: [[f32; 3]; 3] = transform.get_transform().into();
+            let camera_view: [[f32; 4]; 4] = camera.view().into();
+            let camera_transform: [[f32; 3]; 3] = camera_transform.get_transform().into();
+            let texture = self.texture.borrow();
+            let uniforms = uniform! {
+                z: self.z,
+                transform: transform,
+                camera_transform: camera_transform,
+                camera_view: camera_view,
+                color: color,
+                texture: &texture.texture,
+            };
+            let shape = self.shape.borrow();
+            let shaders = self.shaders.borrow();
 
-        if data.draw {
-            let camera = engine.scene.borrow().camera.clone();
-
-            if let (Some(transform), Some(camera_transform)) = (
-                parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID)),
-                camera
-                    .get_parent()
-                    .and_then(|parent| parent.get_first::<Transform>(&ecs::tid(&TRANSFORM_ID))),
-            ) {
-                let color: [f32; 4] = data.color.into();
-                let transform: [[f32; 3]; 3] = transform.data.borrow().get_transform().into();
-                let camera_view: [[f32; 4]; 4] = camera.view().into();
-                let camera_transform: [[f32; 3]; 3] =
-                    camera_transform.data.borrow().get_transform().into();
-                let texture = data.texture.borrow();
-                let uniforms = uniform! {
-                    z: data.z,
-                    transform: transform,
-                    camera_transform: camera_transform,
-                    camera_view: camera_view,
-                    color: color,
-                    texture: &texture.texture,
-                };
-                let shape = data.shape.borrow();
-                let shaders = data.shaders.borrow();
-
-                target.draw(
-                    &shape.vertices,
-                    &shape.indices,
-                    &shaders.program,
-                    &uniforms,
-                    &engine.draw_parameters.borrow(),
-                )?;
-            }
+            target.draw(
+                &shape.vertices,
+                &shape.indices,
+                &shaders.program,
+                &uniforms,
+                &engine.draw_parameters.borrow(),
+            )?;
         }
 
         Ok(())
@@ -104,18 +80,6 @@ impl Sprite {
 
 impl Component for Sprite {
     fn id(&self) -> Id {
-        self.id.clone()
-    }
-
-    fn tid(&self) -> Id {
-        self.tid.clone()
-    }
-
-    fn get_parent(&self) -> Parent {
-        self.parent.borrow().clone()
-    }
-
-    fn set_parent(&self, parent: Option<Rc<Entity>>) {
-        *self.parent.borrow_mut() = parent;
+        ecs::tid(&SPRITE_ID)
     }
 }
