@@ -25,7 +25,7 @@ impl System for DrawingSystem<'static> {
         ecs::tid(&DRAWING_SYSTEM_ID)
     }
 
-    fn on_update(&self, world: &mut World) {
+    fn on_update(&mut self, world: &mut World) {
         if let Some((camera, transform)) = world
             .entities()
             .iter()
