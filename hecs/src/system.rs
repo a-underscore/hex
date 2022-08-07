@@ -1,8 +1,11 @@
 use crate::{AsAny, Entity, Id};
-use std::rc::Rc;
+use glium::glutin::event::Event;
+use std::{rc::Rc, time::Duration};
 
 pub trait System: AsAny {
     fn id(&self) -> Id;
 
-    fn update(self: Rc<Self>, entity: Rc<Entity>);
+    fn on_init(self: Rc<Self>, entity: Rc<Entity>);
+
+    fn on_update(self: Rc<Self>, entity: Rc<Entity>, event: &Event<()>, delta: Duration);
 }
