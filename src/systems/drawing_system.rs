@@ -28,7 +28,7 @@ impl System for DrawingSystem<'static> {
     fn on_update(&mut self, world: &mut World, _event: &Event<()>, _delta: Duration) {
         if let Some((camera, transform)) = world
             .entities()
-            .iter()
+            .values()
             .filter_map(|e| {
                 let e = e.borrow();
 
@@ -45,7 +45,7 @@ impl System for DrawingSystem<'static> {
 
             for (s, t) in world
                 .entities()
-                .iter()
+                .values()
                 .filter_map(|e| {
                     let e = e.borrow();
 

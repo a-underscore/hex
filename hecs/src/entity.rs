@@ -2,14 +2,12 @@ use crate::{Component, Id};
 use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc};
 
 pub struct Entity {
-    pub id: Id,
     components: HashMap<Id, Rc<dyn Any>>,
 }
 
 impl Entity {
-    pub fn new(id: Id) -> Rc<RefCell<Self>> {
+    pub fn new() -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
-            id,
             components: HashMap::new(),
         }))
     }
