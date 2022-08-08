@@ -2,7 +2,7 @@ use crate::{Component, Id};
 use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc};
 
 pub struct Entity {
-    id: Id,
+    pub id: Id,
     components: HashMap<Id, Rc<dyn Any>>,
 }
 
@@ -33,9 +33,5 @@ impl Entity {
 
     pub fn remove(&mut self, id: &Id) {
         self.components.remove(id.as_ref());
-    }
-
-    pub fn id(&self) -> Id {
-        self.id.clone()
     }
 }

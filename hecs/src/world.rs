@@ -1,6 +1,6 @@
 use crate::{Entity, Id, System};
-use std::{cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
 use glium::glutin::event::Event;
+use std::{cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
 
 pub struct World {
     entities: Vec<Rc<RefCell<Entity>>>,
@@ -23,7 +23,7 @@ impl World {
         self.entities
             .iter()
             .cloned()
-            .find(|e| *e.borrow().id() == **id)
+            .find(|e| *e.borrow().id == **id)
     }
 
     pub fn remove(&mut self, id: Id) {
@@ -31,7 +31,7 @@ impl World {
             .entities
             .iter()
             .cloned()
-            .filter(|e| *e.borrow().id() != **id)
+            .filter(|e| *e.borrow().id != **id)
             .collect();
     }
 
