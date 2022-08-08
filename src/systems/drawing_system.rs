@@ -3,8 +3,8 @@ use crate::{
     ecs::{self, Id, System, World},
     Engine,
 };
-use glium::Surface;
-use std::{cell::RefCell, rc::Rc};
+use glium::{glutin::event::Event, Surface};
+use std::{cell::RefCell, rc::Rc, time::Duration};
 
 thread_local! {
     pub static DRAWING_SYSTEM_ID: Id = ecs::id("drawing_system");
@@ -25,7 +25,7 @@ impl System for DrawingSystem<'static> {
         ecs::tid(&DRAWING_SYSTEM_ID)
     }
 
-    fn on_update(&mut self, world: &mut World) {
+    fn on_update(&mut self, world: &mut World, _event: &Event<()>, _delta: Duration) {
         if let Some((camera, transform)) = world
             .entities()
             .iter()

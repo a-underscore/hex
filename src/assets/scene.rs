@@ -1,6 +1,7 @@
 use crate::ecs::{System, World};
 use cgmath::Vector4;
-use std::{cell::RefCell, rc::Rc};
+use glium::glutin::event::Event;
+use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub struct Scene {
     pub bg: Vector4<f32>,
@@ -23,7 +24,7 @@ impl Scene {
         self.world.borrow_mut().init();
     }
 
-    pub fn update(&self) {
-        self.world.borrow_mut().update();
+    pub fn update(&self, event: &Event<()>, delta: Duration) {
+        self.world.borrow_mut().update(event, delta);
     }
 }

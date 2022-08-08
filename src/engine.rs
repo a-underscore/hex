@@ -9,7 +9,7 @@ use glium::{
     },
     Depth, Display, DrawParameters,
 };
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, time::Instant};
 
 pub struct Engine<'a> {
     pub display: Display,
@@ -77,8 +77,15 @@ impl Engine<'static> {
     }
 
     fn run_event_loop(self: Rc<Self>, event_loop: EventLoop<()>) {
+        let mut frame_time = Instant::now();
+
         event_loop.run(move |event, _, control_flow| {
-            self.scene.borrow().update();
+            let new_frame_time = Instant::now();
+            let delta = new_frame_time.duration_since(frame_time);
+
+            frame_time = new_frame_time;
+
+            self.scene.borrow().update(&event, delta);
 
             *control_flow = ControlFlow::Wait;
 

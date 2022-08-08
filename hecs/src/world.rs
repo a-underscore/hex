@@ -1,5 +1,6 @@
 use crate::{Entity, Id, System};
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
+use glium::glutin::event::Event;
 
 pub struct World {
     entities: Vec<Rc<RefCell<Entity>>>,
@@ -52,9 +53,9 @@ impl World {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, event: &Event<()>, delta: Duration) {
         for s in self.systems.clone().values() {
-            s.borrow_mut().on_update(self);
+            s.borrow_mut().on_update(self, event, delta);
         }
     }
 
