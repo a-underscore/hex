@@ -1,8 +1,12 @@
 use crate::{Component, Id};
-use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc};
+use std::{
+    cell::{Ref, RefCell, RefMut},
+    collections::HashMap,
+    rc::Rc,
+};
 
 pub struct Entity {
-    components: HashMap<Id, Rc<dyn Any>>,
+    components: HashMap<Id, Rc<RefCell<dyn Component>>>,
 }
 
 impl Entity {
@@ -12,21 +16,36 @@ impl Entity {
         }))
     }
 
-    pub fn add<C>(&mut self, component: &Rc<RefCell<Box<C>>>)
+    pub fn add<C>(&mut self, component: &Rc<RefCell<C>>)
     where
         C: Component,
     {
-        self.components
-            .insert(component.borrow().id(), component.clone() as Rc<dyn Any>);
+        self.components.insert(
+            component.borrow().id(),
+            component.clone() as Rc<RefCell<dyn Component>>,
+        );
     }
 
-    pub fn get<C>(&self, id: &Id) -> Option<Rc<RefCell<Box<C>>>>
+    pub fn get(&self, id: &Id) -> Option<Rc<RefCell<dyn Component>>> {
+        self.components.get(id).and_then(|c| Some(c.clone()))
+    }
+
+    pub fn get_ref<C>(&self, id: &Id) -> Option<Ref<C>>
     where
         C: Component,
     {
         self.components
             .get(id)
-            .and_then(|c| c.clone().downcast::<RefCell<Box<C>>>().ok())
+            .and_then(|c| Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<C>()).ok())
+    }
+
+    pub fn get_mut<C>(&self, id: &Id) -> Option<RefMut<C>>
+    where
+        C: Component,
+    {
+        self.components.get(id).and_then(|c| {
+            RefMut::filter_map(c.borrow_mut(), |c| c.as_any_mut().downcast_mut::<C>()).ok()
+        })
     }
 
     pub fn remove(&mut self, id: &Id) {

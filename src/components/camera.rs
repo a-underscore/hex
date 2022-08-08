@@ -34,8 +34,8 @@ impl Camera {
         near: f32,
         far: f32,
         active: bool,
-    ) -> Rc<RefCell<Box<Self>>> {
-        Rc::new(RefCell::new(Box::new(Self {
+    ) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self {
             left,
             right,
             bottom,
@@ -44,7 +44,7 @@ impl Camera {
             far,
             view: Self::calculate_view(left, right, bottom, top, near, far),
             active,
-        })))
+        }))
     }
 
     pub fn get_left(&self) -> f32 {

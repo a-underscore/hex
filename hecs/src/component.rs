@@ -1,5 +1,5 @@
-use crate::Id;
+use crate::{AsAny, Id};
 
-pub trait Component: 'static {
+pub trait Component: 'static + AsAny {
     fn id(&self) -> Id;
 }

@@ -14,17 +14,13 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn new(
-        position: Vector2<f32>,
-        rotation: f32,
-        scale: Vector2<f32>,
-    ) -> Rc<RefCell<Box<Self>>> {
-        Rc::new(RefCell::new(Box::new(Self {
+    pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self {
             position,
             rotation,
             scale,
             transform: Self::calculate_transform(position, rotation, scale),
-        })))
+        }))
     }
 
     pub fn get_position(&self) -> Vector2<f32> {

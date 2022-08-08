@@ -29,15 +29,15 @@ impl Sprite {
         shaders: Rc<RefCell<Shaders>>,
         z: f32,
         draw: bool,
-    ) -> Rc<RefCell<Box<Self>>> {
-        Rc::new(RefCell::new(Box::new(Self {
+    ) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self {
             color,
             shape,
             texture,
             shaders,
             z,
             draw,
-        })))
+        }))
     }
 
     pub fn draw(

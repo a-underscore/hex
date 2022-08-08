@@ -31,8 +31,7 @@ impl World {
     where
         S: System,
     {
-        self.systems
-            .insert(system.borrow().id(), system.clone() as Rc<RefCell<S>>);
+        self.systems.insert(system.borrow().id(), system.clone());
     }
 
     pub fn remove_system(&mut self, id: &Id) {
