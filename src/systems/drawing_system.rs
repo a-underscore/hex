@@ -37,7 +37,7 @@ impl System for DrawingSystem<'static> {
                         .and_then(|t| Some((c, t)))
                 })
             })
-            .find(|(c, _)| c.borrow().active)
+            .find(|(c, _)| c.borrow().get_active())
         {
             let mut frame = self.engine.display.draw();
 

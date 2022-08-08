@@ -51,7 +51,7 @@ impl Sprite {
         if self.draw {
             let color: [f32; 4] = self.color.into();
             let transform: [[f32; 3]; 3] = transform.get_transform().into();
-            let camera_view: [[f32; 4]; 4] = camera.view().into();
+            let camera_view: [[f32; 4]; 4] = camera.get_view().into();
             let camera_transform: [[f32; 3]; 3] = camera_transform.get_transform().into();
             let texture = self.texture.borrow();
             let uniforms = uniform! {

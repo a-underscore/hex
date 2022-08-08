@@ -55,15 +55,15 @@ impl Transform {
         self.scale = scale;
     }
 
-    pub fn update_transform(&mut self) {
-        self.transform = Self::calculate_transform(self.position, self.rotation, self.scale);
-    }
-
     pub fn get_transform(&self) -> Matrix3<f32> {
         self.transform
     }
 
-    pub fn calculate_transform(
+    fn update_transform(&mut self) {
+        self.transform = Self::calculate_transform(self.position, self.rotation, self.scale);
+    }
+
+    fn calculate_transform(
         position: Vector2<f32>,
         rotation: f32,
         scale: Vector2<f32>,
