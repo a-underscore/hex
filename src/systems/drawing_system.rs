@@ -26,17 +26,19 @@ impl<'a> DrawingSystem<'a> {
             .get_entities()
             .values()
             .filter_map(|e| {
-                let e = e.borrow();
-
-                e.get(&ecs::tid(&CAMERA_ID))
-                    .and_then(|c| e.get(&ecs::tid(&TRANSFORM_ID)).and_then(|t| Some((c, t))))
+                e.borrow()
+                    .get_all(&[&ecs::tid(&CAMERA_ID), &ecs::tid(&TRANSFORM_ID)])
+                    .and_then(|c| match c.as_slice() {
+                        [ca, ct] => Some((ca.clone(), ct.clone())),
+                        _ => None,
+                    })
             })
-            .try_for_each(|(c, ct)| {
-                if let (Some(c), Some(ct)) = (
-                    (*c.borrow()).as_any_ref().downcast_ref::<Camera>(),
+            .try_for_each(|(ca, ct)| {
+                if let (Some(ca), Some(ct)) = (
+                    (*ca.borrow()).as_any_ref().downcast_ref::<Camera>(),
                     (*ct.borrow()).as_any_ref().downcast_ref::<Transform>(),
                 ) {
-                    if c.get_active() {
+                    if ca.get_active() {
                         let mut frame = self.engine.display.draw();
 
                         frame.clear_color_and_depth(self.engine.scene.borrow().bg.into(), 1.0);
@@ -45,20 +47,22 @@ impl<'a> DrawingSystem<'a> {
                             .get_entities()
                             .values()
                             .filter_map(|e| {
-                                let e = e.borrow();
-
-                                e.get(&ecs::tid(&SPRITE_ID)).and_then(|s| {
-                                    e.get(&ecs::tid(&TRANSFORM_ID)).and_then(|t| Some((s, t)))
-                                })
+                                e.borrow()
+                                    .get_all(&[&ecs::tid(&SPRITE_ID), &ecs::tid(&TRANSFORM_ID)])
+                                    .and_then(|c| match c.as_slice() {
+                                        [s, t] => Some((s.clone(), t.clone())),
+                                        _ => None,
+                                    })
                             })
                             .try_for_each(|(s, t)| {
-                                if let (Some(s), Some(t)) = (
+                                match (
                                     (*s.borrow()).as_any_ref().downcast_ref::<Sprite>(),
                                     (*t.borrow()).as_any_ref().downcast_ref::<Transform>(),
                                 ) {
-                                    s.draw(&t, &c, &ct, &self.engine, &mut frame)
-                                } else {
-                                    Ok(())
+                                    (Some(s), Some(t)) => {
+                                        s.draw(&t, &ca, &ct, &self.engine, &mut frame)
+                                    }
+                                    _ => Ok(()),
                                 }
                             })?;
 
