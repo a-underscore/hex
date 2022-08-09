@@ -38,19 +38,19 @@ impl World {
         self.systems.remove(id.as_ref());
     }
 
-    pub fn init(&mut self) {
+    pub fn init_systems(&mut self) {
         for s in self.systems.clone().values() {
             s.borrow_mut().on_init(self);
         }
     }
 
-    pub fn update(&mut self, event: &Event<()>, delta: Duration) {
+    pub fn update_systems(&mut self, event: &Event<()>, delta: Duration) {
         for s in self.systems.clone().values() {
             s.borrow_mut().on_update(self, event, delta);
         }
     }
 
-    pub fn entities<'a>(&'a self) -> &'a HashMap<Id, Rc<RefCell<Entity>>> {
+    pub fn get_entities<'a>(&'a self) -> &'a HashMap<Id, Rc<RefCell<Entity>>> {
         &self.entities
     }
 }

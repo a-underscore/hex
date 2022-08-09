@@ -21,10 +21,10 @@ impl Scene {
     }
 
     pub fn init(&self) {
-        self.world.borrow_mut().init();
+        self.world.borrow_mut().init_systems();
     }
 
     pub fn update(&self, event: &Event<()>, delta: Duration) {
-        self.world.borrow_mut().update(event, delta);
+        self.world.borrow_mut().update_systems(event, delta);
     }
 }

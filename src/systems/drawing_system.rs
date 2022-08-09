@@ -22,44 +22,52 @@ impl<'a> DrawingSystem<'a> {
 
 impl<'a> DrawingSystem<'a> {
     pub fn draw_sprites(&self, world: &World) -> anyhow::Result<()> {
-        for (camera, transform) in world.entities().values().filter_map(|e| {
-            let e = e.borrow();
+        world
+            .get_entities()
+            .values()
+            .filter_map(|e| {
+                let e = e.borrow();
 
-            e.get(&ecs::tid(&CAMERA_ID))
-                .and_then(|c| e.get(&ecs::tid(&TRANSFORM_ID)).and_then(|t| Some((c, t))))
-        }) {
-            if let (Some(camera), Some(transform)) = (
-                (*camera.borrow()).as_any_ref().downcast_ref::<Camera>(),
-                (*transform.borrow())
-                    .as_any_ref()
-                    .downcast_ref::<Transform>(),
-            ) {
-                if camera.get_active() {
-                    let mut frame = self.engine.display.draw();
+                e.get(&ecs::tid(&CAMERA_ID))
+                    .and_then(|c| e.get(&ecs::tid(&TRANSFORM_ID)).and_then(|t| Some((c, t))))
+            })
+            .try_for_each(|(c, ct)| {
+                if let (Some(c), Some(ct)) = (
+                    (*c.borrow()).as_any_ref().downcast_ref::<Camera>(),
+                    (*ct.borrow()).as_any_ref().downcast_ref::<Transform>(),
+                ) {
+                    if c.get_active() {
+                        let mut frame = self.engine.display.draw();
 
-                    frame.clear_color_and_depth(self.engine.scene.borrow().bg.into(), 1.0);
+                        frame.clear_color_and_depth(self.engine.scene.borrow().bg.into(), 1.0);
 
-                    for (s, t) in world.entities().values().filter_map(|e| {
-                        let e = e.borrow();
+                        world
+                            .get_entities()
+                            .values()
+                            .filter_map(|e| {
+                                let e = e.borrow();
 
-                        e.get(&ecs::tid(&SPRITE_ID)).and_then(|s| {
-                            e.get(&ecs::tid(&TRANSFORM_ID)).and_then(|t| Some((s, t)))
-                        })
-                    }) {
-                        if let (Some(s), Some(t)) = (
-                            (*s.borrow()).as_any_ref().downcast_ref::<Sprite>(),
-                            (*t.borrow()).as_any_ref().downcast_ref::<Transform>(),
-                        ) {
-                            s.draw(&t, &camera, &transform, &self.engine, &mut frame)?;
-                        }
+                                e.get(&ecs::tid(&SPRITE_ID)).and_then(|s| {
+                                    e.get(&ecs::tid(&TRANSFORM_ID)).and_then(|t| Some((s, t)))
+                                })
+                            })
+                            .try_for_each(|(s, t)| {
+                                if let (Some(s), Some(t)) = (
+                                    (*s.borrow()).as_any_ref().downcast_ref::<Sprite>(),
+                                    (*t.borrow()).as_any_ref().downcast_ref::<Transform>(),
+                                ) {
+                                    s.draw(&t, &c, &ct, &self.engine, &mut frame)
+                                } else {
+                                    Ok(())
+                                }
+                            })?;
+
+                        frame.finish().unwrap();
                     }
-
-                    frame.finish().unwrap();
                 }
-            }
-        }
 
-        Ok(())
+                Ok(())
+            })
     }
 }
 
