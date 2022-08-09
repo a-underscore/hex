@@ -8,3 +8,6 @@ anyhow = "1.0.58"
 cgmath = { version = "0.18.0", features = ["swizzle"] }
 glium = "0.31.0"
 hecs = { path = "./hecs" }
+math_adapter = { version = "0.3.8", features = ["cgmath", "nalgebra"] }
+rapier2d = "0.14.0"
+thiserror = "1.0.32"

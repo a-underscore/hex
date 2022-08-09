@@ -71,7 +71,7 @@ impl Transform {
 }
 
 impl Component for Transform {
-    fn id(&self) -> Id {
+    fn get_id(&self) -> Id {
         ecs::tid(&TRANSFORM_ID)
     }
 }

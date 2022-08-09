@@ -1,5 +1,9 @@
-use crate::ecs::{System, World};
-use cgmath::Vector4;
+use crate::{
+    ecs::{System, World},
+    systems::{DrawingSystem, PhysicsSystem},
+    Engine,
+};
+use cgmath::{Vector2, Vector4};
 use glium::glutin::event::Event;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
@@ -11,6 +15,26 @@ pub struct Scene {
 impl Scene {
     pub fn new(bg: Vector4<f32>, world: Rc<RefCell<World>>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self { bg, world }))
+    }
+
+    pub fn default_systems<'a>(
+        bg: Vector4<f32>,
+        world: Rc<RefCell<World>>,
+        engine: Rc<Engine<'static>>,
+        gravity: Vector2<f32>,
+    ) -> Rc<RefCell<Self>> {
+        let scene = Self { bg, world };
+
+        scene.add_default_systems(engine, gravity);
+
+        Rc::new(RefCell::new(scene))
+    }
+
+    pub fn add_default_systems(&self, engine: Rc<Engine<'static>>, gravity: Vector2<f32>) {
+        let mut world = self.world.borrow_mut();
+
+        world.add_system(&DrawingSystem::new(engine));
+        world.add_system(&PhysicsSystem::new(gravity));
     }
 
     pub fn add_system<S>(&self, system: Rc<RefCell<S>>)

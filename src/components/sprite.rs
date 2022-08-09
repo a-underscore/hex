@@ -79,7 +79,7 @@ impl Sprite {
 }
 
 impl Component for Sprite {
-    fn id(&self) -> Id {
+    fn get_id(&self) -> Id {
         ecs::tid(&SPRITE_ID)
     }
 }

@@ -20,10 +20,8 @@ impl Entity {
     where
         C: Component,
     {
-        self.components.insert(
-            component.borrow().id(),
-            component.clone() as Rc<RefCell<dyn Component>>,
-        );
+        self.components
+            .insert(component.borrow().get_id(), component.clone());
     }
 
     pub fn get(&self, id: &Id) -> Option<Rc<RefCell<dyn Component>>> {
@@ -56,5 +54,9 @@ impl Entity {
 
     pub fn remove(&mut self, id: &Id) {
         self.components.remove(id.as_ref());
+    }
+
+    pub fn get_components<'a>(&'a self) -> &'a HashMap<Id, Rc<RefCell<dyn Component>>> {
+        &self.components
     }
 }
