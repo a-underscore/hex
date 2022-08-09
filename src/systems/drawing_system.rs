@@ -21,7 +21,7 @@ impl<'a> DrawingSystem<'a> {
 }
 
 impl<'a> DrawingSystem<'a> {
-    pub fn draw_sprites(&self, world: &World) -> anyhow::Result<()> {
+    fn draw_sprites(&self, world: &World) -> anyhow::Result<()> {
         world
             .get_entities()
             .values()
