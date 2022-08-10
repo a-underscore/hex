@@ -1,4 +1,4 @@
-use crate::{Entity, Id, System};
+use crate::{Component, Entity, Id, System};
 use glium::glutin::event::Event;
 use std::{cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
 
@@ -21,6 +21,16 @@ impl World {
 
     pub fn get(&self, id: &Id) -> Option<Rc<RefCell<Entity>>> {
         self.entities.get(id.as_ref()).and_then(|e| Some(e.clone()))
+    }
+
+    pub fn get_all_with(
+        &self,
+        ids: &[&Id],
+    ) -> Vec<(Rc<RefCell<Entity>>, Vec<Rc<RefCell<dyn Component>>>)> {
+        self.entities
+            .values()
+            .filter_map(|e| Some((e.clone(), e.borrow().get_all(ids)?)))
+            .collect()
     }
 
     pub fn remove(&mut self, id: &Id) {

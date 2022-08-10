@@ -1,7 +1,7 @@
 use crate::{
     components::{Camera, Sprite, Transform, CAMERA_ID, SPRITE_ID, TRANSFORM_ID},
     ecs::{self, Id, System, World},
-    Engine, Error,
+    Engine,
 };
 use glium::{glutin::event::Event, Surface};
 use std::{
@@ -26,60 +26,47 @@ impl<'a> DrawingSystem<'a> {
 
 impl<'a> DrawingSystem<'a> {
     fn draw_sprites(&self, world: &World) -> anyhow::Result<()> {
-        world
-            .get_entities()
-            .values()
-            .filter_map(|e| {
-                e.borrow()
-                    .get_all(&[&ecs::tid(&CAMERA_ID), &ecs::tid(&TRANSFORM_ID)])
-                    .and_then(|c| match c.as_slice() {
-                        [ca, ct] => Some((ca.clone(), ct.clone())),
-                        _ => None,
+        if let Some((ca, ct)) = world
+            .get_all_with(&[&ecs::tid(&CAMERA_ID), &ecs::tid(&TRANSFORM_ID)])
+            .iter()
+            .find_map(|(_, c)| match c.as_slice() {
+                [ca, ct] => {
+                    let ca =
+                        Ref::filter_map(ca.borrow(), |ca| ca.as_any_ref().downcast_ref::<Camera>())
+                            .ok()?;
+                    let ct = Ref::filter_map(ct.borrow(), |ct| {
+                        ct.as_any_ref().downcast_ref::<Transform>()
                     })
-            })
-            .try_for_each(|(ca, ct)| {
-                let ca =
-                    Ref::filter_map(ca.borrow(), |ca| ca.as_any_ref().downcast_ref::<Camera>())
-                        .map_err(|_| Error::DowncastRefFailed)?;
-                let ct = Ref::filter_map(ct.borrow(), |ct| {
-                    ct.as_any_ref().downcast_ref::<Transform>()
-                })
-                .map_err(|_| Error::DowncastRefFailed)?;
+                    .ok()?;
 
-                if ca.get_active() {
-                    let mut frame = self.engine.display.draw();
-
-                    frame.clear_color_and_depth(self.engine.scene.borrow().bg.into(), 1.0);
-
-                    world
-                        .get_entities()
-                        .values()
-                        .filter_map(|e| {
-                            e.borrow()
-                                .get_all(&[&ecs::tid(&SPRITE_ID), &ecs::tid(&TRANSFORM_ID)])
-                                .and_then(|c| match c.as_slice() {
-                                    [s, t] => Some((s.clone(), t.clone())),
-                                    _ => None,
-                                })
-                        })
-                        .try_for_each(|(s, t)| {
-                            let s = Ref::filter_map(s.borrow(), |s| {
-                                s.as_any_ref().downcast_ref::<Sprite>()
-                            })
-                            .map_err(|_| Error::DowncastRefFailed)?;
-                            let t = Ref::filter_map(t.borrow(), |t| {
-                                t.as_any_ref().downcast_ref::<Transform>()
-                            })
-                            .map_err(|_| Error::DowncastRefFailed)?;
-
-                            s.draw(&t, &ca, &ct, &self.engine, &mut frame)
-                        })?;
-
-                    frame.finish().unwrap();
+                    if ca.get_active() {
+                        Some((ca, ct))
+                    } else {
+                        None
+                    }
                 }
-
-                Ok(())
+                _ => None,
             })
+        {
+            let mut frame = self.engine.display.draw();
+
+            frame.clear_color_and_depth(self.engine.scene.borrow().bg.into(), 1.0);
+
+            for (_, c) in world.get_all_with(&[&ecs::tid(&SPRITE_ID), &ecs::tid(&TRANSFORM_ID)]) {
+                if let [s, t] = c.as_slice() {
+                    if let (Some(s), Some(t)) = (
+                        s.borrow().as_any_ref().downcast_ref::<Sprite>(),
+                        t.borrow().as_any_ref().downcast_ref::<Transform>(),
+                    ) {
+                        s.draw(&t, &ca, &ct, &self.engine, &mut frame)?
+                    }
+                }
+            }
+
+            frame.finish().unwrap();
+        }
+
+        Ok(())
     }
 }
 

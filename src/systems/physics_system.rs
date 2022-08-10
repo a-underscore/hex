@@ -1,7 +1,6 @@
 use crate::{
     components::{ColliderObject, Transform, COLLIDER_OBJECT_ID, TRANSFORM_ID},
     ecs::{self, Id, System, World},
-    Error,
 };
 use cgmath::Vector2;
 use glium::glutin::event::Event;
@@ -50,30 +49,29 @@ impl PhysicsSystem {
 }
 
 impl PhysicsSystem {
-    fn update_colliders(&mut self, world: &World, _delta: Duration) -> anyhow::Result<()> {
-        world
-            .get_entities()
-            .values()
-            .filter_map(|e| {
-                e.borrow()
-                    .get_all(&[&ecs::tid(&COLLIDER_OBJECT_ID), &ecs::tid(&TRANSFORM_ID)])
-                    .and_then(|c| match c.as_slice() {
-                        [c, t] => Some((c.clone(), t.clone())),
-                        _ => None,
-                    })
-            })
-            .try_for_each(|(c, t)| -> anyhow::Result<()> {
-                let c = Ref::filter_map(c.borrow(), |c| {
-                    c.as_any_ref().downcast_ref::<ColliderObject>()
+    fn update_colliders(&mut self, world: &World, _delta: Duration) {
+        for e in world.get_entities().values() {
+            if let Some((c, t)) = e
+                .borrow()
+                .get_all(&[&ecs::tid(&COLLIDER_OBJECT_ID), &ecs::tid(&TRANSFORM_ID)])
+                .and_then(|c| match c.as_slice() {
+                    [c, t] => Some((c.clone(), t.clone())),
+
+                    _ => None,
                 })
-                .map_err(|_| Error::DowncastRefFailed)?;
-                let t = Ref::filter_map(t.borrow(), |t| t.as_any_ref().downcast_ref::<Transform>())
-                    .map_err(|_| Error::DowncastRefFailed)?;
-
-                c.update(&t);
-
-                Ok(())
-            })?;
+            {
+                if let (Some(c), Some(t)) = (
+                    Ref::filter_map(c.borrow(), |c| {
+                        c.as_any_ref().downcast_ref::<ColliderObject>()
+                    })
+                    .ok(),
+                    Ref::filter_map(t.borrow(), |t| t.as_any_ref().downcast_ref::<Transform>())
+                        .ok(),
+                ) {
+                    c.update(&t);
+                }
+            }
+        }
 
         self.physics_pipeline.step(
             &vector![self.gravity.x, self.gravity.y],
@@ -89,8 +87,6 @@ impl PhysicsSystem {
             &(),
             &(),
         );
-
-        Ok(())
     }
 }
 
@@ -100,6 +96,6 @@ impl System for PhysicsSystem {
     }
 
     fn on_update(&mut self, world: &mut World, _event: &Event<()>, delta: Duration) {
-        self.update_colliders(world, delta).unwrap();
+        self.update_colliders(world, delta);
     }
 }
