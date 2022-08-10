@@ -1,6 +1,11 @@
 use crate::{Component, Entity, Id, System};
 use glium::glutin::event::Event;
-use std::{cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
+use std::{
+    cell::{Ref, RefCell, RefMut},
+    collections::HashMap,
+    rc::Rc,
+    time::Duration,
+};
 
 pub struct World {
     entities: HashMap<Id, Rc<RefCell<Entity>>>,
@@ -42,6 +47,28 @@ impl World {
         S: System,
     {
         self.systems.insert(system.borrow().id(), system.clone());
+    }
+
+    pub fn get_system(&self, id: &Id) -> Option<Rc<RefCell<dyn System>>> {
+        self.systems.get(id).and_then(|s| Some(s.clone()))
+    }
+
+    pub fn get_system_ref<S>(&self, id: &Id) -> Option<Ref<S>>
+    where
+        S: System,
+    {
+        self.systems
+            .get(id)
+            .and_then(|c| Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<S>()).ok())
+    }
+
+    pub fn get_system_mut<S>(&self, id: &Id) -> Option<RefMut<S>>
+    where
+        S: System,
+    {
+        self.systems.get(id).and_then(|c| {
+            RefMut::filter_map(c.borrow_mut(), |c| c.as_any_mut().downcast_mut::<S>()).ok()
+        })
     }
 
     pub fn remove_system(&mut self, id: &Id) {
