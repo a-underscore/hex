@@ -1,5 +1,5 @@
 use crate::{
-    components::{ColliderQuad, Transform},
+    components::{ColliderRect, Transform},
     ecs::{self, Id, System, World},
 };
 use glium::glutin::event::Event;
@@ -19,19 +19,23 @@ impl PhysicsSystem {
 
 impl PhysicsSystem {
     fn update_colliders(&mut self, world: &World, _delta: Duration) {
-        let _components = world
-            .get_entities()
-            .values()
-            .filter_map(|e| {
-                e.borrow()
-                    .get_all(&[&ecs::tid(&ColliderQuad::ID), &ecs::tid(&Transform::ID)])
-                    .and_then(|c| match c.as_slice() {
-                        [c, t] => Some((c.clone(), t.clone())),
-
-                        _ => None,
-                    })
+        let components = world
+            .get_all_with(&[&ecs::tid(&ColliderRect::ID), &ecs::tid(&Transform::ID)])
+            .iter()
+            .filter_map(|((id, e), c)| match c.as_slice() {
+                [co, t] => Some(((id.clone(), e.clone()), (co.clone(), t.clone()))),
+                _ => None,
             })
             .collect::<Vec<_>>();
+
+        for ((id, e), (c, t)) in &components {
+            if let (Some(c), Some(t)) = (
+                c.borrow_mut().as_any_mut().downcast_mut::<ColliderRect>(),
+                t.borrow().as_any_ref().downcast_ref::<Transform>(),
+            ) {
+                c.update((id.clone(), &mut e.borrow_mut()), t, &components);
+            }
+        }
     }
 }
 

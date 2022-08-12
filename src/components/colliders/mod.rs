@@ -1,5 +1,5 @@
-pub mod collider_quad;
+pub mod collider_rect;
 pub mod collision_callback;
 
-pub use collider_quad::ColliderQuad;
+pub use collider_rect::ColliderRect;
 pub use collision_callback::CollisionCallback;

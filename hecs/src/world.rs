@@ -31,10 +31,10 @@ impl World {
     pub fn get_all_with(
         &self,
         ids: &[&Id],
-    ) -> Vec<(Rc<RefCell<Entity>>, Vec<Rc<RefCell<dyn Component>>>)> {
+    ) -> Vec<((Id, Rc<RefCell<Entity>>), Vec<Rc<RefCell<dyn Component>>>)> {
         self.entities
-            .values()
-            .filter_map(|e| Some((e.clone(), e.borrow().get_all(ids)?)))
+            .iter()
+            .filter_map(|(id, e)| Some(((id.clone(), e.clone()), e.borrow().get_all(ids)?)))
             .collect()
     }
 
