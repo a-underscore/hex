@@ -2,10 +2,6 @@ use crate::ecs::{self, Component, Id};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
 use std::{cell::RefCell, rc::Rc};
 
-thread_local! {
-    pub static TRANSFORM_ID: Id = ecs::id("transform");
-}
-
 pub struct Transform {
     position: Vector2<f32>,
     rotation: f32,
@@ -14,6 +10,10 @@ pub struct Transform {
 }
 
 impl Transform {
+    thread_local! {
+        pub static ID: Id = ecs::id("transform");
+    }
+
     pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             position,
@@ -72,6 +72,6 @@ impl Transform {
 
 impl Component for Transform {
     fn get_id(&self) -> Id {
-        ecs::tid(&TRANSFORM_ID)
+        ecs::tid(&Self::ID)
     }
 }

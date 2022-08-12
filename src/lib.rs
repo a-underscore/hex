@@ -2,7 +2,6 @@ pub use anyhow;
 pub use cgmath;
 pub use glium;
 pub use hecs as ecs;
-pub use rapier2d;
 
 pub mod assets;
 pub mod components;

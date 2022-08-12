@@ -8,10 +8,6 @@ use cgmath::Vector4;
 use glium::{uniform, Frame, Surface};
 use std::{cell::RefCell, rc::Rc};
 
-thread_local! {
-    pub static SPRITE_ID: Id = ecs::id("sprite");
-}
-
 pub struct Sprite {
     pub color: Vector4<f32>,
     pub shape: Rc<RefCell<Shape>>,
@@ -22,6 +18,10 @@ pub struct Sprite {
 }
 
 impl Sprite {
+    thread_local! {
+        pub static ID: Id = ecs::id("sprite");
+    }
+
     pub fn new(
         color: Vector4<f32>,
         shape: Rc<RefCell<Shape>>,
@@ -80,6 +80,6 @@ impl Sprite {
 
 impl Component for Sprite {
     fn get_id(&self) -> Id {
-        ecs::tid(&SPRITE_ID)
+        ecs::tid(&Self::ID)
     }
 }

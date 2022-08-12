@@ -2,18 +2,6 @@ use crate::ecs::{self, Component, Id};
 use cgmath::Matrix4;
 use std::{cell::RefCell, rc::Rc};
 
-thread_local! {
-    pub static CAMERA_ID: Id = ecs::id("camera");
-}
-
-pub struct CameraData {}
-
-impl CameraData {
-    pub fn new() -> Rc<RefCell<Box<Self>>> {
-        Rc::new(RefCell::new(Box::new(Self {})))
-    }
-}
-
 pub struct Camera {
     left: f32,
     right: f32,
@@ -26,6 +14,10 @@ pub struct Camera {
 }
 
 impl Camera {
+    thread_local! {
+        pub static ID: Id = ecs::id("camera");
+    }
+
     pub fn new(
         left: f32,
         right: f32,
@@ -140,6 +132,6 @@ impl Camera {
 
 impl Component for Camera {
     fn get_id(&self) -> Id {
-        ecs::tid(&CAMERA_ID)
+        ecs::tid(&Self::ID)
     }
 }
