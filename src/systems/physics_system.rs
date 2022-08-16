@@ -33,7 +33,7 @@ impl PhysicsSystem {
                 c.borrow_mut().as_any_mut().downcast_mut::<ColliderRect>(),
                 t.borrow().as_any_ref().downcast_ref::<Transform>(),
             ) {
-                c.update((id.clone(), &mut e.borrow_mut()), t, &components);
+                c.update(id.clone(), &mut e.borrow_mut(), t, &components);
             }
         }
     }

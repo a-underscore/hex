@@ -6,14 +6,12 @@ use std::{
 };
 
 pub struct Entity {
-    pub id: Id,
     components: HashMap<Id, Rc<RefCell<dyn Component>>>,
 }
 
 impl Entity {
-    pub fn new(id: &Id) -> Rc<RefCell<Self>> {
+    pub fn new() -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
-            id: id.clone(),
             components: HashMap::new(),
         }))
     }
