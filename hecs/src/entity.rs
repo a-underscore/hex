@@ -16,17 +16,16 @@ impl Entity {
         }))
     }
 
-    pub fn add<C>(&mut self, component: &Rc<RefCell<C>>)
-    where
-        C: Component,
-    {
+    pub fn add_generic(&mut self, component: Rc<RefCell<dyn Component>>) {
         self.components
             .insert(component.borrow().get_id(), component.clone());
     }
 
-    pub fn add_generic(&mut self, component: &Rc<RefCell<dyn Component>>) {
-        self.components
-            .insert(component.borrow().get_id(), component.clone());
+    pub fn add<C>(&mut self, component: &Rc<RefCell<C>>)
+    where
+        C: Component,
+    {
+        self.add_generic(component.clone());
     }
 
     pub fn get(&self, id: &Id) -> Option<Rc<RefCell<dyn Component>>> {

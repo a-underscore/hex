@@ -49,15 +49,15 @@ impl World {
         self.entities.remove(id.as_ref());
     }
 
+    pub fn add_generic_system(&mut self, system: Rc<RefCell<dyn System>>) {
+        self.systems.insert(system.borrow().id(), system.clone());
+    }
+
     pub fn add_system<S>(&mut self, system: &Rc<RefCell<S>>)
     where
         S: System,
     {
-        self.systems.insert(system.borrow().id(), system.clone());
-    }
-
-    pub fn add_generic_system<S>(&mut self, system: &Rc<RefCell<dyn System>>) {
-        self.systems.insert(system.borrow().id(), system.clone());
+        self.add_generic_system(system.clone());
     }
 
     pub fn get_system(&self, id: &Id) -> Option<Rc<RefCell<dyn System>>> {
