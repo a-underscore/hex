@@ -18,7 +18,7 @@ impl EventSystem {
 }
 
 impl System for EventSystem {
-    fn id(&self) -> Id {
+    fn get_id(&self) -> Id {
         ecs::tid(&Self::ID)
     }
 

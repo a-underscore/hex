@@ -3,7 +3,7 @@ use glium::glutin::event::Event;
 use std::time::Duration;
 
 pub trait System: AsAny + 'static {
-    fn id(&self) -> Id;
+    fn get_id(&self) -> Id;
 
     fn init(&mut self, _world: &mut World) {}
 

@@ -71,7 +71,7 @@ impl<'a> DrawingSystem<'a> {
 }
 
 impl System for DrawingSystem<'static> {
-    fn id(&self) -> Id {
+    fn get_id(&self) -> Id {
         ecs::tid(&DRAWING_SYSTEM_ID)
     }
 

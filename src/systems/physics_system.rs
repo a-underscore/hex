@@ -40,7 +40,7 @@ impl PhysicsSystem {
 }
 
 impl System for PhysicsSystem {
-    fn id(&self) -> Id {
+    fn get_id(&self) -> Id {
         ecs::tid(&PHYSICS_SYSTEM_ID)
     }
 
