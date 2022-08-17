@@ -12,8 +12,13 @@ impl EventHandler {
         pub static ID: Id = ecs::id("event_handler");
     }
 
-    pub fn new(callback: Rc<RefCell<dyn EventHandlerCallback>>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self { callback }))
+    pub fn new<C>(callback: &Rc<RefCell<C>>) -> Rc<RefCell<Self>>
+    where
+        C: EventHandlerCallback,
+    {
+        Rc::new(RefCell::new(Self {
+            callback: callback.clone(),
+        }))
     }
 
     pub fn update(&self, p: (Id, Rc<RefCell<Entity>>), event: &Event<()>) {

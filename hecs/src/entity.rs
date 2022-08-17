@@ -32,9 +32,14 @@ impl Entity {
         self.components.get(id).and_then(|c| Some(c.clone()))
     }
 
-    pub fn get_all(&self, ids: &[&Id]) -> Option<Vec<Rc<RefCell<dyn Component>>>> {
+    pub fn get_all(&self, ids: &[&Id]) -> Option<Vec<(Id, Rc<RefCell<dyn Component>>)>> {
         ids.iter()
-            .map(|id| self.components.get(*id).and_then(|c| Some(c.clone())))
+            .cloned()
+            .map(|id| {
+                self.components
+                    .get(id)
+                    .and_then(|c| Some((id.clone(), c.clone())))
+            })
             .collect()
     }
 

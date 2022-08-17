@@ -30,7 +30,7 @@ impl<'a> DrawingSystem<'a> {
             .get_all_with(&[&ecs::tid(&Camera::ID), &ecs::tid(&Transform::ID)])
             .iter()
             .find_map(|(_, c)| match c.as_slice() {
-                [ca, ct] => {
+                [(_, ca), (_, ct)] => {
                     let ca =
                         Ref::filter_map(ca.borrow(), |ca| ca.as_any_ref().downcast_ref::<Camera>())
                             .ok()?;
@@ -53,7 +53,7 @@ impl<'a> DrawingSystem<'a> {
             frame.clear_color_and_depth(self.engine.scene.borrow().bg.into(), 1.0);
 
             for (_, c) in world.get_all_with(&[&ecs::tid(&Sprite::ID), &ecs::tid(&Transform::ID)]) {
-                if let [s, t] = c.as_slice() {
+                if let [(_, s), (_, t)] = c.as_slice() {
                     if let (Some(s), Some(t)) = (
                         s.borrow().as_any_ref().downcast_ref::<Sprite>(),
                         t.borrow().as_any_ref().downcast_ref::<Transform>(),

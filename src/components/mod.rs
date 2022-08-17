@@ -5,7 +5,7 @@ pub mod sprite;
 pub mod transform;
 
 pub use camera::Camera;
-pub use colliders::{ColliderRect, CollisionCallback};
-pub use event_handler::{EventHandler, EventHandlerCallback};
+pub use colliders::ColliderRect;
+pub use event_handler::EventHandler;
 pub use sprite::Sprite;
 pub use transform::Transform;

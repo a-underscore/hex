@@ -20,33 +20,49 @@ impl World {
         }))
     }
 
+    pub fn change_id(&mut self, old: &Id, new: &Id) {
+        if let Some(e) = self.entities.remove(old) {
+            self.entities.insert(new.clone(), e);
+        }
+    }
+
     pub fn add(&mut self, id: &Id, entity: &Rc<RefCell<Entity>>) {
         self.entities.insert(id.clone(), entity.clone());
     }
 
-    pub fn get(&self, id: &Id) -> Option<Rc<RefCell<Entity>>> {
-        self.entities.get(id.as_ref()).and_then(|e| Some(e.clone()))
+    pub fn get(&self, id: &Id) -> Option<(Id, Rc<RefCell<Entity>>)> {
+        self.entities
+            .get(id.as_ref())
+            .and_then(|e| Some((id.clone(), e.clone())))
     }
 
-    pub fn get_all(&self, id: &Id) -> Vec<((Id, Rc<RefCell<Entity>>), Rc<RefCell<dyn Component>>)> {
+    pub fn get_all(
+        &self,
+        id: &Id,
+    ) -> Vec<((Id, Rc<RefCell<Entity>>), (Id, Rc<RefCell<dyn Component>>))> {
         self.entities
             .iter()
-            .filter_map(|(i, e)| Some(((i.clone(), e.clone()), e.borrow().get(id)?)))
+            .filter_map(|(i, e)| Some(((i.clone(), e.clone()), (id.clone(), e.borrow().get(id)?))))
             .collect()
     }
 
     pub fn get_all_with(
         &self,
         ids: &[&Id],
-    ) -> Vec<((Id, Rc<RefCell<Entity>>), Vec<Rc<RefCell<dyn Component>>>)> {
+    ) -> Vec<(
+        (Id, Rc<RefCell<Entity>>),
+        Vec<(Id, Rc<RefCell<dyn Component>>)>,
+    )> {
         self.entities
             .iter()
             .filter_map(|(id, e)| Some(((id.clone(), e.clone()), e.borrow().get_all(ids)?)))
             .collect()
     }
 
-    pub fn remove(&mut self, id: &Id) {
-        self.entities.remove(id.as_ref());
+    pub fn remove(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<Entity>>)> {
+        self.entities
+            .remove(id.as_ref())
+            .and_then(|e| Some((id.clone(), e)))
     }
 
     pub fn add_generic_system(&mut self, system: Rc<RefCell<dyn System>>) {
