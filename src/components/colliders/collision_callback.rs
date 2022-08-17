@@ -1,6 +1,6 @@
-use crate::ecs::{Component, Entity};
-use cgmath::Vector2;
+use crate::ecs::{Component, Entity, Id};
+use std::{cell::RefCell, rc::Rc};
 
 pub trait CollisionCallback: 'static + Component {
-    fn callback(&mut self, parent: &mut Entity, other: &mut Entity, points: &[Vector2<f32>]);
+    fn callback(&mut self, parent: (Id, Rc<RefCell<Entity>>), other: (Id, Rc<RefCell<Entity>>));
 }

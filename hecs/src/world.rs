@@ -28,6 +28,13 @@ impl World {
         self.entities.get(id.as_ref()).and_then(|e| Some(e.clone()))
     }
 
+    pub fn get_all(&self, id: &Id) -> Vec<((Id, Rc<RefCell<Entity>>), Rc<RefCell<dyn Component>>)> {
+        self.entities
+            .iter()
+            .filter_map(|(i, e)| Some(((i.clone(), e.clone()), e.borrow().get(id)?)))
+            .collect()
+    }
+
     pub fn get_all_with(
         &self,
         ids: &[&Id],
@@ -46,6 +53,10 @@ impl World {
     where
         S: System,
     {
+        self.systems.insert(system.borrow().id(), system.clone());
+    }
+
+    pub fn add_generic_system<S>(&mut self, system: &Rc<RefCell<dyn System>>) {
         self.systems.insert(system.borrow().id(), system.clone());
     }
 
@@ -77,13 +88,13 @@ impl World {
 
     pub fn init_systems(&mut self) {
         for s in self.systems.clone().values() {
-            s.borrow_mut().on_init(self);
+            s.borrow_mut().init(self);
         }
     }
 
     pub fn update_systems(&mut self, event: &Event<()>, delta: Duration) {
         for s in self.systems.clone().values() {
-            s.borrow_mut().on_update(self, event, delta);
+            s.borrow_mut().update(self, event, delta);
         }
     }
 

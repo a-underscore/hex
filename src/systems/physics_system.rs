@@ -28,12 +28,12 @@ impl PhysicsSystem {
             })
             .collect::<Vec<_>>();
 
-        for ((id, e), (c, t)) in &components {
+        for (p, (c, t)) in &components {
             if let (Some(c), Some(t)) = (
                 c.borrow_mut().as_any_mut().downcast_mut::<ColliderRect>(),
                 t.borrow().as_any_ref().downcast_ref::<Transform>(),
             ) {
-                c.update(id.clone(), &mut e.borrow_mut(), t, &components);
+                c.update(p.clone(), t, &components);
             }
         }
     }
@@ -44,7 +44,7 @@ impl System for PhysicsSystem {
         ecs::tid(&PHYSICS_SYSTEM_ID)
     }
 
-    fn on_update(&mut self, world: &mut World, _event: &Event<()>, delta: Duration) {
+    fn update(&mut self, world: &mut World, _event: &Event<()>, delta: Duration) {
         self.update_colliders(world, delta);
     }
 }

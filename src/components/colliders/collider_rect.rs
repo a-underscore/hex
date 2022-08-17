@@ -25,58 +25,57 @@ impl ColliderRect {
 
     pub fn update(
         &mut self,
-        parent_id: Id,
-        parent: &mut Entity,
+        parent: (Id, Rc<RefCell<Entity>>),
         transform: &Transform,
         components: &Vec<(
             (Id, Rc<RefCell<Entity>>),
             (Rc<RefCell<dyn Component>>, Rc<RefCell<dyn Component>>),
         )>,
     ) {
-        for ((id, e), (c, t)) in components {
-            if *parent_id != **id {
+        let (parent_id, _) = parent.clone();
+
+        for (p, (c, t)) in components {
+            let (id, _) = p.clone();
+
+            if *parent_id != *id {
                 if let (Some(c), Some(t)) = (
                     c.borrow().as_any_ref().downcast_ref::<Self>(),
                     t.borrow_mut().as_any_mut().downcast_mut::<Transform>(),
                 ) {
-                    if let Some(intersecting) = self.find_intersecting(transform, c, t) {
-                        self.callback.borrow_mut().callback(
-                            parent,
-                            &mut e.borrow_mut(),
-                            &intersecting,
-                        );
+                    if self.intersecting(transform, c, t) {
+                        self.callback
+                            .borrow_mut()
+                            .callback(parent.clone(), p.clone());
                     }
                 }
             }
         }
     }
 
-    fn find_intersecting(
+    fn intersecting(
         &self,
         transform: &Transform,
         other: &Self,
         other_transform: &Transform,
-    ) -> Option<Vec<Vector2<f32>>> {
-        let (min, max) = {
+    ) -> bool {
+        let (p1, p2) = {
             let transform = transform.get_transform();
 
             (
+                (transform * self.dims.extend(1.0)).xy(),
                 (transform * Vector3::zero()).xy(),
-                (transform * self.dims.extend(0.0)).xy(),
             )
         };
 
-        let vec = other
-            .to_points()
-            .into_iter()
-            .filter(|p| {
-                let p = (other_transform.get_transform() * p.extend(0.0)).xy();
+        for p in other.to_points() {
+            let p = (other_transform.get_transform() * p.extend(1.0)).xy();
 
-                p.x >= min.x && p.y >= min.y && p.x <= max.x && p.y <= max.y
-            })
-            .collect::<Vec<_>>();
+            if (p2.x - p1.x) * (p.y - p1.y) - (p.x - p1.x) * (p2.y - p1.y) != 0.0 {
+                return true;
+            }
+        }
 
-        (!vec.is_empty()).then(|| vec)
+        return false;
     }
 
     fn to_points(&self) -> [Vector2<f32>; 4] {

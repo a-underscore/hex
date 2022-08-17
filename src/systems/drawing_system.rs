@@ -75,7 +75,7 @@ impl System for DrawingSystem<'static> {
         ecs::tid(&DRAWING_SYSTEM_ID)
     }
 
-    fn on_update(&mut self, world: &mut World, _event: &Event<()>, _delta: Duration) {
+    fn update(&mut self, world: &mut World, _event: &Event<()>, _delta: Duration) {
         self.draw_sprites(world).unwrap();
     }
 }
