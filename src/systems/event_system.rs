@@ -22,10 +22,10 @@ impl System for EventSystem {
         ecs::tid(&Self::ID)
     }
 
-    fn update(&mut self, world: &mut World, event: &Event<()>, _delta: Duration) {
-        for (p, (_, c)) in world.get_all(&ecs::tid(&EventHandler::ID)) {
+    fn update(&mut self, world: &mut World, event: &Event<()>, delta: Duration) {
+        for (p, c) in world.get_all(&ecs::tid(&EventHandler::ID)) {
             if let Some(c) = c.borrow().as_any_ref().downcast_ref::<EventHandler>() {
-                c.update(p, event);
+                c.update(p, event, delta);
             }
         }
     }

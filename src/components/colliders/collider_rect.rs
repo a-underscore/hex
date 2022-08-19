@@ -4,7 +4,7 @@ use crate::{
     ecs::{self, Component, Entity, Id},
 };
 use cgmath::{Vector2, Zero};
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub struct ColliderRect {
     pub dims: Vector2<f32>,
@@ -34,6 +34,7 @@ impl ColliderRect {
             (Id, Rc<RefCell<Entity>>),
             (Rc<RefCell<dyn Component>>, Rc<RefCell<dyn Component>>),
         )>,
+        delta: Duration,
     ) {
         for (p @ (i, _), (c, t)) in components {
             if **id != **i {
@@ -44,7 +45,7 @@ impl ColliderRect {
                     if let Some(i) = self.intersecting(transform, c, t) {
                         self.callback
                             .borrow_mut()
-                            .callback(parent.clone(), p.clone(), &i);
+                            .callback(parent.clone(), p.clone(), &i, delta);
                     }
                 }
             }

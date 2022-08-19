@@ -18,12 +18,12 @@ impl PhysicsSystem {
 }
 
 impl PhysicsSystem {
-    fn update_colliders(&mut self, world: &World, _delta: Duration) {
+    fn update_colliders(&mut self, world: &World, delta: Duration) {
         let components = world
             .get_all_with(&[&ecs::tid(&ColliderRect::ID), &ecs::tid(&Transform::ID)])
             .iter()
-            .filter_map(|((id, e), c)| match c.as_slice() {
-                [(_, co), (_, t)] => Some(((id.clone(), e.clone()), (co.clone(), t.clone()))),
+            .filter_map(|(p, c)| match c.as_slice() {
+                [co, t] => Some((p.clone(), (co.clone(), t.clone()))),
                 _ => None,
             })
             .collect::<Vec<_>>();
@@ -33,7 +33,7 @@ impl PhysicsSystem {
                 c.borrow_mut().as_any_mut().downcast_mut::<ColliderRect>(),
                 t.borrow().as_any_ref().downcast_ref::<Transform>(),
             ) {
-                c.update(&p, t, &components);
+                c.update(p, t, &components, delta);
             }
         }
     }

@@ -42,18 +42,13 @@ impl World {
             .and_then(|e| Some((id.clone(), e.clone())))
     }
 
-    pub fn get_all(
-        &self,
-        id: &Id,
-    ) -> Vec<((Id, Rc<RefCell<Entity>>), (Id, Rc<RefCell<dyn Component>>))> {
+    pub fn get_all(&self, id: &Id) -> Vec<((Id, Rc<RefCell<Entity>>), Rc<RefCell<dyn Component>>)> {
         self.entities
             .iter()
             .filter_map(|(i, e)| {
                 Some((
                     (i.clone(), e.clone()),
-                    e.borrow()
-                        .get(id)
-                        .and_then(|(id, e)| Some((id.clone(), e.clone())))?,
+                    e.borrow().get(id).and_then(|c| Some(c.clone()))?,
                 ))
             })
             .collect()
@@ -62,10 +57,7 @@ impl World {
     pub fn get_all_with(
         &self,
         ids: &[&Id],
-    ) -> Vec<(
-        (Id, Rc<RefCell<Entity>>),
-        Vec<(Id, Rc<RefCell<dyn Component>>)>,
-    )> {
+    ) -> Vec<((Id, Rc<RefCell<Entity>>), Vec<Rc<RefCell<dyn Component>>>)> {
         self.entities
             .iter()
             .filter_map(|(id, e)| Some(((id.clone(), e.clone()), e.borrow().get_all(ids)?)))
@@ -94,31 +86,24 @@ impl World {
         &self.systems
     }
 
-    pub fn get_system<'a>(&'a self, id: &Id) -> Option<(Id, &'a Rc<RefCell<dyn System>>)> {
-        self.systems.get(id).and_then(|s| Some((id.clone(), s)))
+    pub fn get_system<'a>(&'a self, id: &Id) -> Option<&'a Rc<RefCell<dyn System>>> {
+        self.systems.get(id)
     }
 
-    pub fn get_system_ref<S>(&self, id: &Id) -> Option<(Id, Ref<S>)>
+    pub fn get_system_ref<S>(&self, id: &Id) -> Option<Ref<S>>
     where
         S: System,
     {
-        self.get_system(id).and_then(|(id, s)| {
-            Some((
-                id.clone(),
-                Ref::filter_map(s.borrow(), |s| s.as_any_ref().downcast_ref::<S>()).ok()?,
-            ))
-        })
+        self.get_system(id)
+            .and_then(|s| Ref::filter_map(s.borrow(), |s| s.as_any_ref().downcast_ref::<S>()).ok())
     }
 
-    pub fn get_system_mut<S>(&self, id: &Id) -> Option<(Id, RefMut<S>)>
+    pub fn get_system_mut<S>(&self, id: &Id) -> Option<RefMut<S>>
     where
         S: System,
     {
-        self.get_system(id).and_then(|(id, s)| {
-            Some((
-                id.clone(),
-                RefMut::filter_map(s.borrow_mut(), |s| s.as_any_mut().downcast_mut::<S>()).ok()?,
-            ))
+        self.get_system(id).and_then(|s| {
+            RefMut::filter_map(s.borrow_mut(), |s| s.as_any_mut().downcast_mut::<S>()).ok()
         })
     }
 

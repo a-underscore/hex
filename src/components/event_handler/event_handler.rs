@@ -1,7 +1,7 @@
 use super::EventHandlerCallback;
 use crate::ecs::{self, Component, Entity, Id};
 use glium::glutin::event::Event;
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub struct EventHandler {
     pub callback: Rc<RefCell<dyn EventHandlerCallback>>,
@@ -21,8 +21,8 @@ impl EventHandler {
         }))
     }
 
-    pub fn update(&self, p: (Id, Rc<RefCell<Entity>>), event: &Event<()>) {
-        self.callback.borrow_mut().callback(p, event);
+    pub fn update(&self, p: (Id, Rc<RefCell<Entity>>), event: &Event<()>, delta: Duration) {
+        self.callback.borrow_mut().callback(p, event, delta);
     }
 }
 
