@@ -107,10 +107,8 @@ impl World {
         })
     }
 
-    pub fn remove_system(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn System>>)> {
-        self.systems
-            .remove(id.as_ref())
-            .and_then(|e| Some((id.clone(), e.clone())))
+    pub fn remove_system(&mut self, id: &Id) -> Option<Rc<RefCell<dyn System>>> {
+        self.systems.remove(id.as_ref())
     }
 
     pub fn init_systems(&mut self) {
