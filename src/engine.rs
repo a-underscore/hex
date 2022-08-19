@@ -87,7 +87,7 @@ impl Engine<'static> {
 
             self.scene.borrow().update(&event, delta);
 
-            *control_flow = ControlFlow::Wait;
+            *control_flow = ControlFlow::Poll;
 
             match event {
                 Event::WindowEvent { event, .. } => match event {
