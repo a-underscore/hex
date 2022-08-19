@@ -1,7 +1,7 @@
 use super::ColliderCallback;
 use crate::{
     components::Transform,
-    ecs::{self, Component, Entity, Id},
+    ecs::{self, AsAny, Component, Entity, Id},
 };
 use cgmath::{Vector2, Zero};
 use std::{cell::RefCell, rc::Rc, time::Duration};
@@ -32,11 +32,11 @@ impl ColliderRect {
         transform: &Transform,
         components: &Vec<(
             (Id, Rc<RefCell<Entity>>),
-            (Rc<RefCell<dyn Component>>, Rc<RefCell<dyn Component>>),
+            ((Id, Rc<RefCell<dyn AsAny>>), (Id, Rc<RefCell<dyn AsAny>>)),
         )>,
         delta: Duration,
     ) {
-        for (p @ (i, _), (c, t)) in components {
+        for (p @ (i, _), ((_, c), (_, t))) in components {
             if **id != **i {
                 if let (Some(c), Some(t)) = (
                     c.borrow().as_any_ref().downcast_ref::<Self>(),
@@ -105,7 +105,7 @@ impl ColliderRect {
 }
 
 impl Component for ColliderRect {
-    fn get_id(&self) -> Id {
+    fn get_id() -> Id {
         ecs::tid(&Self::ID)
     }
 }

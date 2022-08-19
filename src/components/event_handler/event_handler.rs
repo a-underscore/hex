@@ -27,7 +27,7 @@ impl EventHandler {
 }
 
 impl Component for EventHandler {
-    fn get_id(&self) -> Id {
+    fn get_id() -> Id {
         ecs::tid(&Self::ID)
     }
 }

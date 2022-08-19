@@ -19,5 +19,5 @@ pub fn id(id: &str) -> Id {
 }
 
 pub fn tid(id: &'static LocalKey<Id>) -> Id {
-    id.with(|id| id.clone())
+    id.with(|c| c.clone())
 }

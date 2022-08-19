@@ -1,6 +1,6 @@
 use crate::{
     components::event_handler::EventHandler,
-    ecs::{self, Id, System, World},
+    ecs::{self, Component, Id, System, World},
 };
 use glium::glutin::event::Event;
 use std::{cell::RefCell, rc::Rc, time::Duration};
@@ -17,13 +17,15 @@ impl EventSystem {
     }
 }
 
-impl System for EventSystem {
-    fn get_id(&self) -> Id {
+impl Component for EventSystem {
+    fn get_id() -> Id {
         ecs::tid(&Self::ID)
     }
+}
 
+impl System for EventSystem {
     fn update(&mut self, world: &mut World, event: &Event<()>, delta: Duration) {
-        for (p, c) in world.get_all(&ecs::tid(&EventHandler::ID)) {
+        for (p, (_, c)) in world.get_all(&EventHandler::get_id()) {
             if let Some(c) = c.borrow().as_any_ref().downcast_ref::<EventHandler>() {
                 c.update(p, event, delta);
             }

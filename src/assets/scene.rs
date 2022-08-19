@@ -1,5 +1,5 @@
 use crate::{
-    ecs::{System, World},
+    ecs::{Component, System, World},
     systems::{DrawingSystem, PhysicsSystem},
     Engine,
 };
@@ -38,7 +38,7 @@ impl Scene {
 
     pub fn add_system<S>(&self, system: Rc<RefCell<S>>)
     where
-        S: System,
+        S: System + Component + 'static,
     {
         self.world.borrow_mut().add_system(&system);
     }

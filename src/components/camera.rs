@@ -131,7 +131,7 @@ impl Camera {
 }
 
 impl Component for Camera {
-    fn get_id(&self) -> Id {
+    fn get_id() -> Id {
         ecs::tid(&Self::ID)
     }
 }
