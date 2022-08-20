@@ -4,11 +4,7 @@ use crate::{
     ecs::{self, AsAny, Component, Entity, Id, World},
 };
 use cgmath::{Vector2, Zero};
-use std::{
-    cell::{Ref, RefCell, RefMut},
-    rc::Rc,
-    time::Duration,
-};
+use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub struct ColliderRect {
     pub dims: Vector2<f32>,
@@ -45,20 +41,19 @@ impl ColliderRect {
     ) {
         if self.active {
             for (p @ (i, _), ((_, c), (_, t))) in components {
-                if let (Some(c), Some(t)) = (
-                    Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<Self>()).ok(),
-                    RefMut::filter_map(t.borrow_mut(), |t| {
-                        t.as_any_mut().downcast_mut::<Transform>()
-                    })
-                    .ok(),
-                ) {
-                    if c.active && **id != **i && self.intersecting(transform, &c, &t) {
-                        self.callback.borrow_mut().callback(
-                            world,
-                            parent.clone(),
-                            p.clone(),
-                            delta,
-                        );
+                if **id != **i {
+                    if let (Some(c), Some(t)) = (
+                        c.clone().borrow().as_any_ref().downcast_ref::<Self>(),
+                        t.clone().borrow().as_any_ref().downcast_ref::<Transform>(),
+                    ) {
+                        if c.active && self.intersecting(transform, &c, &t) {
+                            self.callback.borrow_mut().callback(
+                                world,
+                                parent.clone(),
+                                p.clone(),
+                                delta,
+                            );
+                        }
                     }
                 }
             }
