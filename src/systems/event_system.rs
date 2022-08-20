@@ -27,7 +27,7 @@ impl System for EventSystem {
     fn update(&mut self, world: &mut World, event: &Event<()>, delta: Duration) {
         for (p, (_, c)) in world.get_all(&EventHandler::get_id()) {
             if let Some(c) = c.borrow().as_any_ref().downcast_ref::<EventHandler>() {
-                c.update(p, event, delta);
+                c.update(world, p, event, delta);
             }
         }
     }

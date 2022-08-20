@@ -33,7 +33,6 @@ impl Entity {
 
     pub fn get_all(&self, ids: &[&Id]) -> Option<Vec<(Id, Rc<RefCell<dyn AsAny>>)>> {
         ids.iter()
-            .cloned()
             .map(|id| self.get(id).and_then(|c| Some(c.clone())))
             .collect()
     }
