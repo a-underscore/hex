@@ -14,7 +14,7 @@ pub struct Sprite {
     pub texture: Rc<RefCell<Texture>>,
     pub shaders: Rc<RefCell<Shaders>>,
     pub z: f32,
-    pub draw: bool,
+    pub active: bool,
 }
 
 impl Sprite {
@@ -28,7 +28,7 @@ impl Sprite {
         texture: Rc<RefCell<Texture>>,
         shaders: Rc<RefCell<Shaders>>,
         z: f32,
-        draw: bool,
+        active: bool,
     ) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             color,
@@ -36,7 +36,7 @@ impl Sprite {
             texture,
             shaders,
             z,
-            draw,
+            active,
         }))
     }
 
@@ -48,7 +48,7 @@ impl Sprite {
         engine: &Engine,
         target: &mut Frame,
     ) -> anyhow::Result<()> {
-        if self.draw {
+        if self.active {
             let color: [f32; 4] = self.color.into();
             let transform: [[f32; 3]; 3] = transform.get_transform().into();
             let camera_view: [[f32; 4]; 4] = camera.get_view().into();

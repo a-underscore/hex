@@ -5,6 +5,7 @@ use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub struct EventHandler {
     pub callback: Rc<RefCell<dyn EventHandlerCallback>>,
+    pub active: bool,
 }
 
 impl EventHandler {
@@ -12,12 +13,13 @@ impl EventHandler {
         pub static ID: Id = ecs::id("event_handler");
     }
 
-    pub fn new<C>(callback: &Rc<RefCell<C>>) -> Rc<RefCell<Self>>
+    pub fn new<C>(callback: &Rc<RefCell<C>>, active: bool) -> Rc<RefCell<Self>>
     where
         C: EventHandlerCallback,
     {
         Rc::new(RefCell::new(Self {
             callback: callback.clone(),
+            active,
         }))
     }
 
@@ -28,7 +30,9 @@ impl EventHandler {
         event: &Event<()>,
         delta: Duration,
     ) {
-        self.callback.borrow_mut().callback(world, p, event, delta);
+        if self.active {
+            self.callback.borrow_mut().callback(world, p, event, delta);
+        }
     }
 }
 

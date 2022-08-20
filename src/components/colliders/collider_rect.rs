@@ -4,11 +4,16 @@ use crate::{
     ecs::{self, AsAny, Component, Entity, Id, World},
 };
 use cgmath::{Vector2, Zero};
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use std::{
+    cell::{Ref, RefCell, RefMut},
+    rc::Rc,
+    time::Duration,
+};
 
 pub struct ColliderRect {
     pub dims: Vector2<f32>,
     pub callback: Rc<RefCell<dyn ColliderCallback>>,
+    pub active: bool,
 }
 
 impl ColliderRect {
@@ -16,13 +21,14 @@ impl ColliderRect {
         pub static ID: Id = ecs::id("collider_rect");
     }
 
-    pub fn new<C>(dims: Vector2<f32>, callback: &Rc<RefCell<C>>) -> Rc<RefCell<Self>>
+    pub fn new<C>(dims: Vector2<f32>, callback: &Rc<RefCell<C>>, active: bool) -> Rc<RefCell<Self>>
     where
         C: ColliderCallback,
     {
         Rc::new(RefCell::new(Self {
             dims,
             callback: callback.clone(),
+            active,
         }))
     }
 
@@ -37,19 +43,24 @@ impl ColliderRect {
         )>,
         delta: Duration,
     ) {
-        for (p @ (i, _), ((_, c), (_, t))) in components {
-            if **id != **i {
-                if let (Some(c), Some(t)) = (
-                    c.borrow().as_any_ref().downcast_ref::<Self>(),
-                    t.borrow_mut().as_any_mut().downcast_mut::<Transform>(),
-                ) {
-                    if self.intersecting(transform, c, t) {
-                        self.callback.borrow_mut().callback(
-                            world,
-                            parent.clone(),
-                            p.clone(),
-                            delta,
-                        );
+        if self.active {
+            for (p @ (i, _), ((_, c), (_, t))) in components {
+                if **id != **i {
+                    if let (Some(c), Some(t)) = (
+                        Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<Self>()).ok(),
+                        RefMut::filter_map(t.borrow_mut(), |t| {
+                            t.as_any_mut().downcast_mut::<Transform>()
+                        })
+                        .ok(),
+                    ) {
+                        if c.active && self.intersecting(transform, &c, &t) {
+                            self.callback.borrow_mut().callback(
+                                world,
+                                parent.clone(),
+                                p.clone(),
+                                delta,
+                            );
+                        }
                     }
                 }
             }
