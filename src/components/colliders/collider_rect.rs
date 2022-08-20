@@ -45,22 +45,20 @@ impl ColliderRect {
     ) {
         if self.active {
             for (p @ (i, _), ((_, c), (_, t))) in components {
-                if **id != **i {
-                    if let (Some(c), Some(t)) = (
-                        Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<Self>()).ok(),
-                        RefMut::filter_map(t.borrow_mut(), |t| {
-                            t.as_any_mut().downcast_mut::<Transform>()
-                        })
-                        .ok(),
-                    ) {
-                        if c.active && self.intersecting(transform, &c, &t) {
-                            self.callback.borrow_mut().callback(
-                                world,
-                                parent.clone(),
-                                p.clone(),
-                                delta,
-                            );
-                        }
+                if let (Some(c), Some(t)) = (
+                    Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<Self>()).ok(),
+                    RefMut::filter_map(t.borrow_mut(), |t| {
+                        t.as_any_mut().downcast_mut::<Transform>()
+                    })
+                    .ok(),
+                ) {
+                    if c.active && **id != **i && self.intersecting(transform, &c, &t) {
+                        self.callback.borrow_mut().callback(
+                            world,
+                            parent.clone(),
+                            p.clone(),
+                            delta,
+                        );
                     }
                 }
             }
