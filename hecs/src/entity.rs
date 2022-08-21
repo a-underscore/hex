@@ -49,11 +49,11 @@ impl Entity {
         })
     }
 
-    pub fn get_mut<C>(&self, id: &Id) -> Option<(Id, RefMut<C>)>
+    pub fn get_mut<C>(&self) -> Option<(Id, RefMut<C>)>
     where
         C: Component + 'static,
     {
-        self.get(id).and_then(|(id, c)| {
+        self.get(&C::get_id()).and_then(|(id, c)| {
             Some((
                 id.clone(),
                 RefMut::filter_map(c.borrow_mut(), |c| c.as_any_mut().downcast_mut::<C>()).ok()?,

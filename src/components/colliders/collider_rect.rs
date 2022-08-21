@@ -41,20 +41,10 @@ impl ColliderRect {
     ) {
         if self.active {
             for (p @ (i, _), ((_, c), (_, t))) in components {
-                if **id != **i {
-                    if let (Some(c), Some(t)) = (
-                        c.clone().borrow().as_any_ref().downcast_ref::<Self>(),
-                        t.clone().borrow().as_any_ref().downcast_ref::<Transform>(),
-                    ) {
-                        if c.active && self.intersecting(transform, &c, &t) {
-                            self.callback.borrow_mut().callback(
-                                world,
-                                parent.clone(),
-                                p.clone(),
-                                delta,
-                            );
-                        }
-                    }
+                if self.intersecting(transform, id, i, c.clone(), t.clone()) {
+                    self.callback
+                        .borrow_mut()
+                        .callback(world, parent.clone(), p.clone(), delta);
                 }
             }
         }
@@ -63,15 +53,26 @@ impl ColliderRect {
     fn intersecting(
         &self,
         transform: &Transform,
-        other: &Self,
-        other_transform: &Transform,
+        id: &Id,
+        other_id: &Id,
+        c: Rc<RefCell<dyn AsAny>>,
+        t: Rc<RefCell<dyn AsAny>>,
     ) -> bool {
-        let (min, max) = self.dims_to_global(transform);
-        let points = other.dims_to_points(&other_transform);
+        if **id != **other_id {
+            if let (Some(c), Some(t)) = (
+                c.clone().borrow().as_any_ref().downcast_ref::<Self>(),
+                t.clone().borrow().as_any_ref().downcast_ref::<Transform>(),
+            ) {
+                if c.active {
+                    let (min, max) = self.dims_to_global(transform);
+                    let points = c.dims_to_points(&t);
 
-        for p in points {
-            if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
-                return true;
+                    for p in points {
+                        if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
+                            return true;
+                        }
+                    }
+                }
             }
         }
 
