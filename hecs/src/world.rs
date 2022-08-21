@@ -21,11 +21,9 @@ impl World {
     }
 
     pub fn change_id(&mut self, old: &Id, new: &Id) {
-        self.remove(old).and_then(|(_, e)| {
+        if let Some((_, e)) = self.remove(old) {
             self.add(&(new.clone(), e));
-
-            Some(())
-        });
+        };
     }
 
     pub fn add(&mut self, e @ (id, _): &(Id, Rc<RefCell<Entity>>)) {
@@ -46,12 +44,7 @@ impl World {
     ) -> Vec<((Id, Rc<RefCell<Entity>>), (Id, Rc<RefCell<dyn AsAny>>))> {
         self.entities
             .values()
-            .filter_map(|(i, e)| {
-                Some((
-                    (i.clone(), e.clone()),
-                    e.borrow().get(id).and_then(|c| Some(c.clone()))?,
-                ))
-            })
+            .filter_map(|(i, e)| Some(((i.clone(), e.clone()), e.borrow().get(id)?.clone())))
             .collect()
     }
 
@@ -61,7 +54,7 @@ impl World {
     ) -> Vec<((Id, Rc<RefCell<Entity>>), Vec<(Id, Rc<RefCell<dyn AsAny>>)>)> {
         self.entities
             .values()
-            .filter_map(|(id, e)| Some(((id.clone(), e.clone()), e.borrow().get_all(ids)?)))
+            .filter_map(|e @ (_, en)| Some((e.clone(), en.borrow().get_all(ids)?)))
             .collect()
     }
 

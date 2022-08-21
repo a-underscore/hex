@@ -6,7 +6,7 @@ use std::{
 };
 
 pub struct Entity {
-    pub components: HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)>,
+    components: HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)>,
 }
 
 impl Entity {
