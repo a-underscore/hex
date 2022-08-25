@@ -1,5 +1,5 @@
 use crate::{
-    components::{ColliderRect, Transform},
+    components::{Collider, Transform},
     ecs::{self, Component, Id, System, World},
 };
 use glium::glutin::event::Event;
@@ -21,7 +21,7 @@ impl PhysicsSystem {
     fn update_colliders(&mut self, world: &mut World, delta: Duration) {
         let components = world
             .get_all_with(&[
-                &ecs::id(&ColliderRect::get_id()),
+                &ecs::id(&Collider::get_id()),
                 &ecs::id(&Transform::get_id()),
             ])
             .iter()
@@ -33,7 +33,7 @@ impl PhysicsSystem {
 
         for (p, ((_, c), (_, t))) in &components {
             if let (Some(c), Some(t)) = (
-                c.borrow_mut().as_any_mut().downcast_mut::<ColliderRect>(),
+                c.borrow_mut().as_any_mut().downcast_mut::<Collider>(),
                 t.borrow().as_any_ref().downcast_ref::<Transform>(),
             ) {
                 c.update(world, p, t, &components, delta);

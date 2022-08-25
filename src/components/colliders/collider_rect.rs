@@ -1,53 +1,22 @@
-use super::ColliderCallback;
+use super::{Collider, ColliderShape};
 use crate::{
     components::Transform,
-    ecs::{self, AsAny, Component, Entity, Id, World},
+    ecs::{AsAny, Entity, Id, World},
 };
 use cgmath::{Vector2, Zero};
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use std::{
+    cell::{Ref, RefCell},
+    rc::Rc,
+    time::Duration,
+};
 
 pub struct ColliderRect {
     pub dims: Vector2<f32>,
-    pub callback: Rc<RefCell<dyn ColliderCallback>>,
-    pub active: bool,
 }
 
 impl ColliderRect {
-    thread_local! {
-        pub static ID: Id = ecs::id("collider_rect");
-    }
-
-    pub fn new<C>(dims: Vector2<f32>, callback: &Rc<RefCell<C>>, active: bool) -> Rc<RefCell<Self>>
-    where
-        C: ColliderCallback,
-    {
-        Rc::new(RefCell::new(Self {
-            dims,
-            callback: callback.clone(),
-            active,
-        }))
-    }
-
-    pub fn update(
-        &mut self,
-        world: &mut World,
-        parent @ (id, _): &(Id, Rc<RefCell<Entity>>),
-        transform: &Transform,
-        components: &Vec<(
-            (Id, Rc<RefCell<Entity>>),
-            ((Id, Rc<RefCell<dyn AsAny>>), (Id, Rc<RefCell<dyn AsAny>>)),
-        )>,
-        delta: Duration,
-    ) {
-        if self.active {
-            for (p @ (i, _), ((_, c), (_, t))) in components {
-                if self.intersecting(transform, id, i, c.clone(), t.clone()) {
-                    self.callback
-                        .borrow_mut()
-                        .callback(world, parent.clone(), p.clone(), delta);
-                }
-            }
-        }
+    pub fn new(dims: Vector2<f32>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { dims }))
     }
 
     fn intersecting(
@@ -60,16 +29,21 @@ impl ColliderRect {
     ) -> bool {
         if **id != **other_id {
             if let (Some(c), Some(t)) = (
-                c.clone().borrow().as_any_ref().downcast_ref::<Self>(),
-                t.clone().borrow().as_any_ref().downcast_ref::<Transform>(),
+                Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<Collider>()).ok(),
+                Ref::filter_map(t.borrow(), |t| t.as_any_ref().downcast_ref::<Transform>()).ok(),
             ) {
                 if c.active {
-                    let (min, max) = self.dims_to_global(transform);
-                    let points = c.dims_to_points(&t);
+                    if let Some(c) =
+                        Ref::filter_map(c.shape.borrow(), |s| s.as_any_ref().downcast_ref::<Self>())
+                            .ok()
+                    {
+                        let (min, max) = self.dims_to_global(transform);
+                        let points = c.dims_to_points(&t);
 
-                    for p in points {
-                        if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
-                            return true;
+                        for p in points {
+                            if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -112,8 +86,26 @@ impl ColliderRect {
     }
 }
 
-impl Component for ColliderRect {
-    fn get_id() -> Id {
-        ecs::tid(&Self::ID)
+impl ColliderShape for ColliderRect {
+    fn get_intersecting(
+        &mut self,
+        _: &mut World,
+        (id, _): &(Id, Rc<RefCell<Entity>>),
+        transform: &Transform,
+        components: &Vec<(
+            (Id, Rc<RefCell<Entity>>),
+            ((Id, Rc<RefCell<dyn AsAny>>), (Id, Rc<RefCell<dyn AsAny>>)),
+        )>,
+        _: Duration,
+    ) -> Vec<(Id, Rc<RefCell<Entity>>)> {
+        let mut intersecting = Vec::new();
+
+        for (p @ (i, _), ((_, c), (_, t))) in components {
+            if self.intersecting(transform, id, i, c.clone(), t.clone()) {
+                intersecting.push(p.clone());
+            }
+        }
+
+        intersecting
     }
 }
