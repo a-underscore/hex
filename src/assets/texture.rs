@@ -1,5 +1,5 @@
 use glium::{
-    texture::{RawImage2d, SrgbTexture2d},
+    texture::{RawImage2d, SrgbTexture2d, MipmapsOption},
     Display,
 };
 use std::{cell::RefCell, rc::Rc};
@@ -9,9 +9,9 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn new(display: &Display, image: RawImage2d<u8>) -> anyhow::Result<Rc<RefCell<Self>>> {
+    pub fn new(display: &Display, image: RawImage2d<u8>, mipmaps_option: MipmapsOption) -> anyhow::Result<Rc<RefCell<Self>>> {
         Ok(Rc::new(RefCell::new(Self {
-            texture: SrgbTexture2d::new(display, image)?,
+            texture: SrgbTexture2d::with_mipmaps(display, image, mipmaps_option)?,
         })))
     }
 }
