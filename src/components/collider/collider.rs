@@ -4,8 +4,8 @@ use crate::{
     ecs::{self, Component, Id},
     ecs::{AsAny, Entity, World},
 };
-use std::time::Duration;
-use std::{cell::RefCell, rc::Rc};
+use glium::glutin::event::Event;
+use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub struct Collider {
     pub shape: Rc<RefCell<dyn ColliderShape>>,
@@ -43,6 +43,7 @@ impl Collider {
             (Id, Rc<RefCell<Entity>>),
             ((Id, Rc<RefCell<dyn AsAny>>), (Id, Rc<RefCell<dyn AsAny>>)),
         )>,
+        event: &Event<()>,
         delta: Duration,
     ) {
         if self.active {
@@ -53,7 +54,7 @@ impl Collider {
             {
                 self.callback
                     .borrow_mut()
-                    .callback(world, parent.clone(), i, delta);
+                    .callback(world, parent.clone(), i, event, delta);
             }
         }
     }

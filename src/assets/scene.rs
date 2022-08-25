@@ -1,11 +1,10 @@
+use super::Engine;
 use crate::{
     ecs::{Component, System, World},
     systems::{DrawingSystem, PhysicsSystem},
-    Engine,
 };
 use cgmath::Vector4;
-use glium::glutin::event::Event;
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Scene {
     pub bg: Vector4<f32>,
@@ -20,16 +19,16 @@ impl Scene {
     pub fn default_systems<'a>(
         bg: Vector4<f32>,
         world: Rc<RefCell<World>>,
-        engine: Rc<Engine<'static>>,
+        engine: Rc<RefCell<Engine<'static>>>,
     ) -> Rc<RefCell<Self>> {
-        let scene = Self { bg, world };
+        let scene = Self::new(bg, world);
 
-        scene.add_default_systems(engine);
+        scene.borrow_mut().add_default_systems(engine);
 
-        Rc::new(RefCell::new(scene))
+        scene
     }
 
-    pub fn add_default_systems(&self, engine: Rc<Engine<'static>>) {
+    pub fn add_default_systems(&self, engine: Rc<RefCell<Engine<'static>>>) {
         let mut world = self.world.borrow_mut();
 
         world.add_system(&DrawingSystem::new(engine));
@@ -41,13 +40,5 @@ impl Scene {
         S: System + Component + 'static,
     {
         self.world.borrow_mut().add_system(&system);
-    }
-
-    pub fn init(&self) {
-        self.world.borrow_mut().init_systems();
-    }
-
-    pub fn update(&self, event: &Event<()>, delta: Duration) {
-        self.world.borrow_mut().update_systems(event, delta);
     }
 }

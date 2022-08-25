@@ -1,8 +1,8 @@
 use crate::{
+    assets::Engine,
     assets::{Shaders, Shape, Texture},
     components::{Camera, Transform},
     ecs::{self, Component, Id},
-    engine::Engine,
 };
 use cgmath::Vector4;
 use glium::{uniform, Frame, Surface};
@@ -70,7 +70,7 @@ impl Sprite {
                 &shape.indices,
                 &shaders.program,
                 &uniforms,
-                &engine.draw_parameters.borrow(),
+                &engine.draw_parameters,
             )?;
         }
 
