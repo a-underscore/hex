@@ -1,11 +1,10 @@
 use crate::{
-    assets::Engine,
     assets::{Shaders, Shape, Texture},
     components::{Camera, Transform},
     ecs::{self, Component, Id},
 };
 use cgmath::Vector4;
-use glium::{uniform, Frame, Surface};
+use glium::{uniform, DrawParameters, Frame, Surface};
 use std::{cell::RefCell, rc::Rc};
 
 pub struct Sprite {
@@ -45,7 +44,7 @@ impl Sprite {
         transform: &Transform,
         camera: &Camera,
         camera_transform: &Transform,
-        engine: &Engine,
+        draw_params: &DrawParameters,
         target: &mut Frame,
     ) -> anyhow::Result<()> {
         if self.active {
@@ -70,7 +69,7 @@ impl Sprite {
                 &shape.indices,
                 &shaders.program,
                 &uniforms,
-                &engine.draw_parameters,
+                draw_params,
             )?;
         }
 

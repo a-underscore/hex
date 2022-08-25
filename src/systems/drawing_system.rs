@@ -1,5 +1,5 @@
 use crate::{
-    assets::Engine,
+    assets::Scene,
     components::{Camera, Sprite, Transform},
     ecs::{self, Component, Id, System, World},
 };
@@ -11,7 +11,7 @@ use std::{
 };
 
 pub struct DrawingSystem<'a> {
-    pub engine: Rc<RefCell<Engine<'a>>>,
+    pub scene: Rc<RefCell<Scene<'a>>>,
 }
 
 impl<'a> DrawingSystem<'a> {
@@ -19,8 +19,8 @@ impl<'a> DrawingSystem<'a> {
         pub static ID: Id = ecs::id("drawing_system");
     }
 
-    pub fn new(engine: Rc<RefCell<Engine<'a>>>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self { engine }))
+    pub fn new(scene: Rc<RefCell<Scene<'a>>>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { scene }))
     }
 }
 
@@ -48,9 +48,10 @@ impl<'a> DrawingSystem<'a> {
                 _ => None,
             })
         {
-            let mut frame = self.engine.borrow().display.draw();
+            let scene = self.scene.borrow();
+            let mut frame = scene.display.draw();
 
-            frame.clear_color_and_depth(self.engine.borrow().scene.borrow().bg.into(), 1.0);
+            frame.clear_color_and_depth(scene.bg.into(), 1.0);
 
             for (_, c) in world.get_all_with(&[&Sprite::get_id(), &Transform::get_id()]) {
                 if let [(_, s), (_, t)] = c.as_slice() {
@@ -58,7 +59,7 @@ impl<'a> DrawingSystem<'a> {
                         s.borrow().as_any_ref().downcast_ref::<Sprite>(),
                         t.borrow().as_any_ref().downcast_ref::<Transform>(),
                     ) {
-                        s.draw(&t, &ca, &ct, &self.engine.borrow(), &mut frame)?
+                        s.draw(&t, &ca, &ct, &scene.draw_params, &mut frame)?
                     }
                 }
             }
