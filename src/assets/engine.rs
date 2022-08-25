@@ -65,43 +65,45 @@ impl<'a> Engine<'a> {
             ..Default::default()
         }
     }
+
+    fn init_scene(engine: Rc<RefCell<Self>>) {
+        let world = engine.borrow().scene.borrow().world.clone();
+
+        world.borrow_mut().init_systems();
+    }
+
+    fn update_scene(engine: Rc<RefCell<Self>>, event: &Event<()>, delta: Duration) {
+        let world = engine.borrow().scene.borrow().world.clone();
+
+        world.borrow_mut().update_systems(&event, delta);
+    }
 }
 
-fn init_scene(engine: Rc<RefCell<Engine>>) {
-    let world = engine.borrow().scene.borrow().world.clone();
+impl Engine<'static> {
+    pub fn init(engine: Rc<RefCell<Self>>, event_loop: EventLoop<()>) {
+        Self::init_scene(engine.clone());
 
-    world.borrow_mut().init_systems();
-}
+        let mut old_frame_time = Instant::now();
 
-fn update_scene(engine: Rc<RefCell<Engine>>, event: &Event<()>, delta: Duration) {
-    let world = engine.borrow().scene.borrow().world.clone();
+        event_loop.run(move |event, _, control_flow| {
+            let frame_time = Instant::now();
+            let delta = frame_time.duration_since(old_frame_time);
 
-    world.borrow_mut().update_systems(&event, delta);
-}
+            old_frame_time = frame_time;
 
-pub fn init(engine: Rc<RefCell<Engine<'static>>>, event_loop: EventLoop<()>) {
-    init_scene(engine.clone());
+            Self::update_scene(engine.clone(), &event, delta);
 
-    let mut old_frame_time = Instant::now();
+            *control_flow = ControlFlow::Poll;
 
-    event_loop.run(move |event, _, control_flow| {
-        let frame_time = Instant::now();
-        let delta = frame_time.duration_since(old_frame_time);
-
-        old_frame_time = frame_time;
-
-        update_scene(engine.clone(), &event, delta);
-
-        *control_flow = ControlFlow::Poll;
-
-        match event {
-            Event::WindowEvent { event, .. } => match event {
-                WindowEvent::CloseRequested => {
-                    *control_flow = ControlFlow::Exit;
-                }
+            match event {
+                Event::WindowEvent { event, .. } => match event {
+                    WindowEvent::CloseRequested => {
+                        *control_flow = ControlFlow::Exit;
+                    }
+                    _ => {}
+                },
                 _ => {}
-            },
-            _ => {}
-        }
-    });
+            }
+        });
+    }
 }
