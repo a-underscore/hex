@@ -9,19 +9,19 @@ use std::{
     time::{Duration, Instant},
 };
 
-fn init_scene(scene: Rc<RefCell<Scene>>) {
-    let world = scene.borrow().world.clone();
-
-    world.borrow_mut().init_systems();
-}
-
-fn update_scene(scene: Rc<RefCell<Scene>>, event: &Event<()>, delta: Duration) {
-    let world = scene.borrow().world.clone();
-
-    world.borrow_mut().update_systems(&event, delta);
-}
-
 pub fn init(scene: Rc<RefCell<Scene<'static>>>, event_loop: EventLoop<()>) {
+    fn init_scene(scene: Rc<RefCell<Scene>>) {
+        let world = scene.borrow().world.clone();
+
+        world.borrow_mut().init_systems();
+    }
+
+    fn update_scene(scene: Rc<RefCell<Scene>>, event: &Event<()>, delta: Duration) {
+        let world = scene.borrow().world.clone();
+
+        world.borrow_mut().update_systems(&event, delta);
+    }
+
     init_scene(scene.clone());
 
     let mut old_frame_time = Instant::now();
