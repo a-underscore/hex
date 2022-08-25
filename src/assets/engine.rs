@@ -67,13 +67,13 @@ impl<'a> Engine<'a> {
     }
 }
 
-pub fn init_scene(engine: Rc<RefCell<Engine>>) {
+fn init_scene(engine: Rc<RefCell<Engine>>) {
     let world = engine.borrow().scene.borrow().world.clone();
 
     world.borrow_mut().init_systems();
 }
 
-pub fn update_scene(engine: Rc<RefCell<Engine>>, event: &Event<()>, delta: Duration) {
+fn update_scene(engine: Rc<RefCell<Engine>>, event: &Event<()>, delta: Duration) {
     let world = engine.borrow().scene.borrow().world.clone();
 
     world.borrow_mut().update_systems(&event, delta);
