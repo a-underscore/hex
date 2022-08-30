@@ -8,4 +8,3 @@ anyhow = "1.0.58"
 cgmath = { version = "0.18.0", features = ["swizzle"] }
 glium = "0.32.1"
 hecs = { path = "./hecs" }
-thiserror = "1.0.32"
