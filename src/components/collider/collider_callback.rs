@@ -6,7 +6,7 @@ pub trait ColliderCallback: 'static {
     fn callback(
         &mut self,
         parent: &(Id, Rc<RefCell<Entity>>),
-        other: (Id, Rc<RefCell<Entity>>),
+        other: &(Id, Rc<RefCell<Entity>>),
         world: &mut World,
         event: &Event<()>,
         delta: Duration,

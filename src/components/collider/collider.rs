@@ -54,7 +54,7 @@ impl Collider {
             {
                 self.callback
                     .try_borrow_mut()?
-                    .callback(&parent, i, world, event, delta);
+                    .callback(&parent, &i, world, event, delta);
             }
         }
 
