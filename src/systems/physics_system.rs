@@ -18,7 +18,12 @@ impl PhysicsSystem {
         pub static ID: Id = ecs::id("physics_system");
     }
 
-    fn update_colliders(&mut self, world: &mut World, event: &Event<()>, delta: Duration) {
+    fn update_colliders(
+        &mut self,
+        world: &mut World,
+        event: &Event<()>,
+        delta: Duration,
+    ) -> anyhow::Result<()> {
         let components = world
             .get_all_with(&[
                 &ecs::id(&Collider::get_id()),
@@ -33,12 +38,16 @@ impl PhysicsSystem {
 
         for (p, ((_, c), (_, t))) in &components {
             if let (Some(c), Some(t)) = (
-                c.borrow_mut().as_any_mut().downcast_mut::<Collider>(),
-                t.borrow().as_any_ref().downcast_ref::<Transform>(),
+                c.try_borrow_mut()?.as_any_mut().downcast_mut::<Collider>(),
+                t.try_borrow()?.as_any_ref().downcast_ref::<Transform>(),
             ) {
-                c.update(world, p, t, &components, event, delta);
+                if let Err(e) = c.update(world, p, t, &components, event, delta) {
+                    println!("{}", e);
+                }
             }
         }
+
+        Ok(())
     }
 }
 
@@ -50,6 +59,6 @@ impl Component for PhysicsSystem {
 
 impl System for PhysicsSystem {
     fn update(&mut self, world: &mut World, event: &Event<()>, delta: Duration) {
-        self.update_colliders(world, event, delta);
+        let _ = self.update_colliders(world, event, delta);
     }
 }

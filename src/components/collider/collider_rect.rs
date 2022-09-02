@@ -26,23 +26,30 @@ impl ColliderRect {
         other_id: &Id,
         c: Rc<RefCell<dyn AsAny>>,
         t: Rc<RefCell<dyn AsAny>>,
-    ) -> bool {
+    ) -> anyhow::Result<bool> {
         if **id != **other_id {
             if let (Some(c), Some(t)) = (
-                Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<Collider>()).ok(),
-                Ref::filter_map(t.borrow(), |t| t.as_any_ref().downcast_ref::<Transform>()).ok(),
+                Ref::filter_map(c.try_borrow()?, |c| {
+                    c.as_any_ref().downcast_ref::<Collider>()
+                })
+                .ok(),
+                Ref::filter_map(t.try_borrow()?, |t| {
+                    t.as_any_ref().downcast_ref::<Transform>()
+                })
+                .ok(),
             ) {
                 if c.active {
-                    if let Some(c) =
-                        Ref::filter_map(c.shape.borrow(), |s| s.as_any_ref().downcast_ref::<Self>())
-                            .ok()
+                    if let Some(c) = Ref::filter_map(c.shape.try_borrow()?, |s| {
+                        s.as_any_ref().downcast_ref::<Self>()
+                    })
+                    .ok()
                     {
                         let (min, max) = self.dims_to_global(transform);
                         let points = c.dims_to_points(&t);
 
                         for p in points {
                             if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
-                                return true;
+                                return Ok(true);
                             }
                         }
                     }
@@ -50,7 +57,7 @@ impl ColliderRect {
             }
         }
 
-        false
+        Ok(false)
     }
 
     fn dims_to_global(&self, transform: &Transform) -> (Vector2<f32>, Vector2<f32>) {
@@ -101,7 +108,7 @@ impl ColliderShape for ColliderRect {
         let mut intersecting = Vec::new();
 
         for (p @ (i, _), ((_, c), (_, t))) in components {
-            if self.intersecting(transform, id, i, c.clone(), t.clone()) {
+            if let Ok(true) = self.intersecting(transform, id, i, c.clone(), t.clone()) {
                 intersecting.push(p.clone());
             }
         }

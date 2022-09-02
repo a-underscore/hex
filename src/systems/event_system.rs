@@ -3,7 +3,11 @@ use crate::{
     ecs::{self, Component, Id, System, World},
 };
 use glium::glutin::event::Event;
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use std::{
+    cell::{Ref, RefCell},
+    rc::Rc,
+    time::Duration,
+};
 
 pub struct EventSystem;
 
@@ -26,8 +30,12 @@ impl Component for EventSystem {
 impl System for EventSystem {
     fn update(&mut self, world: &mut World, event: &Event<()>, delta: Duration) {
         for (p, (_, c)) in world.get_all(&EventHandler::get_id()) {
-            if let Some(c) = c.borrow().as_any_ref().downcast_ref::<EventHandler>() {
-                c.update(world, p, event, delta);
+            if let Some(c) = c.try_borrow().ok().and_then(|c| {
+                Ref::filter_map(c, |c| c.as_any_ref().downcast_ref::<EventHandler>()).ok()
+            }) {
+                if let Err(e) = c.update(world, p, event, delta) {
+                    println!("{}", e);
+                }
             }
         }
     }

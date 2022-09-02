@@ -29,11 +29,13 @@ impl<'a> Scene<'a> {
         }))
     }
 
-    pub fn add_system<S>(&self, system: Rc<RefCell<S>>)
+    pub fn add_system<S>(&self, system: Rc<RefCell<S>>) -> anyhow::Result<()>
     where
         S: System + Component + 'static,
     {
-        self.world.borrow_mut().add_system(&system);
+        self.world.try_borrow_mut()?.add_system(&system);
+
+        Ok(())
     }
 
     pub fn display(

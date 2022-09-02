@@ -44,7 +44,8 @@ impl Entity {
         self.get(&C::get_id()).and_then(|(id, c)| {
             Some((
                 id.clone(),
-                Ref::filter_map(c.borrow(), |c| c.as_any_ref().downcast_ref::<C>()).ok()?,
+                Ref::filter_map(c.try_borrow().ok()?, |c| c.as_any_ref().downcast_ref::<C>())
+                    .ok()?,
             ))
         })
     }
@@ -56,7 +57,10 @@ impl Entity {
         self.get(&C::get_id()).and_then(|(id, c)| {
             Some((
                 id.clone(),
-                RefMut::filter_map(c.borrow_mut(), |c| c.as_any_mut().downcast_mut::<C>()).ok()?,
+                RefMut::filter_map(c.try_borrow_mut().ok()?, |c| {
+                    c.as_any_mut().downcast_mut::<C>()
+                })
+                .ok()?,
             ))
         })
     }

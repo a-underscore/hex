@@ -45,18 +45,20 @@ impl Collider {
         )>,
         event: &Event<()>,
         delta: Duration,
-    ) {
+    ) -> anyhow::Result<()> {
         if self.active {
             for i in self
                 .shape
-                .borrow_mut()
+                .try_borrow_mut()?
                 .get_intersecting(world, parent, transform, components, delta)
             {
                 self.callback
-                    .borrow_mut()
+                    .try_borrow_mut()?
                     .callback(world, parent.clone(), i, event, delta);
             }
         }
+
+        Ok(())
     }
 }
 

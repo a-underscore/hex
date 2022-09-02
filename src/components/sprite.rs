@@ -52,7 +52,7 @@ impl Sprite {
             let transform: [[f32; 3]; 3] = transform.get_transform().into();
             let camera_view: [[f32; 4]; 4] = camera.get_view().into();
             let camera_transform: [[f32; 3]; 3] = camera_transform.get_transform().into();
-            let texture = self.texture.borrow();
+            let texture = self.texture.try_borrow()?;
             let uniforms = uniform! {
                 z: self.z,
                 transform: transform,
@@ -61,8 +61,8 @@ impl Sprite {
                 color: color,
                 texture: &texture.texture,
             };
-            let shape = self.shape.borrow();
-            let shaders = self.shaders.borrow();
+            let shape = self.shape.try_borrow()?;
+            let shaders = self.shaders.try_borrow()?;
 
             target.draw(
                 &shape.vertices,

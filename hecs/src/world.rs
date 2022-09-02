@@ -44,7 +44,12 @@ impl World {
     ) -> Vec<((Id, Rc<RefCell<Entity>>), (Id, Rc<RefCell<dyn AsAny>>))> {
         self.entities
             .values()
-            .filter_map(|(i, e)| Some(((i.clone(), e.clone()), e.borrow().get(id)?.clone())))
+            .filter_map(|(i, e)| {
+                Some((
+                    (i.clone(), e.clone()),
+                    e.try_borrow().ok()?.get(id)?.clone(),
+                ))
+            })
             .collect()
     }
 
@@ -54,7 +59,7 @@ impl World {
     ) -> Vec<((Id, Rc<RefCell<Entity>>), Vec<(Id, Rc<RefCell<dyn AsAny>>)>)> {
         self.entities
             .values()
-            .filter_map(|e @ (_, en)| Some((e.clone(), en.borrow().get_all(ids)?)))
+            .filter_map(|e @ (_, en)| Some((e.clone(), en.try_borrow().ok()?.get_all(ids)?)))
             .collect()
     }
 
@@ -88,7 +93,8 @@ impl World {
         self.get_system(id).and_then(|(id, s)| {
             Some((
                 id.clone(),
-                Ref::filter_map(s.borrow(), |s| s.as_any_ref().downcast_ref::<S>()).ok()?,
+                Ref::filter_map(s.try_borrow().ok()?, |s| s.as_any_ref().downcast_ref::<S>())
+                    .ok()?,
             ))
         })
     }
@@ -100,7 +106,10 @@ impl World {
         self.get_system(id).and_then(|(id, s)| {
             Some((
                 id.clone(),
-                RefMut::filter_map(s.borrow_mut(), |s| s.as_any_mut().downcast_mut::<S>()).ok()?,
+                RefMut::filter_map(s.try_borrow_mut().ok()?, |s| {
+                    s.as_any_mut().downcast_mut::<S>()
+                })
+                .ok()?,
             ))
         })
     }
@@ -109,15 +118,19 @@ impl World {
         self.systems.remove(id.as_ref())
     }
 
-    pub fn init_systems(&mut self) {
+    pub fn init_systems(&mut self) -> anyhow::Result<()> {
         for (_, s) in self.systems.clone().values() {
-            s.borrow_mut().init(self);
+            s.try_borrow_mut()?.init(self);
         }
+
+        Ok(())
     }
 
-    pub fn update_systems(&mut self, event: &Event<()>, delta: Duration) {
+    pub fn update_systems(&mut self, event: &Event<()>, delta: Duration) -> anyhow::Result<()> {
         for (_, s) in self.systems.clone().values() {
-            s.borrow_mut().update(self, event, delta);
+            s.try_borrow_mut()?.update(self, event, delta);
         }
+
+        Ok(())
     }
 }

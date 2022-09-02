@@ -9,20 +9,26 @@ use std::{
     time::{Duration, Instant},
 };
 
-pub fn init(scene: Rc<RefCell<Scene<'static>>>, event_loop: EventLoop<()>) {
-    fn init_scene(scene: Rc<RefCell<Scene>>) {
-        let world = scene.borrow().world.clone();
+pub fn init(scene: Rc<RefCell<Scene<'static>>>, event_loop: EventLoop<()>) -> anyhow::Result<()> {
+    fn init_scene(scene: Rc<RefCell<Scene>>) -> anyhow::Result<()> {
+        let world = scene.try_borrow()?.world.clone();
+        let mut world = world.try_borrow_mut()?;
 
-        world.borrow_mut().init_systems();
+        world.init_systems()
     }
 
-    fn update_scene(scene: Rc<RefCell<Scene>>, event: &Event<()>, delta: Duration) {
-        let world = scene.borrow().world.clone();
+    fn update_scene(
+        scene: Rc<RefCell<Scene>>,
+        event: &Event<()>,
+        delta: Duration,
+    ) -> anyhow::Result<()> {
+        let world = scene.try_borrow()?.world.clone();
+        let mut world = world.try_borrow_mut()?;
 
-        world.borrow_mut().update_systems(&event, delta);
+        world.update_systems(&event, delta)
     }
 
-    init_scene(scene.clone());
+    init_scene(scene.clone())?;
 
     let mut old_frame_time = Instant::now();
 
@@ -32,7 +38,9 @@ pub fn init(scene: Rc<RefCell<Scene<'static>>>, event_loop: EventLoop<()>) {
 
         old_frame_time = frame_time;
 
-        update_scene(scene.clone(), &event, delta);
+        if let Err(e) = update_scene(scene.clone(), &event, delta) {
+            println!("{}", e);
+        }
 
         *control_flow = ControlFlow::Poll;
 

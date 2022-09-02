@@ -31,10 +31,11 @@ impl<'a> DrawingSystem<'a> {
             .iter()
             .find_map(|(_, c)| match c.as_slice() {
                 [(_, ca), (_, ct)] => {
-                    let ca =
-                        Ref::filter_map(ca.borrow(), |ca| ca.as_any_ref().downcast_ref::<Camera>())
-                            .ok()?;
-                    let ct = Ref::filter_map(ct.borrow(), |ct| {
+                    let ca = Ref::filter_map(ca.try_borrow().ok()?, |ca| {
+                        ca.as_any_ref().downcast_ref::<Camera>()
+                    })
+                    .ok()?;
+                    let ct = Ref::filter_map(ct.try_borrow().ok()?, |ct| {
                         ct.as_any_ref().downcast_ref::<Transform>()
                     })
                     .ok()?;
@@ -48,7 +49,7 @@ impl<'a> DrawingSystem<'a> {
                 _ => None,
             })
         {
-            let scene = self.scene.borrow();
+            let scene = self.scene.try_borrow()?;
             let mut frame = scene.display.draw();
 
             frame.clear_color_and_depth(scene.bg.into(), 1.0);
@@ -56,15 +57,15 @@ impl<'a> DrawingSystem<'a> {
             for (_, c) in world.get_all_with(&[&Sprite::get_id(), &Transform::get_id()]) {
                 if let [(_, s), (_, t)] = c.as_slice() {
                     if let (Some(s), Some(t)) = (
-                        s.borrow().as_any_ref().downcast_ref::<Sprite>(),
-                        t.borrow().as_any_ref().downcast_ref::<Transform>(),
+                        s.try_borrow()?.as_any_ref().downcast_ref::<Sprite>(),
+                        t.try_borrow()?.as_any_ref().downcast_ref::<Transform>(),
                     ) {
                         s.draw(&t, &ca, &ct, &scene.draw_params, &mut frame)?
                     }
                 }
             }
 
-            frame.finish().unwrap();
+            frame.finish()?;
         }
 
         Ok(())
@@ -79,6 +80,8 @@ impl Component for DrawingSystem<'static> {
 
 impl System for DrawingSystem<'static> {
     fn update(&mut self, world: &mut World, _event: &Event<()>, _delta: Duration) {
-        self.draw_sprites(world).unwrap();
+        if let Err(e) = self.draw_sprites(world) {
+            println!("{}", e);
+        }
     }
 }

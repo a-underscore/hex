@@ -29,10 +29,14 @@ impl EventHandler {
         p: (Id, Rc<RefCell<Entity>>),
         event: &Event<()>,
         delta: Duration,
-    ) {
+    ) -> anyhow::Result<()> {
         if self.active {
-            self.callback.borrow_mut().callback(world, p, event, delta);
+            self.callback
+                .try_borrow_mut()?
+                .callback(world, p, event, delta);
         }
+
+        Ok(())
     }
 }
 
