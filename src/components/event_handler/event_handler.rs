@@ -33,7 +33,7 @@ impl EventHandler {
         if self.active {
             self.callback
                 .try_borrow_mut()?
-                .callback(world, p, event, delta);
+                .callback(p, world, event, delta);
         }
 
         Ok(())

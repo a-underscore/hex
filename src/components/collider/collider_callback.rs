@@ -5,9 +5,9 @@ use std::{cell::RefCell, rc::Rc, time::Duration};
 pub trait ColliderCallback: 'static {
     fn callback(
         &mut self,
-        world: &mut World,
         parent: (Id, Rc<RefCell<Entity>>),
         other: (Id, Rc<RefCell<Entity>>),
+        world: &mut World,
         event: &Event<()>,
         delta: Duration,
     );
