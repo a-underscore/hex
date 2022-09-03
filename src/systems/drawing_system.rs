@@ -10,21 +10,21 @@ use std::{
     time::Duration,
 };
 
-pub struct DrawingSystem<'a> {
-    pub scene: Rc<RefCell<Scene<'a>>>,
+pub struct DrawingSystem {
+    pub scene: Rc<RefCell<Scene>>,
 }
 
-impl<'a> DrawingSystem<'a> {
+impl DrawingSystem {
     thread_local! {
         pub static ID: Id = ecs::id("drawing_system");
     }
 
-    pub fn new(scene: Rc<RefCell<Scene<'a>>>) -> Rc<RefCell<Self>> {
+    pub fn new(scene: Rc<RefCell<Scene>>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self { scene }))
     }
 }
 
-impl<'a> DrawingSystem<'a> {
+impl DrawingSystem {
     fn draw_sprites(&self, world: &World) -> anyhow::Result<()> {
         if let Some((ca, ct)) = world
             .get_all_with(&[&Camera::get_id(), &Transform::get_id()])
@@ -60,7 +60,7 @@ impl<'a> DrawingSystem<'a> {
                         s.try_borrow()?.as_any_ref().downcast_ref::<Sprite>(),
                         t.try_borrow()?.as_any_ref().downcast_ref::<Transform>(),
                     ) {
-                        s.draw(&t, &ca, &ct, &scene.draw_params, &mut frame)?
+                        s.draw(&t, &ca, &ct, &mut frame)?
                     }
                 }
             }
@@ -72,13 +72,13 @@ impl<'a> DrawingSystem<'a> {
     }
 }
 
-impl Component for DrawingSystem<'static> {
+impl Component for DrawingSystem {
     fn get_id() -> Id {
         ecs::tid(&Self::ID)
     }
 }
 
-impl System for DrawingSystem<'static> {
+impl System for DrawingSystem {
     fn update(&mut self, world: &mut World, _event: &Event<()>, _delta: Duration) {
         if let Err(e) = self.draw_sprites(world) {
             println!("{}", e);

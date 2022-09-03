@@ -1,32 +1,20 @@
 use crate::ecs::{Component, System, World};
 use cgmath::Vector4;
 use glium::{
-    draw_parameters::{Blend, DepthTest},
     glutin::{event_loop::EventLoop, window::WindowBuilder, ContextBuilder, NotCurrent},
-    Depth, Display, DrawParameters,
+    Display,
 };
 use std::{cell::RefCell, rc::Rc};
 
-pub struct Scene<'a> {
+pub struct Scene {
     pub bg: Vector4<f32>,
     pub world: Rc<RefCell<World>>,
-    pub draw_params: DrawParameters<'a>,
     pub display: Display,
 }
 
-impl<'a> Scene<'a> {
-    pub fn new(
-        bg: Vector4<f32>,
-        world: Rc<RefCell<World>>,
-        draw_params: DrawParameters<'a>,
-        display: Display,
-    ) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
-            bg,
-            world,
-            draw_params,
-            display,
-        }))
+impl Scene {
+    pub fn new(bg: Vector4<f32>, world: Rc<RefCell<World>>, display: Display) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { bg, world, display }))
     }
 
     pub fn add_system<S>(&self, system: Rc<RefCell<S>>) -> anyhow::Result<()>
@@ -56,17 +44,5 @@ impl<'a> Scene<'a> {
         let cb = ContextBuilder::new().with_multisampling(sample_count);
 
         Self::display(wb, cb)
-    }
-
-    pub fn default_draw_params() -> DrawParameters<'static> {
-        DrawParameters {
-            depth: Depth {
-                test: DepthTest::IfLess,
-                write: true,
-                ..Default::default()
-            },
-            blend: Blend::alpha_blending(),
-            ..Default::default()
-        }
     }
 }

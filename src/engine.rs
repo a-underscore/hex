@@ -9,7 +9,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-pub fn init(scene: Rc<RefCell<Scene<'static>>>, event_loop: EventLoop<()>) -> anyhow::Result<()> {
+pub fn init(scene: Rc<RefCell<Scene>>, event_loop: EventLoop<()>) -> anyhow::Result<()> {
     fn init_scene(scene: Rc<RefCell<Scene>>) -> anyhow::Result<()> {
         let world = scene.try_borrow()?.world.clone();
         let mut world = world.try_borrow_mut()?;

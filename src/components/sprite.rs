@@ -4,19 +4,23 @@ use crate::{
     ecs::{self, Component, Id},
 };
 use cgmath::Vector4;
-use glium::{uniform, DrawParameters, Frame, Surface};
+use glium::{
+    draw_parameters::{Blend, DepthTest},
+    uniform, Depth, DrawParameters, Frame, Surface,
+};
 use std::{cell::RefCell, rc::Rc};
 
-pub struct Sprite {
+pub struct Sprite<'a> {
     pub color: Vector4<f32>,
     pub shape: Rc<RefCell<Shape>>,
     pub texture: Rc<RefCell<Texture>>,
     pub shaders: Rc<RefCell<Shaders>>,
+    pub draw_parameters: Rc<RefCell<DrawParameters<'a>>>,
     pub z: f32,
     pub active: bool,
 }
 
-impl Sprite {
+impl<'a> Sprite<'a> {
     thread_local! {
         pub static ID: Id = ecs::id("sprite");
     }
@@ -26,6 +30,7 @@ impl Sprite {
         shape: Rc<RefCell<Shape>>,
         texture: Rc<RefCell<Texture>>,
         shaders: Rc<RefCell<Shaders>>,
+        draw_parameters: Rc<RefCell<DrawParameters<'a>>>,
         z: f32,
         active: bool,
     ) -> Rc<RefCell<Self>> {
@@ -34,6 +39,7 @@ impl Sprite {
             shape,
             texture,
             shaders,
+            draw_parameters,
             z,
             active,
         }))
@@ -44,7 +50,6 @@ impl Sprite {
         transform: &Transform,
         camera: &Camera,
         camera_transform: &Transform,
-        draw_params: &DrawParameters,
         target: &mut Frame,
     ) -> anyhow::Result<()> {
         if self.active {
@@ -69,15 +74,27 @@ impl Sprite {
                 &shape.indices,
                 &shaders.program,
                 &uniforms,
-                draw_params,
+                &self.draw_parameters.borrow(),
             )?;
         }
 
         Ok(())
     }
+
+    pub fn default_draw_parameters() -> Rc<RefCell<DrawParameters<'static>>> {
+        Rc::new(RefCell::new(DrawParameters {
+            depth: Depth {
+                test: DepthTest::IfLess,
+                write: true,
+                ..Default::default()
+            },
+            blend: Blend::alpha_blending(),
+            ..Default::default()
+        }))
+    }
 }
 
-impl Component for Sprite {
+impl Component for Sprite<'static> {
     fn get_id() -> Id {
         ecs::tid(&Self::ID)
     }
