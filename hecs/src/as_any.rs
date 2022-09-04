@@ -8,7 +8,7 @@ pub trait AsAny {
 
 impl<T> AsAny for T
 where
-    T: Sized + 'static,
+    T: 'static,
 {
     fn as_any_ref(&self) -> &dyn Any {
         self
