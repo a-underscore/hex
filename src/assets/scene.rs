@@ -26,7 +26,7 @@ impl Scene {
         Ok(())
     }
 
-    pub fn display(
+    pub fn setup_display(
         wb: WindowBuilder,
         cb: ContextBuilder<'_, NotCurrent>,
     ) -> anyhow::Result<(EventLoop<()>, Display)> {
@@ -43,6 +43,6 @@ impl Scene {
         let wb = WindowBuilder::new().with_title(name);
         let cb = ContextBuilder::new().with_multisampling(sample_count);
 
-        Self::display(wb, cb)
+        Self::setup_display(wb, cb)
     }
 }
