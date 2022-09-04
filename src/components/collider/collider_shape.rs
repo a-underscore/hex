@@ -4,7 +4,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
-pub trait ColliderShape: AsAny + 'static {
+pub trait ColliderShape: AsAny {
     fn get_intersecting(
         &mut self,
         world: &mut World,

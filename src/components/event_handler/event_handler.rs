@@ -15,7 +15,7 @@ impl EventHandler {
 
     pub fn new<C>(callback: &Rc<RefCell<C>>, active: bool) -> Rc<RefCell<Self>>
     where
-        C: EventHandlerCallback,
+        C: EventHandlerCallback + 'static,
     {
         Rc::new(RefCell::new(Self {
             callback: callback.clone(),

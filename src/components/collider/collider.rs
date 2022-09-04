@@ -24,8 +24,8 @@ impl Collider {
         active: bool,
     ) -> Rc<RefCell<Self>>
     where
-        S: ColliderShape,
-        C: ColliderCallback,
+        S: ColliderShape + 'static,
+        C: ColliderCallback + 'static,
     {
         Rc::new(RefCell::new(Self {
             shape: shape.clone(),
