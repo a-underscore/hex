@@ -9,14 +9,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-pub fn init(scene: Rc<RefCell<Scene>>, event_loop: EventLoop<()>) -> anyhow::Result<()> {
-    fn init_scene(scene: Rc<RefCell<Scene>>) -> anyhow::Result<()> {
-        let world = scene.try_borrow()?.world.clone();
-        let mut world = world.try_borrow_mut()?;
-
-        world.init_systems()
-    }
-
+pub fn init(scene: Rc<RefCell<Scene>>, event_loop: EventLoop<()>) {
     fn update_scene(
         scene: Rc<RefCell<Scene>>,
         event: &Event<()>,
@@ -27,8 +20,6 @@ pub fn init(scene: Rc<RefCell<Scene>>, event_loop: EventLoop<()>) -> anyhow::Res
 
         world.update_systems(&event, delta)
     }
-
-    init_scene(scene.clone())?;
 
     let mut old_frame_time = Instant::now();
 
