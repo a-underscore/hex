@@ -49,6 +49,8 @@ impl Transform {
 
     pub fn set_scale(&mut self, scale: Vector2<f32>) {
         self.scale = scale;
+
+        self.update_transform();
     }
 
     pub fn get_transform(&self) -> Matrix3<f32> {
