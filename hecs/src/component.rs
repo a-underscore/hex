@@ -1,5 +1,5 @@
-use crate::{AsAny, Id};
+use crate::Id;
 
-pub trait Component: AsAny {
+pub trait Component {
     fn get_id() -> Id;
 }
