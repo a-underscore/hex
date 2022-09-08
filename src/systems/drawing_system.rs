@@ -60,7 +60,7 @@ impl DrawingSystem {
                         s.try_borrow()?.as_any_ref().downcast_ref::<Sprite>(),
                         t.try_borrow()?.as_any_ref().downcast_ref::<Transform>(),
                     ) {
-                        s.draw(&t, &ca, &ct, &mut frame)?;
+                        s.draw(&t, &ca, &ct, &mut frame, &scene.display)?;
                     }
                 }
             }
