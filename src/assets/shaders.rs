@@ -10,7 +10,7 @@ impl Shaders {
         Rc::new(RefCell::new(Self { program }))
     }
 
-    pub fn default(display: &Display) -> anyhow::Result<Rc<RefCell<Self>>> {
+    pub fn new_default(display: &Display) -> anyhow::Result<Rc<RefCell<Self>>> {
         let vertex_src = r#"
             #version 140
 

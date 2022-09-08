@@ -81,16 +81,31 @@ impl<'a> Sprite<'a> {
         Ok(())
     }
 
-    pub fn default_draw_parameters() -> Rc<RefCell<DrawParameters<'static>>> {
-        Rc::new(RefCell::new(DrawParameters {
-            depth: Depth {
-                test: DepthTest::IfLess,
-                write: true,
+    pub fn new_default(
+        color: Vector4<f32>,
+        shape: Rc<RefCell<Shape>>,
+        texture: Rc<RefCell<Texture>>,
+        shaders: Rc<RefCell<Shaders>>,
+        z: f32,
+        active: bool,
+    ) -> Rc<RefCell<Self>> {
+        Self::new(
+            color,
+            shape,
+            texture,
+            shaders,
+            Rc::new(RefCell::new(DrawParameters {
+                depth: Depth {
+                    test: DepthTest::IfLess,
+                    write: true,
+                    ..Default::default()
+                },
+                blend: Blend::alpha_blending(),
                 ..Default::default()
-            },
-            blend: Blend::alpha_blending(),
-            ..Default::default()
-        }))
+            })),
+            z,
+            active,
+        )
     }
 }
 
