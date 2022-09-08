@@ -7,7 +7,7 @@ use std::{cell::RefCell, rc::Rc};
 
 pub struct Texture<'a, F>
 where
-    F: Fn() -> RawImage2d<'a, u8>,
+    F: FnMut() -> RawImage2d<'a, u8>,
 {
     pub process: F,
     pub mipmaps_option: MipmapsOption,
@@ -15,7 +15,7 @@ where
 
 impl<'a, F> Texture<'a, F>
 where
-    F: Fn() -> RawImage2d<'a, u8>,
+    F: FnMut() -> RawImage2d<'a, u8>,
 {
     pub fn new(process: F, mipmaps_option: MipmapsOption) -> anyhow::Result<Rc<RefCell<Self>>> {
         Ok(Rc::new(RefCell::new(Self {
@@ -27,9 +27,9 @@ where
 
 impl<'a, F> TextureBuffer for Texture<'a, F>
 where
-    F: Fn() -> RawImage2d<'a, u8>,
+    F: FnMut() -> RawImage2d<'a, u8>,
 {
-    fn bind(&self, display: &Display) -> anyhow::Result<SrgbTexture2d> {
+    fn bind(&mut self, display: &Display) -> anyhow::Result<SrgbTexture2d> {
         Ok(SrgbTexture2d::with_mipmaps(
             display,
             (self.process)(),
