@@ -45,6 +45,33 @@ impl<'a> Sprite<'a> {
         }))
     }
 
+    pub fn new_default(
+        color: Vector4<f32>,
+        shape: Rc<RefCell<Shape>>,
+        texture: Rc<RefCell<Texture>>,
+        shaders: Rc<RefCell<Shaders>>,
+        z: f32,
+        active: bool,
+    ) -> Rc<RefCell<Self>> {
+        Self::new(
+            color,
+            shape,
+            texture,
+            shaders,
+            Rc::new(RefCell::new(DrawParameters {
+                depth: Depth {
+                    test: DepthTest::IfLess,
+                    write: true,
+                    ..Default::default()
+                },
+                blend: Blend::alpha_blending(),
+                ..Default::default()
+            })),
+            z,
+            active,
+        )
+    }
+
     pub fn draw(
         &self,
         transform: &Transform,
@@ -79,33 +106,6 @@ impl<'a> Sprite<'a> {
         }
 
         Ok(())
-    }
-
-    pub fn new_default(
-        color: Vector4<f32>,
-        shape: Rc<RefCell<Shape>>,
-        texture: Rc<RefCell<Texture>>,
-        shaders: Rc<RefCell<Shaders>>,
-        z: f32,
-        active: bool,
-    ) -> Rc<RefCell<Self>> {
-        Self::new(
-            color,
-            shape,
-            texture,
-            shaders,
-            Rc::new(RefCell::new(DrawParameters {
-                depth: Depth {
-                    test: DepthTest::IfLess,
-                    write: true,
-                    ..Default::default()
-                },
-                blend: Blend::alpha_blending(),
-                ..Default::default()
-            })),
-            z,
-            active,
-        )
     }
 }
 
