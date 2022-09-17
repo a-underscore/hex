@@ -1,5 +1,5 @@
-use glium::{texture::SrgbTexture2d, Display};
+use glium::texture::TextureHandle;
 
 pub trait TextureBuffer {
-    fn bind(&mut self, display: &Display) -> anyhow::Result<SrgbTexture2d>;
+    fn unit(&mut self) -> anyhow::Result<TextureHandle>;
 }

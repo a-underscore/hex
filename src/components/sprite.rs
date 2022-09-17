@@ -1,12 +1,14 @@
 use crate::{
-    assets::{texture::TextureBuffer, Shaders, Shape},
+    assets::{shaders::Uniforms, texture::TextureBuffer, Shaders, Shape},
     components::{Camera, Transform},
     ecs::{self, Component, Id},
 };
 use cgmath::Vector4;
 use glium::{
     draw_parameters::{Blend, DepthTest},
-    uniform, Depth, Display, DrawParameters, Frame, Surface,
+    uniform,
+    uniforms::UniformBuffer,
+    Depth, Display, DrawParameters, Frame, Surface,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -85,14 +87,17 @@ impl<'a> Sprite<'a> {
             let transform: [[f32; 3]; 3] = transform.get_transform().into();
             let camera_view: [[f32; 4]; 4] = camera.get_view().into();
             let camera_transform: [[f32; 3]; 3] = camera_transform.get_transform().into();
-            let texture = self.texture.try_borrow_mut()?.bind(display)?;
+            let mut texture = self.texture.try_borrow_mut()?;
+            let texture = texture.unit()?;
+            let buffer = UniformBuffer::new(display, Uniforms { image: texture })?;
             let uniforms = uniform! {
-                z: self.z,
-                transform: transform,
-                camera_transform: camera_transform,
-                camera_view: camera_view,
-                color: color,
-                texture: &texture
+                    z: self.z,
+                    transform: transform,
+                    camera_transform: camera_transform,
+                    camera_view: camera_view,
+                    color: color,
+                Uniforms:
+                &*buffer
             };
             let shape = self.shape.try_borrow()?;
             let shaders = self.shaders.try_borrow()?;

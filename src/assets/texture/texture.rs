@@ -1,36 +1,32 @@
 use super::TextureBuffer;
 use glium::{
-    texture::{MipmapsOption, RawImage2d, SrgbTexture2d},
+    texture::{bindless::TextureHandle, MipmapsOption, RawImage2d, ResidentTexture, Texture2d},
     Display,
 };
 use std::{cell::RefCell, rc::Rc};
 
-pub struct Texture<'a> {
-    pub image: RawImage2d<'a, u8>,
+pub struct Texture {
+    pub texture: ResidentTexture,
     pub mipmaps_option: MipmapsOption,
 }
 
-impl<'a> Texture<'a> {
+impl Texture {
     pub fn new(
-        image: RawImage2d<'a, u8>,
+        display: &Display,
+        image: RawImage2d<u8>,
         mipmaps_option: MipmapsOption,
     ) -> anyhow::Result<Rc<RefCell<Self>>> {
         Ok(Rc::new(RefCell::new(Self {
-            image,
+            texture: Texture2d::with_mipmaps(display, image, mipmaps_option)?
+                .resident()
+                .unwrap(),
             mipmaps_option,
         })))
     }
 }
 
-impl<'a> TextureBuffer for Texture<'a> {
-    fn bind(&mut self, display: &Display) -> anyhow::Result<SrgbTexture2d> {
-        Ok(SrgbTexture2d::with_mipmaps(
-            display,
-            RawImage2d {
-                data: self.image.data.clone(),
-                ..self.image
-            },
-            self.mipmaps_option,
-        )?)
+impl TextureBuffer for Texture {
+    fn unit<'a>(&'a mut self) -> anyhow::Result<TextureHandle> {
+        Ok(TextureHandle::new(&self.texture, &Default::default()))
     }
 }

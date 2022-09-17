@@ -1,4 +1,4 @@
-#version 140
+#version 430
 
 in vec2 position;
 in vec2 uv;
