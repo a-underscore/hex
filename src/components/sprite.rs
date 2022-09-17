@@ -88,7 +88,7 @@ impl<'a> Sprite<'a> {
             let camera_view: [[f32; 4]; 4] = camera.get_view().into();
             let camera_transform: [[f32; 3]; 3] = camera_transform.get_transform().into();
             let mut texture = self.texture.try_borrow_mut()?;
-            let image = texture.unit()?;
+            let image = texture.handle()?;
             let buffer = UniformBuffer::new(display, Uniforms::new(image))?;
             let uniforms = uniform! {
                 z: self.z,

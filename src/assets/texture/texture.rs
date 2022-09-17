@@ -26,7 +26,7 @@ impl Texture {
 }
 
 impl TextureBuffer for Texture {
-    fn unit<'a>(&'a mut self) -> anyhow::Result<TextureHandle> {
+    fn handle(&mut self) -> anyhow::Result<TextureHandle> {
         Ok(TextureHandle::new(&self.texture, &Default::default()))
     }
 }
