@@ -3,7 +3,7 @@ use crate::{
     components::{Camera, Sprite, Transform},
     ecs::{self, Component, Id, System, World},
 };
-use glium::{glutin::event::Event, Surface};
+use glium::{glutin::event::Event, Display, Surface};
 use std::{
     cell::{Ref, RefCell},
     rc::Rc,
@@ -11,6 +11,7 @@ use std::{
 };
 
 pub struct DrawingSystem {
+    pub display: Rc<RefCell<Display>>,
     pub scene: Rc<RefCell<Scene>>,
 }
 
@@ -19,8 +20,8 @@ impl DrawingSystem {
         pub static ID: Id = ecs::id("drawing_system");
     }
 
-    pub fn new(scene: Rc<RefCell<Scene>>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self { scene }))
+    pub fn new(display: Rc<RefCell<Display>>, scene: Rc<RefCell<Scene>>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { display, scene }))
     }
 }
 
@@ -50,9 +51,10 @@ impl DrawingSystem {
             })
         {
             let scene = self.scene.try_borrow()?;
-            let mut frame = scene.display.draw();
+            let display = self.display.borrow();
+            let mut target = display.draw();
 
-            frame.clear_color_and_depth(scene.bg.into(), 1.0);
+            target.clear_color_and_depth(scene.bg.into(), 1.0);
 
             for (_, c) in world.get_all_with(&[&Sprite::get_id(), &Transform::get_id()]) {
                 if let [(_, s), (_, t)] = c.as_slice() {
@@ -60,12 +62,12 @@ impl DrawingSystem {
                         s.try_borrow()?.as_any_ref().downcast_ref::<Sprite>(),
                         t.try_borrow()?.as_any_ref().downcast_ref::<Transform>(),
                     ) {
-                        s.draw(&t, &ca, &ct, &mut frame, &scene.display)?;
+                        s.draw(&display, &mut target, &t, &ca, &ct)?;
                     }
                 }
             }
 
-            frame.finish()?;
+            target.finish()?;
         }
 
         Ok(())

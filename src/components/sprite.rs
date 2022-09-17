@@ -76,11 +76,11 @@ impl<'a> Sprite<'a> {
 
     pub fn draw(
         &self,
+        display: &Display,
+        target: &mut Frame,
         transform: &Transform,
         camera: &Camera,
         camera_transform: &Transform,
-        target: &mut Frame,
-        display: &Display,
     ) -> anyhow::Result<()> {
         if self.active {
             let color: [f32; 4] = self.color.into();

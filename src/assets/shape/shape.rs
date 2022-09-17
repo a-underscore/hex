@@ -10,9 +10,9 @@ pub struct Shape {
 
 impl Shape {
     pub fn new(
+        display: &Display,
         vertices: &[Vertex],
         indices: &[u32],
-        display: &Display,
     ) -> anyhow::Result<Rc<RefCell<Self>>> {
         Ok(Rc::new(RefCell::new(Self {
             vertices: VertexBuffer::new(display, vertices)?,
@@ -20,7 +20,7 @@ impl Shape {
         })))
     }
 
-    pub fn new_rect(dims: Vector2<f32>, display: &Display) -> anyhow::Result<Rc<RefCell<Self>>> {
+    pub fn new_rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Rc<RefCell<Self>>> {
         let indices = [0, 1, 2, 1, 3, 2];
         let vertices = {
             let dims = dims / 2.0;
@@ -33,6 +33,6 @@ impl Shape {
             ]
         };
 
-        Self::new(&vertices, &indices, display)
+        Self::new(display, &vertices, &indices)
     }
 }
