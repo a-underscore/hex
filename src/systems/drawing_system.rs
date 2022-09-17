@@ -51,7 +51,7 @@ impl DrawingSystem {
             })
         {
             let scene = self.scene.try_borrow()?;
-            let display = self.display.borrow();
+            let display = self.display.try_borrow()?;
             let mut target = display.draw();
 
             target.clear_color_and_depth(scene.bg.into(), 1.0);

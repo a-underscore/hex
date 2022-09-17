@@ -101,13 +101,14 @@ impl<'a> Sprite<'a> {
             };
             let shape = self.shape.try_borrow()?;
             let shaders = self.shaders.try_borrow()?;
+            let draw_parameters = self.draw_parameters.try_borrow()?;
 
             target.draw(
                 &shape.vertices,
                 &shape.indices,
                 &shaders.program,
                 &uniforms,
-                &self.draw_parameters.borrow(),
+                &draw_parameters,
             )?;
         }
 
