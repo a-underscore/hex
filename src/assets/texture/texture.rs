@@ -19,7 +19,7 @@ impl Texture {
         Ok(Rc::new(RefCell::new(Self {
             texture: Texture2d::with_mipmaps(display, image, mipmaps_option)?
                 .resident()
-                .unwrap(),
+                .map_err(|e| anyhow::Error::msg(format!("{:?}", e)))?,
             mipmaps_option,
         })))
     }
