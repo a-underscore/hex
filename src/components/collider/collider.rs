@@ -14,6 +14,7 @@ use std::{
 pub struct Collider {
     pub shape: Rc<RefCell<dyn Shape>>,
     pub callback: Rc<RefCell<dyn Callback>>,
+    pub layers: Rc<RefCell<Vec<f32>>>,
     pub active: bool,
 }
 
@@ -25,6 +26,7 @@ impl Collider {
     pub fn new<S, C>(
         shape: &Rc<RefCell<S>>,
         callback: &Rc<RefCell<C>>,
+        layers: &Rc<RefCell<Vec<f32>>>,
         active: bool,
     ) -> Rc<RefCell<Self>>
     where
@@ -34,6 +36,7 @@ impl Collider {
         Rc::new(RefCell::new(Self {
             shape: shape.clone(),
             callback: callback.clone(),
+            layers: layers.clone(),
             active,
         }))
     }
@@ -54,33 +57,26 @@ impl Collider {
             for (other_parent @ (other_id, _), ((_, other), (_, other_transform))) in components {
                 if **id != **other_id {
                     if let (Some(mut other), Some(mut other_transform)) = (
-                        RefMut::filter_map(other.try_borrow_mut()?, |c| {
-                            c.as_any_mut().downcast_mut::<Collider>()
+                        RefMut::filter_map(other.try_borrow_mut()?, |oc| {
+                            oc.as_any_mut().downcast_mut::<Collider>()
                         })
                         .ok(),
-                        RefMut::filter_map(other_transform.try_borrow_mut()?, |t| {
-                            t.as_any_mut().downcast_mut::<Transform>()
+                        RefMut::filter_map(other_transform.try_borrow_mut()?, |ot| {
+                            ot.as_any_mut().downcast_mut::<Transform>()
                         })
                         .ok(),
                     ) {
-                        if {
-                            let mut shape = self.shape.try_borrow_mut()?;
-
-                            shape.intersecting(
-                                parent,
-                                transform,
-                                &mut other,
-                                other_parent,
-                                &mut other_transform,
-                                world,
-                                delta,
-                            )
-                        } || other.shape.try_borrow_mut()?.intersecting(
-                            other_parent,
-                            &mut other_transform,
-                            self,
+                        if self.layers.try_borrow()?.iter().any(|l| {
+                            match other.layers.try_borrow() {
+                                Ok(ol) => ol.contains(l),
+                                Err(_) => false,
+                            }
+                        }) && self.shape.try_borrow_mut()?.intersecting(
                             parent,
                             transform,
+                            &mut other,
+                            other_parent,
+                            &mut other_transform,
                             world,
                             delta,
                         ) {
