@@ -60,12 +60,13 @@ impl ColliderRect {
                 .ok(),
             ) {
                 if c.active {
-                    let points = c.shape.try_borrow_mut()?.to_points(&mut t);
-                    let (min, max) = self.to_global(&transform);
+                    if let Some(points) = c.shape.try_borrow_mut()?.to_points(&mut t) {
+                        let (min, max) = self.to_global(&transform);
 
-                    for p in points {
-                        if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
-                            return Ok(true);
+                        for p in points {
+                            if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
+                                return Ok(true);
+                            }
                         }
                     }
                 }
@@ -99,17 +100,19 @@ impl ColliderShape for ColliderRect {
         }
     }
 
-    fn to_points(&mut self, transform: &mut Transform) -> Vec<Vector2<f32>> {
+    fn to_points(&mut self, transform: &mut Transform) -> Option<Vec<Vector2<f32>>> {
         let transform = transform.get_transform();
 
-        [
-            self.dims,
-            Vector2::new(0.0, self.dims.y),
-            Vector2::zero(),
-            Vector2::new(self.dims.x, 0.0),
-        ]
-        .into_iter()
-        .map(|p| (transform * p.extend(1.0)).xy())
-        .collect()
+        Some(
+            [
+                self.dims,
+                Vector2::new(0.0, self.dims.y),
+                Vector2::zero(),
+                Vector2::new(self.dims.x, 0.0),
+            ]
+            .into_iter()
+            .map(|p| (transform * p.extend(1.0)).xy())
+            .collect(),
+        )
     }
 }

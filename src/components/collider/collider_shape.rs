@@ -18,5 +18,7 @@ pub trait ColliderShape: AsAny {
         delta: Duration,
     ) -> bool;
 
-    fn to_points(&mut self, _: &mut Transform) -> Vec<Vector2<f32>>;
+    fn to_points(&mut self, _: &mut Transform) -> Option<Vec<Vector2<f32>>> {
+        None
+    }
 }
