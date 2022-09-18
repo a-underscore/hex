@@ -3,7 +3,7 @@ use crate::{
     components::Transform,
     ecs::{Entity, Id, World},
 };
-use cgmath::{Vector2, Zero};
+use cgmath::{InnerSpace, Vector2, Zero};
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub struct Rect {
@@ -22,42 +22,36 @@ impl Rect {
         other_transform: &mut Transform,
     ) -> anyhow::Result<bool> {
         if other.active {
-            if let Some(points) = other.shape.try_borrow_mut()?.to_points() {
-                let (min, max) = self.to_global(transform);
+            if let Some(points) = self.to_points().and_then(|p| {
+                Some(
+                    p.into_iter()
+                        .map(|p| (transform.get_transform() * p.extend(1.0)).xy())
+                        .collect::<Vec<_>>(),
+                )
+            }) {
+                if let [a, b, c, _] = points.as_slice() {
+                    if let Some(other_points) = other.shape.try_borrow_mut()?.to_points() {
+                        for p in other_points {
+                            let p = (other_transform.get_transform() * p.extend(1.0)).xy();
+                            let ab = a - p;
+                            let am = a - p;
+                            let bc = b - c;
+                            let bm = b - p;
+                            let abam = ab.dot(am);
+                            let abab = ab.dot(ab);
+                            let bcbm = bc.dot(bm);
+                            let bcbc = bc.dot(bc);
 
-                for p in points {
-                    let p = (other_transform.get_transform() * p.extend(1.0)).xy();
-
-                    if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
-                        return Ok(true);
+                            if 0.0 <= abam && abam <= abab && 0.0 <= bcbm && bcbm <= bcbc {
+                                return Ok(true);
+                            }
+                        }
                     }
                 }
             }
         }
 
         Ok(false)
-    }
-
-    fn to_global(&self, transform: &Transform) -> (Vector2<f32>, Vector2<f32>) {
-        let (p1, p2) = {
-            let transform = transform.get_transform();
-            (
-                (transform * Vector2::zero().extend(1.0)).xy(),
-                (transform * self.dims.extend(1.0)).xy(),
-            )
-        };
-        let (min_x, max_x) = if p1.x < p2.x {
-            (p1.x, p2.x)
-        } else {
-            (p2.x, p1.x)
-        };
-        let (min_y, max_y) = if p1.y < p2.y {
-            (p1.y, p2.y)
-        } else {
-            (p2.y, p1.y)
-        };
-
-        (Vector2::new(min_x, min_y), Vector2::new(max_x, max_y))
     }
 }
 
