@@ -5,7 +5,7 @@ use crate::{
 };
 use cgmath::{Vector2, Zero};
 use std::{
-    cell::{Ref, RefCell},
+    cell::{Ref, RefCell, RefMut},
     rc::Rc,
     time::Duration,
 };
@@ -17,41 +17,6 @@ pub struct ColliderRect {
 impl ColliderRect {
     pub fn new(dims: Vector2<f32>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self { dims }))
-    }
-
-    fn intersecting(
-        &self,
-        transform: &Transform,
-        id: &Id,
-        other_id: &Id,
-        c: Rc<RefCell<dyn AsAny>>,
-        t: Rc<RefCell<dyn AsAny>>,
-    ) -> anyhow::Result<bool> {
-        if **id != **other_id {
-            if let (Some(c), Some(t)) = (
-                Ref::filter_map(c.try_borrow()?, |c| {
-                    c.as_any_ref().downcast_ref::<Collider>()
-                })
-                .ok(),
-                Ref::filter_map(t.try_borrow()?, |t| {
-                    t.as_any_ref().downcast_ref::<Transform>()
-                })
-                .ok(),
-            ) {
-                if c.active {
-                    let (min, max) = self.to_global(transform);
-                    let points = c.shape.try_borrow()?.to_points(&t);
-
-                    for p in points {
-                        if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
-                            return Ok(true);
-                        }
-                    }
-                }
-            }
-        }
-
-        Ok(false)
     }
 
     fn to_global(&self, transform: &Transform) -> (Vector2<f32>, Vector2<f32>) {
@@ -75,32 +40,66 @@ impl ColliderRect {
 
         (Vector2::new(min_x, min_y), Vector2::new(max_x, max_y))
     }
-}
 
-impl ColliderShape for ColliderRect {
-    fn get_intersecting(
-        &mut self,
-        _: &mut World,
-        (id, _): &(Id, Rc<RefCell<Entity>>),
-        transform: &Transform,
-        components: &Vec<(
-            (Id, Rc<RefCell<Entity>>),
-            ((Id, Rc<RefCell<dyn AsAny>>), (Id, Rc<RefCell<dyn AsAny>>)),
-        )>,
-        _: Duration,
-    ) -> Vec<(Id, Rc<RefCell<Entity>>)> {
-        let mut intersecting = Vec::new();
+    fn try_intersecting(
+        &self,
+        transform: &mut Transform,
+        id: &Id,
+        other_id: &Id,
+        (c, t): &(Rc<RefCell<dyn AsAny>>, Rc<RefCell<dyn AsAny>>),
+    ) -> anyhow::Result<bool> {
+        if **id != **other_id {
+            if let (Some(c), Some(mut t)) = (
+                Ref::filter_map(c.try_borrow()?, |c| {
+                    c.as_any_ref().downcast_ref::<Collider>()
+                })
+                .ok(),
+                RefMut::filter_map(t.try_borrow_mut()?, |t| {
+                    t.as_any_mut().downcast_mut::<Transform>()
+                })
+                .ok(),
+            ) {
+                if c.active {
+                    let points = c.shape.try_borrow_mut()?.to_points(&mut t);
+                    let (min, max) = self.to_global(&transform);
 
-        for (p @ (i, _), ((_, c), (_, t))) in components {
-            if let Ok(true) = self.intersecting(transform, id, i, c.clone(), t.clone()) {
-                intersecting.push(p.clone());
+                    for p in points {
+                        if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
+                            return Ok(true);
+                        }
+                    }
+                }
             }
         }
 
-        intersecting
+        Ok(false)
+    }
+}
+
+impl ColliderShape for ColliderRect {
+    fn intersecting(
+        &mut self,
+        (id, _): &(Id, Rc<RefCell<Entity>>),
+        transform: &mut Transform,
+        ((other_id, _), ((_, other_collider), (_, other_transform))): &(
+            (Id, Rc<RefCell<Entity>>),
+            ((Id, Rc<RefCell<dyn AsAny>>), (Id, Rc<RefCell<dyn AsAny>>)),
+        ),
+        _: &mut World,
+        _: Duration,
+    ) -> bool {
+        match self.try_intersecting(
+            transform,
+            id,
+            &other_id,
+            &(other_collider.clone(), other_transform.clone()),
+        ) {
+            Ok(i) => i,
+            Err(_) => false,
+        }
     }
 
-    fn to_points(&self, transform: &Transform) -> Vec<Vector2<f32>> {
+    fn to_points(&mut self, transform: &mut Transform) -> Vec<Vector2<f32>> {
         let transform = transform.get_transform();
 
         [

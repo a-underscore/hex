@@ -33,8 +33,8 @@ impl System for EventSystem {
             if let Some(c) = c.try_borrow().ok().and_then(|c| {
                 Ref::filter_map(c, |c| c.as_any_ref().downcast_ref::<EventHandler>()).ok()
             }) {
-                if let Err(e) = c.update(world, p, event, delta) {
-                    println!("{}", e);
+                if let Err(e) = c.update(p, world, event, delta) {
+                    println!("{:?}", e);
                 }
             }
         }

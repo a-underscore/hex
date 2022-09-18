@@ -6,17 +6,17 @@ use cgmath::Vector2;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub trait ColliderShape: AsAny {
-    fn get_intersecting(
+    fn intersecting(
         &mut self,
-        world: &mut World,
         parent: &(Id, Rc<RefCell<Entity>>),
-        transform: &Transform,
-        components: &Vec<(
+        transform: &mut Transform,
+        other: &(
             (Id, Rc<RefCell<Entity>>),
             ((Id, Rc<RefCell<dyn AsAny>>), (Id, Rc<RefCell<dyn AsAny>>)),
-        )>,
+        ),
+        world: &mut World,
         delta: Duration,
-    ) -> Vec<(Id, Rc<RefCell<Entity>>)>;
+    ) -> bool;
 
-    fn to_points(&self, transform: &Transform) -> Vec<Vector2<f32>>;
+    fn to_points(&mut self, _: &mut Transform) -> Vec<Vector2<f32>>;
 }

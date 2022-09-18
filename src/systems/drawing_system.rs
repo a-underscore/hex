@@ -81,9 +81,9 @@ impl Component for DrawingSystem {
 }
 
 impl System for DrawingSystem {
-    fn update(&mut self, world: &mut World, _event: &Event<()>, _delta: Duration) {
+    fn update(&mut self, world: &mut World, _: &Event<()>, _: Duration) {
         if let Err(e) = self.draw_sprites(world) {
-            println!("{}", e);
+            println!("{:?}", e);
         }
     }
 }

@@ -36,25 +36,27 @@ impl Collider {
 
     pub fn update(
         &mut self,
-        world: &mut World,
         parent: &(Id, Rc<RefCell<Entity>>),
-        transform: &Transform,
+        transform: &mut Transform,
         components: &Vec<(
             (Id, Rc<RefCell<Entity>>),
             ((Id, Rc<RefCell<dyn AsAny>>), (Id, Rc<RefCell<dyn AsAny>>)),
         )>,
+        world: &mut World,
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {
         if self.active {
-            for i in self
-                .shape
-                .try_borrow_mut()?
-                .get_intersecting(world, parent, transform, components, delta)
-            {
-                self.callback
+            for c @ (e, _) in components {
+                if self
+                    .shape
                     .try_borrow_mut()?
-                    .callback(&parent, &i, world, event, delta);
+                    .intersecting(parent, transform, c, world, delta)
+                {
+                    self.callback
+                        .try_borrow_mut()?
+                        .callback(parent, e, world, event, delta);
+                }
             }
         }
 

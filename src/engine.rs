@@ -30,7 +30,7 @@ pub fn init(scene: Rc<RefCell<Scene>>, event_loop: EventLoop<()>) {
         old_frame_time = frame_time;
 
         if let Err(e) = update_scene(scene.clone(), &event, delta) {
-            println!("{}", e);
+            println!("{:?}", e);
         }
 
         *control_flow = ControlFlow::Poll;

@@ -37,12 +37,12 @@ impl PhysicsSystem {
             .collect::<Vec<_>>();
 
         for (p, ((_, c), (_, t))) in &components {
-            if let (Some(c), Some(t)) = (
+            if let (Some(c), Some(mut t)) = (
                 c.try_borrow_mut()?.as_any_mut().downcast_mut::<Collider>(),
-                t.try_borrow()?.as_any_ref().downcast_ref::<Transform>(),
+                t.try_borrow_mut()?.as_any_mut().downcast_mut::<Transform>(),
             ) {
-                if let Err(e) = c.update(world, p, t, &components, event, delta) {
-                    println!("{}", e);
+                if let Err(e) = c.update(p, &mut t, &components, world, event, delta) {
+                    println!("{:?}", e);
                 }
             }
         }
