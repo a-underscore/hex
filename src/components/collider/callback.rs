@@ -2,7 +2,7 @@ use crate::ecs::{Entity, Id, World};
 use glium::glutin::event::Event;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
-pub trait ColliderCallback {
+pub trait Callback {
     fn callback(
         &mut self,
         parent: &(Id, Rc<RefCell<Entity>>),

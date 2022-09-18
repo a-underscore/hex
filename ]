@@ -1,0 +1,83 @@
+use super::{Collider, Quantity, Shape};
+use crate::{
+    components::Transform,
+    ecs::{Entity, Id, World},
+};
+use cgmath::{Vector2, Zero};
+use std::{cell::RefCell, rc::Rc, time::Duration};
+
+pub struct Rect {
+    pub dims: Vector2<f32>,
+}
+
+impl Rect {
+    pub fn new(dims: Vector2<f32>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { dims }))
+    }
+
+    fn try_intersecting(
+        &self,
+        transform: &mut Transform,
+        other: &mut Collider,
+        other_transform: &mut Transform,
+    ) -> anyhow::Result<bool> {
+        if other.active {
+            if let Quantity::Dims(dims) = other.shape.try_borrow_mut()?.to_quantity()
+            {
+                let (min, max) = Self::to_global(self.dims, transform);
+
+                for p in points {
+                    if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
+                        return Ok(true);
+                    }
+                }
+            }
+        }
+
+        Ok(false)
+    }
+
+    fn to_global(&self, transform: &Transform) -> (Vector2<f32>, Vector2<f32>) {
+        let (p1, p2) = {
+            let transform = transform.get_transform();
+            (
+                (transform * Vector2::zero().extend(1.0)).xy(),
+                (transform * self.dims.extend(1.0)).xy(),
+            )
+        };
+        let (min_x, max_x) = if p1.x < p2.x {
+            (p1.x, p2.x)
+        } else {
+            (p2.x, p1.x)
+        };
+        let (min_y, max_y) = if p1.y < p2.y {
+            (p1.y, p2.y)
+        } else {
+            (p2.y, p1.y)
+        };
+
+        (Vector2::new(min_x, min_y), Vector2::new(max_x, max_y))
+    }
+}
+
+impl Shape for Rect {
+    fn intersecting(
+        &mut self,
+        _: &(Id, Rc<RefCell<Entity>>),
+        transform: &mut Transform,
+        other: &mut Collider,
+        _: &(Id, Rc<RefCell<Entity>>),
+        other_transform: &mut Transform,
+        _: &mut World,
+        _: Duration,
+    ) -> bool {
+        match self.try_intersecting(transform, other, other_transform) {
+            Ok(i) => i,
+            Err(_) => false,
+        }
+    }
+
+    fn to_quantity(&mut self, transform: &mut Transform) -> Quantity {
+        Quantity::Dims(self.dims)
+    }
+}
