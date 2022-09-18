@@ -41,7 +41,7 @@ impl DrawingSystem {
                     })
                     .ok()?;
 
-                    if ca.get_active() {
+                    if ca.active {
                         Some((ca, ct))
                     } else {
                         None

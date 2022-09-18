@@ -39,18 +39,12 @@ impl ColliderRect {
                 .ok(),
             ) {
                 if c.active {
-                    if let Some(c) = Ref::filter_map(c.shape.try_borrow()?, |s| {
-                        s.as_any_ref().downcast_ref::<Self>()
-                    })
-                    .ok()
-                    {
-                        let (min, max) = self.dims_to_global(transform);
-                        let points = c.dims_to_points(&t);
+                    let (min, max) = self.to_global(transform);
+                    let points = c.shape.try_borrow()?.to_points(&t);
 
-                        for p in points {
-                            if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
-                                return Ok(true);
-                            }
+                    for p in points {
+                        if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
+                            return Ok(true);
                         }
                     }
                 }
@@ -60,10 +54,14 @@ impl ColliderRect {
         Ok(false)
     }
 
-    fn dims_to_global(&self, transform: &Transform) -> (Vector2<f32>, Vector2<f32>) {
-        let transform = transform.get_transform();
-        let p1 = (transform * Vector2::zero().extend(1.0)).xy();
-        let p2 = (transform * self.dims.extend(1.0)).xy();
+    fn to_global(&self, transform: &Transform) -> (Vector2<f32>, Vector2<f32>) {
+        let (p1, p2) = {
+            let transform = transform.get_transform();
+            (
+                (transform * Vector2::zero().extend(1.0)).xy(),
+                (transform * self.dims.extend(1.0)).xy(),
+            )
+        };
         let (min_x, max_x) = if p1.x < p2.x {
             (p1.x, p2.x)
         } else {
@@ -76,20 +74,6 @@ impl ColliderRect {
         };
 
         (Vector2::new(min_x, min_y), Vector2::new(max_x, max_y))
-    }
-
-    fn dims_to_points(&self, transform: &Transform) -> Vec<Vector2<f32>> {
-        let transform = transform.get_transform();
-
-        [
-            self.dims,
-            Vector2::new(0.0, self.dims.y),
-            Vector2::zero(),
-            Vector2::new(self.dims.x, 0.0),
-        ]
-        .into_iter()
-        .map(|p| (transform * p.extend(1.0)).xy())
-        .collect()
     }
 }
 
@@ -114,5 +98,19 @@ impl ColliderShape for ColliderRect {
         }
 
         intersecting
+    }
+
+    fn to_points(&self, transform: &Transform) -> Vec<Vector2<f32>> {
+        let transform = transform.get_transform();
+
+        [
+            self.dims,
+            Vector2::new(0.0, self.dims.y),
+            Vector2::zero(),
+            Vector2::new(self.dims.x, 0.0),
+        ]
+        .into_iter()
+        .map(|p| (transform * p.extend(1.0)).xy())
+        .collect()
     }
 }

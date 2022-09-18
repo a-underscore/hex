@@ -15,7 +15,7 @@ pub struct Collider {
 
 impl Collider {
     thread_local! {
-        static ID: Id = ecs::id("collider_rect");
+        static ID: Id = ecs::id("collider");
     }
 
     pub fn new<S, C>(

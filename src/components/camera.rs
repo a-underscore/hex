@@ -10,7 +10,7 @@ pub struct Camera {
     near: f32,
     far: f32,
     view: Matrix4<f32>,
-    active: bool,
+    pub active: bool,
 }
 
 impl Camera {
@@ -101,10 +101,6 @@ impl Camera {
 
     pub fn get_view(&self) -> Matrix4<f32> {
         self.view
-    }
-
-    pub fn get_active(&self) -> bool {
-        self.active
     }
 
     fn calculate_view(

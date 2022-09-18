@@ -2,6 +2,7 @@ use crate::{
     components::Transform,
     ecs::{AsAny, Entity, Id, World},
 };
+use cgmath::Vector2;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub trait ColliderShape: AsAny {
@@ -16,4 +17,6 @@ pub trait ColliderShape: AsAny {
         )>,
         delta: Duration,
     ) -> Vec<(Id, Rc<RefCell<Entity>>)>;
+
+    fn to_points(&self, transform: &Transform) -> Vec<Vector2<f32>>;
 }
