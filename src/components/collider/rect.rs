@@ -1,9 +1,9 @@
-use super::{Collider, Quantity, Shape};
+use super::{Collider, Shape};
 use crate::{
     components::Transform,
     ecs::{Entity, Id, World},
 };
-use cgmath::{InnerSpace, Vector2, Zero};
+use cgmath::{Vector2, Zero};
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub struct Rect {
@@ -22,30 +22,14 @@ impl Rect {
         other_transform: &mut Transform,
     ) -> anyhow::Result<bool> {
         if other.active {
-            match other
-                .shape
-                .try_borrow_mut()?
-                .to_quantity()
-                .to_global(other_transform)
-            {
-                (min, Quantity::Dims(max)) => {
-                    let points = self.to_points();
+            if let Some(points) = other.shape.try_borrow_mut()?.to_points() {
+                let (min, max) = self.to_global(transform);
 
-                    for p in points {
-                        let p = (transform.get_transform() * p.extend(1.0)).xy();
+                for p in points {
+                    let p = (other_transform.get_transform() * p.extend(1.0)).xy();
 
-                        if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
-                            return Ok(true);
-                        }
-                    }
-                }
-                (pos, Quantity::Radius(radius)) => {
-                    for p in self.to_points() {
-                        if ((transform.get_transform() * p.extend(1.0)).xy() - pos).magnitude()
-                            <= radius
-                        {
-                            return Ok(true);
-                        }
+                    if p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y {
+                        return Ok(true);
                     }
                 }
             }
@@ -54,14 +38,26 @@ impl Rect {
         Ok(false)
     }
 
-    pub fn to_points(&self) -> Vec<Vector2<f32>> {
-        [
-            self.dims,
-            Vector2::new(0.0, self.dims.y),
-            Vector2::zero(),
-            Vector2::new(self.dims.x, 0.0),
-        ]
-        .to_vec()
+    fn to_global(&self, transform: &Transform) -> (Vector2<f32>, Vector2<f32>) {
+        let (p1, p2) = {
+            let transform = transform.get_transform();
+            (
+                (transform * Vector2::zero().extend(1.0)).xy(),
+                (transform * self.dims.extend(1.0)).xy(),
+            )
+        };
+        let (min_x, max_x) = if p1.x < p2.x {
+            (p1.x, p2.x)
+        } else {
+            (p2.x, p1.x)
+        };
+        let (min_y, max_y) = if p1.y < p2.y {
+            (p1.y, p2.y)
+        } else {
+            (p2.y, p1.y)
+        };
+
+        (Vector2::new(min_x, min_y), Vector2::new(max_x, max_y))
     }
 }
 
@@ -80,7 +76,15 @@ impl Shape for Rect {
             .unwrap_or(false)
     }
 
-    fn to_quantity(&self) -> Quantity {
-        Quantity::Dims(self.dims)
+    fn to_points(&self) -> Option<Vec<Vector2<f32>>> {
+        Some(
+            [
+                self.dims,
+                Vector2::new(0.0, self.dims.y),
+                Vector2::zero(),
+                Vector2::new(self.dims.x, 0.0),
+            ]
+            .to_vec(),
+        )
     }
 }

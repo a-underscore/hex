@@ -1,8 +1,9 @@
-use super::{Collider, Quantity};
+use super::Collider;
 use crate::{
     components::Transform,
     ecs::{AsAny, Entity, Id, World},
 };
+use cgmath::Vector2;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub trait Shape: AsAny {
@@ -17,5 +18,7 @@ pub trait Shape: AsAny {
         delta: Duration,
     ) -> bool;
 
-    fn to_quantity(&self) -> Quantity;
+    fn to_points(&self) -> Option<Vec<Vector2<f32>>> {
+        None
+    }
 }
