@@ -7,7 +7,6 @@ use std::{cell::RefCell, rc::Rc};
 
 pub struct Texture {
     pub texture: ResidentTexture,
-    pub mipmaps_option: MipmapsOption,
 }
 
 impl Texture {
@@ -20,7 +19,6 @@ impl Texture {
             texture: Texture2d::with_mipmaps(display, image, mipmaps_option)?
                 .resident()
                 .map_err(|e| anyhow::Error::msg(format!("{:?}", e)))?,
-            mipmaps_option,
         })))
     }
 }

@@ -58,7 +58,7 @@ impl Collider {
                 if **id != **other_id {
                     if let (Some(mut other), Some(mut other_transform)) = (
                         RefMut::filter_map(other.try_borrow_mut()?, |oc| {
-                            oc.as_any_mut().downcast_mut::<Collider>()
+                            oc.as_any_mut().downcast_mut::<Self>()
                         })
                         .ok(),
                         RefMut::filter_map(other_transform.try_borrow_mut()?, |ot| {
@@ -108,7 +108,7 @@ impl Collider {
         &mut self,
         parent: &(Id, Rc<RefCell<Entity>>),
         transform: &mut Transform,
-        other: &mut Collider,
+        other: &mut Self,
         other_parent: &(Id, Rc<RefCell<Entity>>),
         other_transform: &mut Transform,
         world: &mut World,
