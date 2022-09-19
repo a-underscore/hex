@@ -33,7 +33,7 @@ impl Rect {
                     if let Some(other_points) = other.shape.try_borrow_mut()?.to_points() {
                         for p in other_points {
                             let p = (other_transform.get_transform() * p.extend(1.0)).xy();
-                            let ab = a - p;
+                            let ab = a - b;
                             let am = a - p;
                             let bc = b - c;
                             let bm = b - p;
