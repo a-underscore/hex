@@ -66,17 +66,31 @@ impl Collider {
                         })
                         .ok(),
                     ) {
-                        if self.in_layer(&other)?
-                            && self.intersecting(
-                                parent,
-                                transform,
-                                &mut other,
+                        if self.layers.try_borrow()?.iter().any(|l| {
+                            match other.layers.try_borrow() {
+                                Ok(ol) => ol.contains(l),
+                                Err(_) => false,
+                            }
+                        }) && (
+                            self.shape.try_borrow_mut()?.intersecting(
+                            parent,
+                            transform,
+                            &mut other,
+                            other_parent,
+                            &mut other_transform,
+                            world,
+                            delta,
+                        ) ||
+                            other.shape.try_borrow_mut()?.intersecting(
                                 other_parent,
                                 &mut other_transform,
-                                world,
-                                delta,
-                            )?
-                        {
+                            self,
+                            parent,
+                            transform,
+                            world,
+                            delta,
+                        )) {
+                            self.callback.try_borrow_mut()?.callback(
                             self.callback.try_borrow_mut()?.callback(
                                 parent,
                                 other_parent,
@@ -91,50 +105,6 @@ impl Collider {
         }
 
         Ok(())
-    }
-
-    fn in_layer(&self, other: &Self) -> anyhow::Result<bool> {
-        Ok(self
-            .layers
-            .try_borrow()?
-            .iter()
-            .any(|l| match other.layers.try_borrow() {
-                Ok(ol) => ol.contains(l),
-                Err(_) => false,
-            }))
-    }
-
-    fn intersecting(
-        &mut self,
-        parent: &(Id, Rc<RefCell<Entity>>),
-        transform: &mut Transform,
-        other: &mut Collider,
-        other_parent: &(Id, Rc<RefCell<Entity>>),
-        other_transform: &mut Transform,
-        world: &mut World,
-        delta: Duration,
-    ) -> anyhow::Result<bool> {
-        Ok(self.shape.try_borrow_mut().and_then(|mut s| {
-            Ok(s.intersecting(
-                parent,
-                transform,
-                other,
-                other_parent,
-                other_transform,
-                world,
-                delta,
-            ))
-        })? || other.shape.try_borrow_mut().and_then(|mut s| {
-            Ok(s.intersecting(
-                other_parent,
-                other_transform,
-                self,
-                parent,
-                transform,
-                world,
-                delta,
-            ))
-        })?)
     }
 }
 
