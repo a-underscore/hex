@@ -16,7 +16,7 @@ pub trait Shape: AsAny {
         other_transform: &mut Transform,
         world: &mut World,
         delta: Duration,
-    ) -> bool;
+    ) -> Option<Vector2<f32>>;
 
     fn to_points(&self) -> Option<Vec<Vector2<f32>>> {
         None

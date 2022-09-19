@@ -16,11 +16,11 @@ impl Rect {
     }
 
     fn try_intersecting(
-        &mut self,
-        transform: &mut Transform,
-        other: &mut Collider,
-        other_transform: &mut Transform,
-    ) -> anyhow::Result<bool> {
+        &self,
+        transform: &Transform,
+        other: &Collider,
+        other_transform: &Transform,
+    ) -> anyhow::Result<Option<Vector2<f32>>> {
         if other.active {
             if let Some(points) = self.to_points().and_then(|p| {
                 Some(
@@ -43,7 +43,7 @@ impl Rect {
                             let bcbc = bc.dot(bc);
 
                             if 0.0 <= abam && abam <= abab && 0.0 <= bcbm && bcbm <= bcbc {
-                                return Ok(true);
+                                return Ok(Some(Vector2::new(abam / abab, bcbm / bcbc)));
                             }
                         }
                     }
@@ -51,7 +51,7 @@ impl Rect {
             }
         }
 
-        Ok(false)
+        Ok(None)
     }
 }
 
@@ -65,9 +65,9 @@ impl Shape for Rect {
         other_transform: &mut Transform,
         _: &mut World,
         _: Duration,
-    ) -> bool {
+    ) -> Option<Vector2<f32>> {
         self.try_intersecting(transform, other, other_transform)
-            .unwrap_or(false)
+            .unwrap_or(None)
     }
 
     fn to_points(&self) -> Option<Vec<Vector2<f32>>> {

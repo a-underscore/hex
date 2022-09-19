@@ -71,22 +71,25 @@ impl Collider {
                                 Ok(ol) => ol.contains(l),
                                 Err(_) => false,
                             }
-                        }) && self.shape.try_borrow_mut()?.intersecting(
-                            parent,
-                            transform,
-                            &mut other,
-                            other_parent,
-                            &mut other_transform,
-                            world,
-                            delta,
-                        ) {
-                            self.callback.try_borrow_mut()?.callback(
+                        }) {
+                            if let Some(p) = self.shape.try_borrow_mut()?.intersecting(
                                 parent,
+                                transform,
+                                &mut other,
                                 other_parent,
+                                &mut other_transform,
                                 world,
-                                event,
                                 delta,
-                            );
+                            ) {
+                                self.callback.try_borrow_mut()?.callback(
+                                    parent,
+                                    other_parent,
+                                    world,
+                                    p,
+                                    event,
+                                    delta,
+                                );
+                            }
                         }
                     }
                 }
