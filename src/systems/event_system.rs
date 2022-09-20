@@ -28,15 +28,20 @@ impl Component for EventSystem {
 }
 
 impl System for EventSystem {
-    fn update(&mut self, world: &mut World, event: &Event<()>, delta: Duration) {
+    fn update(
+        &mut self,
+        world: &mut World,
+        event: &Event<()>,
+        delta: Duration,
+    ) -> anyhow::Result<()> {
         for (p, (_, c)) in world.get_all(&EventHandler::get_id()) {
-            if let Some(c) = c.try_borrow().ok().and_then(|c| {
-                Ref::filter_map(c, |c| c.as_any_ref().downcast_ref::<EventHandler>()).ok()
+            if let Ok(c) = Ref::filter_map(c.try_borrow()?, |c| {
+                c.as_any_ref().downcast_ref::<EventHandler>()
             }) {
-                if let Err(e) = c.update(p, world, event, delta) {
-                    println!("{:?}", e);
-                }
+                c.update(p, world, event, delta)?;
             }
         }
+
+        Ok(())
     }
 }

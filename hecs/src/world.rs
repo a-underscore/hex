@@ -120,7 +120,7 @@ impl World {
 
     pub fn update_systems(&mut self, event: &Event<()>, delta: Duration) -> anyhow::Result<()> {
         for (_, s) in self.systems.clone().values() {
-            s.try_borrow_mut()?.update(self, event, delta);
+            s.try_borrow_mut()?.update(self, event, delta)?;
         }
 
         Ok(())

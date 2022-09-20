@@ -25,8 +25,14 @@ impl DrawingSystem {
     }
 }
 
-impl DrawingSystem {
-    fn draw_sprites(&self, world: &World) -> anyhow::Result<()> {
+impl Component for DrawingSystem {
+    fn get_id() -> Id {
+        ecs::tid(&Self::ID)
+    }
+}
+
+impl System for DrawingSystem {
+    fn update(&mut self, world: &mut World, _: &Event<()>, _: Duration) -> anyhow::Result<()> {
         if let Some((ca, ct)) = world
             .get_all_with(&[&Camera::get_id(), &Transform::get_id()])
             .iter()
@@ -71,19 +77,5 @@ impl DrawingSystem {
         }
 
         Ok(())
-    }
-}
-
-impl Component for DrawingSystem {
-    fn get_id() -> Id {
-        ecs::tid(&Self::ID)
-    }
-}
-
-impl System for DrawingSystem {
-    fn update(&mut self, world: &mut World, _: &Event<()>, _: Duration) {
-        if let Err(e) = self.draw_sprites(world) {
-            println!("{:?}", e);
-        }
     }
 }

@@ -29,9 +29,8 @@ impl Texture {
 
 impl TextureBuffer for Texture {
     fn handle(&mut self) -> anyhow::Result<TextureHandle> {
-        Ok(TextureHandle::new(
-            &self.texture,
-            &self.sampler_behaviour.borrow(),
-        ))
+        let sampler_behaviour = self.sampler_behaviour.try_borrow()?;
+
+        Ok(TextureHandle::new(&self.texture, &sampler_behaviour))
     }
 }

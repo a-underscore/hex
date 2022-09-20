@@ -9,5 +9,5 @@ pub trait EventHandlerCallback {
         world: &mut World,
         event: &Event<()>,
         delta: Duration,
-    );
+    ) -> anyhow::Result<()>;
 }
