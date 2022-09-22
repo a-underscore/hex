@@ -17,17 +17,14 @@ use std::{
 pub fn setup_display(
     wb: WindowBuilder,
     cb: ContextBuilder<'_, NotCurrent>,
-) -> anyhow::Result<(EventLoop<()>, Rc<RefCell<Display>>)> {
+) -> anyhow::Result<(EventLoop<()>, Display)> {
     let event_loop = EventLoop::new();
-    let display = Rc::new(RefCell::new(Display::new(wb, cb, &event_loop)?));
+    let display = Display::new(wb, cb, &event_loop)?;
 
     Ok((event_loop, display))
 }
 
-pub fn basic_display(
-    name: &String,
-    sample_count: u16,
-) -> anyhow::Result<(EventLoop<()>, Rc<RefCell<Display>>)> {
+pub fn basic_display(name: &String, sample_count: u16) -> anyhow::Result<(EventLoop<()>, Display)> {
     let wb = WindowBuilder::new().with_title(name);
     let cb = ContextBuilder::new().with_multisampling(sample_count);
 
