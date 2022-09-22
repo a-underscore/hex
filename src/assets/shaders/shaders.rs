@@ -11,8 +11,8 @@ impl Shaders {
     }
 
     pub fn new_default(display: &Display) -> anyhow::Result<Rc<RefCell<Self>>> {
-        let vertex_src = include_str!("vertex.glsl");
-        let fragment_src = include_str!("fragment.glsl");
+        let vertex_src = include_str!("vertex.vsh");
+        let fragment_src = include_str!("fragment.fsh");
         let program = Program::from_source(display, vertex_src, fragment_src, None)?;
 
         Ok(Self::new(program))
