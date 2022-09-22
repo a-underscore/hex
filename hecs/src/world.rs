@@ -7,6 +7,7 @@ use std::{
     time::Duration,
 };
 
+#[derive(Clone)]
 pub struct World {
     entities: HashMap<Id, (Id, Rc<RefCell<Entity>>)>,
     systems: HashMap<Id, (Id, Rc<RefCell<dyn System>>)>,

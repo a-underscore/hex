@@ -12,6 +12,7 @@ use glium::{
 };
 use std::{cell::RefCell, rc::Rc};
 
+#[derive(Clone)]
 pub struct Sprite<'a> {
     pub color: Vector4<f32>,
     pub shape: Rc<RefCell<Shape>>,
@@ -90,13 +91,13 @@ impl<'a> Sprite<'a> {
             let mut texture = self.texture.try_borrow_mut()?;
             let image = texture.handle()?;
             let buffer = UniformBuffer::new(display, Uniforms::new(image))?;
-            let uniforms = uniform! {
+            let uniform = uniform! {
                 z: self.z,
                 transform: transform,
                 camera_transform: camera_transform,
                 camera_view: camera_view,
                 color: color,
-                Uniforms: &*buffer
+                Uniform: &*buffer
             };
             let shape = self.shape.try_borrow()?;
             let shaders = self.shaders.try_borrow()?;
@@ -106,7 +107,7 @@ impl<'a> Sprite<'a> {
                 &shape.vertices,
                 &shape.indices,
                 &shaders.program,
-                &uniforms,
+                &uniform,
                 &draw_parameters,
             )?;
         }

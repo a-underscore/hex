@@ -1,8 +1,8 @@
 use crate::{
-    assets::Scene,
     components::{Camera, Sprite, Transform},
     ecs::{self, Component, Id, System, World},
 };
+use cgmath::Vector4;
 use glium::{glutin::event::Event, Display, Surface};
 use std::{
     cell::{Ref, RefCell},
@@ -10,9 +10,10 @@ use std::{
     time::Duration,
 };
 
+#[derive(Clone)]
 pub struct DrawingSystem {
     pub display: Rc<RefCell<Display>>,
-    pub scene: Rc<RefCell<Scene>>,
+    pub bg: Vector4<f32>,
 }
 
 impl DrawingSystem {
@@ -20,8 +21,8 @@ impl DrawingSystem {
         pub static ID: Id = ecs::id("drawing_system");
     }
 
-    pub fn new(display: Rc<RefCell<Display>>, scene: Rc<RefCell<Scene>>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self { display, scene }))
+    pub fn new(display: Rc<RefCell<Display>>, bg: Vector4<f32>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self { display, bg }))
     }
 }
 
@@ -56,11 +57,10 @@ impl System for DrawingSystem {
                 _ => None,
             })
         {
-            let scene = self.scene.try_borrow()?;
             let display = self.display.try_borrow()?;
             let mut target = display.draw();
 
-            target.clear_color_and_depth(scene.bg.into(), 1.0);
+            target.clear_color_and_depth(self.bg.into(), 1.0);
 
             for (_, c) in world.get_all_with(&[&Sprite::get_id(), &Transform::get_id()]) {
                 if let [(_, s), (_, t)] = c.as_slice() {

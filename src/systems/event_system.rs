@@ -9,6 +9,7 @@ use std::{
     time::Duration,
 };
 
+#[derive(Clone)]
 pub struct EventSystem;
 
 impl EventSystem {

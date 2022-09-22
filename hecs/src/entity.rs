@@ -5,6 +5,7 @@ use std::{
     rc::Rc,
 };
 
+#[derive(Clone)]
 pub struct Entity {
     components: HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)>,
 }

@@ -6,7 +6,7 @@ in vec2 tex_pos;
 
 out vec4 frag_color;
 
-layout(std140, binding = 0) uniform Uniforms {
+layout(std140, binding = 0) uniform Uniform {
 	sampler2D image;
 };
 

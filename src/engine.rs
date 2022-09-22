@@ -1,7 +1,12 @@
-use crate::assets::Scene;
-use glium::glutin::{
-    event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
+use crate::ecs::World;
+use glium::{
+    glutin::{
+        event::{Event, WindowEvent},
+        event_loop::{ControlFlow, EventLoop},
+        window::WindowBuilder,
+        ContextBuilder, NotCurrent,
+    },
+    Display,
 };
 use std::{
     cell::RefCell,
@@ -9,13 +14,32 @@ use std::{
     time::{Duration, Instant},
 };
 
-pub fn init(scene: Rc<RefCell<Scene>>, event_loop: EventLoop<()>) {
-    fn update_scene(
-        scene: Rc<RefCell<Scene>>,
+pub fn setup_display(
+    wb: WindowBuilder,
+    cb: ContextBuilder<'_, NotCurrent>,
+) -> anyhow::Result<(EventLoop<()>, Rc<RefCell<Display>>)> {
+    let event_loop = EventLoop::new();
+    let display = Rc::new(RefCell::new(Display::new(wb, cb, &event_loop)?));
+
+    Ok((event_loop, display))
+}
+
+pub fn basic_display(
+    name: &String,
+    sample_count: u16,
+) -> anyhow::Result<(EventLoop<()>, Rc<RefCell<Display>>)> {
+    let wb = WindowBuilder::new().with_title(name);
+    let cb = ContextBuilder::new().with_multisampling(sample_count);
+
+    setup_display(wb, cb)
+}
+
+pub fn init(world: Rc<RefCell<World>>, event_loop: EventLoop<()>) {
+    fn update_world(
+        world: Rc<RefCell<World>>,
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {
-        let world = scene.try_borrow()?.world.clone();
         let mut world = world.try_borrow_mut()?;
 
         world.update_systems(&event, delta)
@@ -29,7 +53,7 @@ pub fn init(scene: Rc<RefCell<Scene>>, event_loop: EventLoop<()>) {
 
         old_frame_time = frame_time;
 
-        if let Err(e) = update_scene(scene.clone(), &event, delta) {
+        if let Err(e) = update_world(world.clone(), &event, delta) {
             println!("{:?}", e);
         }
 
