@@ -1,4 +1,4 @@
-use crate::{AsAny, Component, Id};
+use super::{AsAny, Component, Id};
 use std::{
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,

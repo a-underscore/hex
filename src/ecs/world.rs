@@ -1,4 +1,4 @@
-use crate::{AsAny, Component, Entity, Id, System};
+use super::{AsAny, Component, Entity, Id, System};
 use glium::glutin::event::Event;
 use std::{
     cell::{Ref, RefCell, RefMut},

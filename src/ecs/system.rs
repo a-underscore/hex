@@ -1,4 +1,4 @@
-use crate::{AsAny, World};
+use super::{AsAny, World};
 use glium::glutin::event::Event;
 use std::time::Duration;
 
