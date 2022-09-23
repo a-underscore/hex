@@ -1,6 +1,6 @@
 use crate::{
     components::{Camera, Sprite, Transform},
-    ecs::{self, Component, Id, System, World},
+    ecs::{self, AsAny, Component, Id, System, World},
 };
 use cgmath::Vector4;
 use glium::{glutin::event::Event, Display, Surface};
@@ -35,26 +35,27 @@ impl Component for DrawingSystem {
 impl System for DrawingSystem {
     fn update(&mut self, world: &mut World, _: &Event<()>, _: Duration) -> anyhow::Result<()> {
         if let Some((ca, ct)) = world
-            .get_all(&[&Camera::get_id(), &Transform::get_id()])
+            .get_all(&[&Camera::get_id()])
             .iter()
-            .find_map(|(_, c)| {
-                if let [(_, c), (_, t)] = c.as_slice() {
-                    let c = Ref::filter_map(c.try_borrow().ok()?, |c| {
-                        c.as_any_ref().downcast_ref::<Camera>()
-                    })
+            .find_map(|((_, e), c)| {
+                match c.as_slice() {
+                    [(_, c)] => {
+                        let c = Ref::filter_map(c.try_borrow().ok()?, |c| c.as_any_ref().downcast_ref::<Camera>()).ok()?;
+                c.active.then(|| {
+                    let t = Ref::filter_map(
+                        Ref::filter_map(e.try_borrow().ok()?, |e| {
+                            Some(e.get(&Transform::get_id())?)
+                        })
+                        .ok()?,
+                        |(_, c)| c.try_borrow().ok()?.as_any_ref().downcast_ref::<Transform>(),
+                    )
                     .ok()?;
 
-                    if c.active {
-                        let t = Ref::filter_map(t.try_borrow().ok()?, |t| {
-                            t.as_any_ref().downcast_ref::<Transform>()
-                        })
-                        .ok()?;
-
-                        return Some((c, t));
-                    }
+                    ((c, t))
+                })
+                    },
+                    _ => None,
                 }
-
-                None
             })
         {
             let display = &self.display;
@@ -62,7 +63,7 @@ impl System for DrawingSystem {
 
             target.clear_color_and_depth(self.bg.into(), 1.0);
 
-            for (_, c) in world.get_all(&[&Sprite::get_id(), &Transform::get_id()]) {
+            for (_, c) in world.get_all_with(&[&Sprite::get_id(), &Transform::get_id()]) {
                 if let [(_, s), (_, t)] = c.as_slice() {
                     if let (Some(s), Some(t)) = (
                         Ref::filter_map(s.try_borrow()?, |s| {

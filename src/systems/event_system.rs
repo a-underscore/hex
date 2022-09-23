@@ -35,11 +35,13 @@ impl System for EventSystem {
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {
-        for (p, (_, c)) in world.get_all(&EventHandler::get_id()) {
-            if let Ok(c) = Ref::filter_map(c.try_borrow()?, |c| {
-                c.as_any_ref().downcast_ref::<EventHandler>()
-            }) {
-                c.update(p, world, event, delta)?;
+        for (p, c) in world.get_all(&[&EventHandler::get_id()]) {
+            if let [(_, c)] = c.as_slice() {
+                if let Ok(c) = Ref::filter_map(c.try_borrow()?, |c| {
+                    c.as_any_ref().downcast_ref::<EventHandler>()
+                }) {
+                    c.update(p, world, event, delta)?;
+                }
             }
         }
 

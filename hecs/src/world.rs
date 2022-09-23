@@ -31,7 +31,7 @@ impl World {
         self.entities.insert(id.clone(), e.clone());
     }
 
-    pub fn get_entities<'a>(&'a self) -> &'a HashMap<Id, (Id, Rc<RefCell<Entity>>)> {
+    pub fn get_entities(&self) -> &HashMap<Id, (Id, Rc<RefCell<Entity>>)> {
         &self.entities
     }
 
@@ -40,21 +40,6 @@ impl World {
     }
 
     pub fn get_all(
-        &self,
-        id: &Id,
-    ) -> Vec<((Id, Rc<RefCell<Entity>>), (Id, Rc<RefCell<dyn AsAny>>))> {
-        self.entities
-            .values()
-            .filter_map(|(i, e)| {
-                Some((
-                    (i.clone(), e.clone()),
-                    e.try_borrow().ok()?.get(id)?.clone(),
-                ))
-            })
-            .collect()
-    }
-
-    pub fn get_all_with(
         &self,
         ids: &[&Id],
     ) -> Vec<((Id, Rc<RefCell<Entity>>), Vec<(Id, Rc<RefCell<dyn AsAny>>)>)> {
@@ -79,12 +64,16 @@ impl World {
         self.add_generic_system(&(S::get_id(), system.clone()))
     }
 
-    pub fn get_systems<'a>(&'a self) -> &'a HashMap<Id, (Id, Rc<RefCell<dyn System>>)> {
+    pub fn get_systems(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn System>>)> {
         &self.systems
     }
 
-    pub fn get_system<'a>(&'a self, id: &Id) -> Option<&'a (Id, Rc<RefCell<dyn System>>)> {
+    pub fn get_system(&self, id: &Id) -> Option<&(Id, Rc<RefCell<dyn System>>)> {
         self.systems.get(id)
+    }
+
+    pub fn get_system_mut(&mut self, id: &Id) -> Option<&mut (Id, Rc<RefCell<dyn System>>)> {
+        self.systems.get_mut(id)
     }
 
     pub fn get_system_ref<S>(&self, id: &Id) -> Option<(Id, Ref<S>)>
@@ -100,7 +89,7 @@ impl World {
         })
     }
 
-    pub fn get_system_mut<S>(&self, id: &Id) -> Option<(Id, RefMut<S>)>
+    pub fn get_system_ref_mut<S>(&self, id: &Id) -> Option<(Id, RefMut<S>)>
     where
         S: System + 'static,
     {

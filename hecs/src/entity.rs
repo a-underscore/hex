@@ -28,8 +28,12 @@ impl Entity {
         self.add_generic(&(C::get_id(), component.clone()));
     }
 
-    pub fn get<'a>(&'a self, id: &Id) -> Option<&'a (Id, Rc<RefCell<dyn AsAny>>)> {
+    pub fn get(&self, id: &Id) -> Option<&(Id, Rc<RefCell<dyn AsAny>>)> {
         self.components.get(id)
+    }
+
+    pub fn get_mut(&mut self, id: &Id) -> Option<&mut (Id, Rc<RefCell<dyn AsAny>>)> {
+        self.components.get_mut(id)
     }
 
     pub fn get_all(&self, ids: &[&Id]) -> Option<Vec<(Id, Rc<RefCell<dyn AsAny>>)>> {
@@ -38,31 +42,24 @@ impl Entity {
             .collect()
     }
 
-    pub fn get_ref<C>(&self) -> Option<(Id, Ref<C>)>
+    pub fn get_ref<C>(&self) -> Option<Ref<C>>
     where
         C: Component + 'static,
     {
-        self.get(&C::get_id()).and_then(|(id, c)| {
-            Some((
-                id.clone(),
-                Ref::filter_map(c.try_borrow().ok()?, |c| c.as_any_ref().downcast_ref::<C>())
-                    .ok()?,
-            ))
+        self.get(&C::get_id()).and_then(|(_, c)| {
+            Ref::filter_map(c.try_borrow().ok()?, |c| c.as_any_ref().downcast_ref::<C>()).ok()
         })
     }
 
-    pub fn get_mut<C>(&self) -> Option<(Id, RefMut<C>)>
+    pub fn get_ref_mut<C>(&self) -> Option<RefMut<C>>
     where
         C: Component + 'static,
     {
-        self.get(&C::get_id()).and_then(|(id, c)| {
-            Some((
-                id.clone(),
-                RefMut::filter_map(c.try_borrow_mut().ok()?, |c| {
-                    c.as_any_mut().downcast_mut::<C>()
-                })
-                .ok()?,
-            ))
+        self.get(&C::get_id()).and_then(|(_, c)| {
+            RefMut::filter_map(c.try_borrow_mut().ok()?, |c| {
+                c.as_any_mut().downcast_mut::<C>()
+            })
+            .ok()
         })
     }
 
@@ -70,7 +67,7 @@ impl Entity {
         self.components.remove(id.as_ref())
     }
 
-    pub fn get_components<'a>(&'a self) -> &'a HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)> {
+    pub fn get_components(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)> {
         &self.components
     }
 }
