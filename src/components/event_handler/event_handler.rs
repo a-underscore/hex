@@ -21,7 +21,7 @@ impl EventHandler {
     pub fn update(
         &self,
         p: (Id, Rc<RefCell<Entity>>),
-        world: &mut World,
+        world: &Rc<RefCell<World>>,
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {

@@ -1,4 +1,4 @@
-use crate::ecs::World;
+use crate::ecs::{world, World};
 use glium::{
     glutin::{
         event::{Event, WindowEvent},
@@ -8,11 +8,7 @@ use glium::{
     },
     Display,
 };
-use std::{
-    cell::RefCell,
-    rc::Rc,
-    time::{Duration, Instant},
-};
+use std::{cell::RefCell, rc::Rc, time::Instant};
 
 pub fn setup_display(
     wb: WindowBuilder,
@@ -32,16 +28,6 @@ pub fn basic_display(name: &String, sample_count: u16) -> anyhow::Result<(EventL
 }
 
 pub fn init(world: Rc<RefCell<World>>, event_loop: EventLoop<()>) {
-    fn update_world(
-        world: Rc<RefCell<World>>,
-        event: &Event<()>,
-        delta: Duration,
-    ) -> anyhow::Result<()> {
-        let mut world = world.try_borrow_mut()?;
-
-        world.update_systems(&event, delta)
-    }
-
     let mut old_frame_time = Instant::now();
 
     event_loop.run(move |event, _, control_flow| {
@@ -50,7 +36,7 @@ pub fn init(world: Rc<RefCell<World>>, event_loop: EventLoop<()>) {
 
         old_frame_time = frame_time;
 
-        if let Err(e) = update_world(world.clone(), &event, delta) {
+        if let Err(e) = world::update(world.clone(), &event, delta) {
             println!("{:?}", e);
         }
 

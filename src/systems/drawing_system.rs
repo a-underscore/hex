@@ -33,53 +33,44 @@ impl Component for DrawingSystem {
 }
 
 impl System for DrawingSystem {
-    fn update(&mut self, world: &mut World, _: &Event<()>, _: Duration) -> anyhow::Result<()> {
-        if let Some((ca, ct)) = world
-            .get_all(&[&Camera::get_id(), &Transform::get_id()])
-            .iter()
-            .find_map(|(_, c)| {
-                if let [(_, c), (_, t)] = c.as_slice() {
-                    let c = Ref::filter_map(c.try_borrow().ok()?, |c| {
-                        c.as_any_ref().downcast_ref::<Camera>()
-                    })
-                    .ok()?;
+    fn update(
+        &mut self,
+        world: &Rc<RefCell<World>>,
+        _: &Event<()>,
+        _: Duration,
+    ) -> anyhow::Result<()> {
+        let world = world.try_borrow()?;
 
-                    if c.active {
-                        let t = Ref::filter_map(t.try_borrow().ok()?, |t| {
-                            t.as_any_ref().downcast_ref::<Transform>()
-                        })
-                        .ok()?;
-
-                        return Some((c, t));
-                    }
-                }
-
-                None
-            })
+        if let Some(((_, e), ca)) = world
+            .get_all_ref::<Camera>()
+            .into_iter()
+            .find(|(_, c)| c.active)
         {
-            let display = &self.display;
-            let mut target = display.draw();
+            if let Some(ct) = e.try_borrow()?.get_ref::<Transform>() {
+                let display = &self.display;
+                let mut target = display.draw();
 
-            target.clear_color_and_depth(self.bg.into(), 1.0);
+                target.clear_color_and_depth(self.bg.into(), 1.0);
 
-            for (_, c) in world.get_all(&[&Sprite::get_id(), &Transform::get_id()]) {
-                if let [(_, s), (_, t)] = c.as_slice() {
-                    if let (Some(s), Some(t)) = (
-                        Ref::filter_map(s.try_borrow()?, |s| {
-                            s.as_any_ref().downcast_ref::<Sprite>()
-                        })
-                        .ok(),
-                        Ref::filter_map(t.try_borrow()?, |t| {
-                            t.as_any_ref().downcast_ref::<Transform>()
-                        })
-                        .ok(),
-                    ) {
-                        s.draw(&display, &mut target, &t, &ca, &ct)?;
+                for (_, c) in world.get_all_with(&[&Sprite::get_id(), &Transform::get_id()]) {
+                    if let [(_, s), (_, t)] = c.as_slice() {
+                        if let (Some(s), Some(t)) = (
+                            Ref::filter_map(s.try_borrow()?, |s| {
+                                s.as_any_ref().downcast_ref::<Sprite>()
+                            })
+                            .ok(),
+                            Ref::filter_map(t.try_borrow()?, |t| {
+                                t.as_any_ref().downcast_ref::<Transform>()
+                            })
+                            .ok(),
+                        ) {
+                            s.draw(&display, &mut target, &t, &ca, &ct)?;
+                        }
                     }
                 }
-            }
 
-            target.finish()?;
+                target.finish()?;
+            }
         }
 
         Ok(())

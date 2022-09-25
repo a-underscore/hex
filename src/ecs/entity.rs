@@ -32,13 +32,9 @@ impl Entity {
         self.components.get(id)
     }
 
-    pub fn get_mut(&mut self, id: &Id) -> Option<&mut (Id, Rc<RefCell<dyn AsAny>>)> {
-        self.components.get_mut(id)
-    }
-
-    pub fn get_all(&self, ids: &[&Id]) -> Option<Vec<(Id, Rc<RefCell<dyn AsAny>>)>> {
+    pub fn get_all(&self, ids: &[&Id]) -> Vec<(Id, Rc<RefCell<dyn AsAny>>)> {
         ids.iter()
-            .map(|id| self.get(id).and_then(|c| Some(c.clone())))
+            .filter_map(|id| self.get(id).and_then(|c| Some(c.clone())))
             .collect()
     }
 
@@ -47,7 +43,7 @@ impl Entity {
         C: Component + 'static,
     {
         self.get(&C::get_id()).and_then(|(_, c)| {
-            Ref::filter_map(c.try_borrow().ok()?, |c| c.as_any_ref().downcast_ref::<C>()).ok()
+            Ref::filter_map(c.try_borrow().ok()?, |c| c.as_any_ref().downcast_ref()).ok()
         })
     }
 
@@ -56,10 +52,7 @@ impl Entity {
         C: Component + 'static,
     {
         self.get(&C::get_id()).and_then(|(_, c)| {
-            RefMut::filter_map(c.try_borrow_mut().ok()?, |c| {
-                c.as_any_mut().downcast_mut::<C>()
-            })
-            .ok()
+            RefMut::filter_map(c.try_borrow_mut().ok()?, |c| c.as_any_mut().downcast_mut()).ok()
         })
     }
 

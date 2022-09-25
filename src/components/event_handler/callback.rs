@@ -6,7 +6,7 @@ pub trait Callback {
     fn callback(
         &mut self,
         parent: &(Id, Rc<RefCell<Entity>>),
-        world: &mut World,
+        world: &Rc<RefCell<World>>,
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()>;

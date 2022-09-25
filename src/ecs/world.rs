@@ -41,11 +41,58 @@ impl World {
 
     pub fn get_all(
         &self,
+        id: &Id,
+    ) -> Vec<((Id, Rc<RefCell<Entity>>), (Id, Rc<RefCell<dyn AsAny>>))> {
+        self.entities
+            .values()
+            .filter_map(|p @ (_, e)| Some((p.clone(), e.try_borrow().ok()?.get(id)?.clone())))
+            .collect()
+    }
+
+    pub fn get_all_ref<C>(&self) -> Vec<((Id, Rc<RefCell<Entity>>), Ref<C>)>
+    where
+        C: Component + 'static,
+    {
+        self.entities
+            .values()
+            .filter_map(|p @ (_, e)| {
+                Some((
+                    p.clone(),
+                    unsafe { e.try_borrow_unguarded() }.ok()?.get_ref()?,
+                ))
+            })
+            .collect()
+    }
+
+    pub fn get_all_mut<C>(&self) -> Vec<((Id, Rc<RefCell<Entity>>), RefMut<C>)>
+    where
+        C: Component + 'static,
+    {
+        self.entities
+            .values()
+            .filter_map(|p @ (_, e)| {
+                Some((
+                    p.clone(),
+                    unsafe { e.try_borrow_unguarded() }.ok()?.get_ref_mut()?,
+                ))
+            })
+            .collect()
+    }
+
+    pub fn get_all_with(
+        &self,
         ids: &[&Id],
     ) -> Vec<((Id, Rc<RefCell<Entity>>), Vec<(Id, Rc<RefCell<dyn AsAny>>)>)> {
         self.entities
             .values()
-            .filter_map(|e @ (_, en)| Some((e.clone(), en.try_borrow().ok()?.get_all(ids)?)))
+            .filter_map(|p @ (_, e)| {
+                Some((
+                    p.clone(),
+                    ids.iter()
+                        .map(|id| Some(e.try_borrow().ok()?.get(id)?.clone()))
+                        .collect::<Option<Vec<_>>>()?,
+                ))
+            })
             .collect()
     }
 
@@ -72,10 +119,6 @@ impl World {
         self.systems.get(id)
     }
 
-    pub fn get_system_mut(&mut self, id: &Id) -> Option<&mut (Id, Rc<RefCell<dyn System>>)> {
-        self.systems.get_mut(id)
-    }
-
     pub fn get_system_ref<S>(&self, id: &Id) -> Option<(Id, Ref<S>)>
     where
         S: System + 'static,
@@ -83,8 +126,7 @@ impl World {
         self.get_system(id).and_then(|(id, s)| {
             Some((
                 id.clone(),
-                Ref::filter_map(s.try_borrow().ok()?, |s| s.as_any_ref().downcast_ref::<S>())
-                    .ok()?,
+                Ref::filter_map(s.try_borrow().ok()?, |s| s.as_any_ref().downcast_ref()).ok()?,
             ))
         })
     }
@@ -96,10 +138,8 @@ impl World {
         self.get_system(id).and_then(|(id, s)| {
             Some((
                 id.clone(),
-                RefMut::filter_map(s.try_borrow_mut().ok()?, |s| {
-                    s.as_any_mut().downcast_mut::<S>()
-                })
-                .ok()?,
+                RefMut::filter_map(s.try_borrow_mut().ok()?, |s| s.as_any_mut().downcast_mut())
+                    .ok()?,
             ))
         })
     }
@@ -107,12 +147,17 @@ impl World {
     pub fn remove_system(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn System>>)> {
         self.systems.remove(id.as_ref())
     }
+}
 
-    pub fn update_systems(&mut self, event: &Event<()>, delta: Duration) -> anyhow::Result<()> {
-        for (_, s) in self.systems.clone().values() {
-            s.try_borrow_mut()?.update(self, event, delta)?;
-        }
-
-        Ok(())
+pub fn update(world: Rc<RefCell<World>>, event: &Event<()>, delta: Duration) -> anyhow::Result<()> {
+    for (_, s) in world
+        .try_borrow()
+        .and_then(|w| Ok(w.clone()))?
+        .systems
+        .values()
+    {
+        s.try_borrow_mut()?.update(&world, event, delta)?;
     }
+
+    Ok(())
 }
