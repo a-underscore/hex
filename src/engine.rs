@@ -36,7 +36,7 @@ pub fn init(world: Rc<RefCell<World>>, event_loop: EventLoop<()>) {
 
         old_frame_time = frame_time;
 
-        if let Err(e) = World::update(world.clone(), &event, delta) {
+        if let Err(e) = World::update(&world, &event, delta) {
             println!("{:?}", e);
         }
 

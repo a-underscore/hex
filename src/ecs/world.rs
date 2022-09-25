@@ -149,7 +149,7 @@ impl World {
     }
 
     pub fn update(
-        world: Rc<RefCell<World>>,
+        world: &Rc<RefCell<World>>,
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {
