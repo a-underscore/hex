@@ -147,17 +147,21 @@ impl World {
     pub fn remove_system(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn System>>)> {
         self.systems.remove(id.as_ref())
     }
-}
 
-pub fn update(world: Rc<RefCell<World>>, event: &Event<()>, delta: Duration) -> anyhow::Result<()> {
-    for (_, s) in world
-        .try_borrow()
-        .and_then(|w| Ok(w.clone()))?
-        .systems
-        .values()
-    {
-        s.try_borrow_mut()?.update(&world, event, delta)?;
+    pub fn update(
+        world: Rc<RefCell<World>>,
+        event: &Event<()>,
+        delta: Duration,
+    ) -> anyhow::Result<()> {
+        for (_, s) in world
+            .try_borrow()
+            .and_then(|w| Ok(w.clone()))?
+            .systems
+            .values()
+        {
+            s.try_borrow_mut()?.update(&world, event, delta)?;
+        }
+
+        Ok(())
     }
-
-    Ok(())
 }
