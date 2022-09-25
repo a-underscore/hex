@@ -153,12 +153,7 @@ impl World {
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {
-        for (_, s) in world
-            .try_borrow()
-            .and_then(|w| Ok(w.clone()))?
-            .systems
-            .values()
-        {
+        for (_, s) in unsafe { world.try_borrow_unguarded() }?.systems.values() {
             s.try_borrow_mut()?.update(&world, event, delta)?;
         }
 
