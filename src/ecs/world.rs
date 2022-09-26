@@ -154,7 +154,7 @@ impl World {
         delta: Duration,
     ) -> anyhow::Result<()> {
         for (_, s) in unsafe { world.try_borrow_unguarded() }?.systems.values() {
-            s.try_borrow_mut()?.update(&world, event, delta)?;
+            s.try_borrow_mut()?.update(world, event, delta)?;
         }
 
         Ok(())
