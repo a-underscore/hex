@@ -17,6 +17,10 @@ impl Entity {
         }))
     }
 
+    pub fn get_components(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)> {
+        &self.components
+    }
+
     pub fn add_generic(&mut self, c @ (id, _): &(Id, Rc<RefCell<dyn AsAny>>)) {
         self.components.insert(id.clone(), c.clone());
     }
@@ -65,9 +69,5 @@ impl Entity {
         C: Component,
     {
         self.remove_generic(&C::get_id())
-    }
-
-    pub fn get_components(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)> {
-        &self.components
     }
 }

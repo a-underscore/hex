@@ -21,6 +21,14 @@ impl World {
         }))
     }
 
+    pub fn get_entities(&self) -> &HashMap<Id, (Id, Rc<RefCell<Entity>>)> {
+        &self.entities
+    }
+
+    pub fn get_systems(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn System>>)> {
+        &self.systems
+    }
+
     pub fn change_id(&mut self, old: &Id, new: &Id) {
         if let Some((_, e)) = self.remove(old) {
             self.add(&(new.clone(), e));
@@ -29,10 +37,6 @@ impl World {
 
     pub fn add(&mut self, e @ (id, _): &(Id, Rc<RefCell<Entity>>)) {
         self.entities.insert(id.clone(), e.clone());
-    }
-
-    pub fn get_entities(&self) -> &HashMap<Id, (Id, Rc<RefCell<Entity>>)> {
-        &self.entities
     }
 
     pub fn get(&self, id: &Id) -> Option<(Id, Rc<RefCell<Entity>>)> {
@@ -109,10 +113,6 @@ impl World {
         S: System + Component + 'static,
     {
         self.add_generic_system(&(S::get_id(), system.clone()))
-    }
-
-    pub fn get_systems(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn System>>)> {
-        &self.systems
     }
 
     pub fn get_system(&self, id: &Id) -> Option<&(Id, Rc<RefCell<dyn System>>)> {
