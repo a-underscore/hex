@@ -119,21 +119,28 @@ impl World {
         self.systems.get(id)
     }
 
-    pub fn get_system_ref<S>(&self) -> Option<Ref<S>>
+    pub fn get_system_ref<S>(&self, id: &Id) -> Option<(Id, Ref<S>)>
     where
-        S: Component + System + 'static,
+        S: System + 'static,
     {
-        self.get_system(&S::get_id()).and_then(|(_, s)| {
-            Ref::filter_map(s.try_borrow().ok()?, |s| s.as_any_ref().downcast_ref()).ok()
+        self.get_system(id).and_then(|(id, s)| {
+            Some((
+                id.clone(),
+                Ref::filter_map(s.try_borrow().ok()?, |s| s.as_any_ref().downcast_ref()).ok()?,
+            ))
         })
     }
 
-    pub fn get_system_ref_mut<S>(&self) -> Option<RefMut<S>>
+    pub fn get_system_ref_mut<S>(&self, id: &Id) -> Option<(Id, RefMut<S>)>
     where
-        S: Component + System + 'static,
+        S: System + 'static,
     {
-        self.get_system(&S::get_id()).and_then(|(_, s)| {
-            RefMut::filter_map(s.try_borrow_mut().ok()?, |s| s.as_any_mut().downcast_mut()).ok()
+        self.get_system(id).and_then(|(id, s)| {
+            Some((
+                id.clone(),
+                RefMut::filter_map(s.try_borrow_mut().ok()?, |s| s.as_any_mut().downcast_mut())
+                    .ok()?,
+            ))
         })
     }
 
@@ -141,10 +148,8 @@ impl World {
         self.systems.remove(id.as_ref())
     }
 
-    pub fn remove_system<S>(&mut self) -> Option<(Id, Rc<RefCell<dyn System>>)>
-    where
-        S: Component + 'static,
-    {
+    pub fn remove_system<S>(&mut self) -> Option<(Id, Rc<RefCell<dyn System>>)> 
+    where S: Component + 'static {
         self.remove_system_generic(&S::get_id())
     }
 

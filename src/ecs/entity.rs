@@ -56,8 +56,15 @@ impl Entity {
         })
     }
 
-    pub fn remove(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn AsAny>>)> {
+    pub fn remove_generic(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn AsAny>>)> {
         self.components.remove(id.as_ref())
+    }
+
+    pub fn remove<C>(&mut self) -> Option<(Id, Rc<RefCell<dyn AsAny>>)>
+    where
+        C: Component,
+    {
+        self.remove_generic(&C::get_id())
     }
 
     pub fn get_components(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)> {
