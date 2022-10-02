@@ -137,7 +137,7 @@ impl World {
         })
     }
 
-    pub fn remove_system_generic(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn System>>)> {
+    pub fn remove_generic_system(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn System>>)> {
         self.systems.remove(id.as_ref())
     }
 
@@ -145,7 +145,7 @@ impl World {
     where
         S: Component + 'static,
     {
-        self.remove_system_generic(&S::get_id())
+        self.remove_generic_system(&S::get_id())
     }
 
     pub fn update(
