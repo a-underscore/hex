@@ -1,4 +1,4 @@
-use super::vertex::Vertex;
+use super::Vertex;
 use cgmath::{Vector2, Zero};
 use glium::{index::PrimitiveType, Display, IndexBuffer, VertexBuffer};
 use std::{cell::RefCell, rc::Rc};
