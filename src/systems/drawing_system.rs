@@ -21,8 +21,11 @@ impl DrawingSystem {
         pub static ID: Id = ecs::id("drawing_system");
     }
 
-    pub fn new(display: Display, bg: Vector4<f32>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self { display, bg }))
+    pub fn new(display: &Display, bg: Vector4<f32>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self {
+            display: display.clone(),
+            bg,
+        }))
     }
 }
 
