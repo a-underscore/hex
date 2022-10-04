@@ -12,7 +12,7 @@ use std::{
 
 #[derive(Clone)]
 pub struct DrawingSystem {
-    pub display: Display,
+    pub display: Rc<RefCell<Display>>,
     pub bg: Vector4<f32>,
 }
 
@@ -21,7 +21,7 @@ impl DrawingSystem {
         pub static ID: Id = ecs::id("drawing_system");
     }
 
-    pub fn new(display: &Display, bg: Vector4<f32>) -> Rc<RefCell<Self>> {
+    pub fn new(display: &Rc<RefCell<Display>>, bg: Vector4<f32>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             display: display.clone(),
             bg,
@@ -50,7 +50,7 @@ impl System for DrawingSystem {
             .find(|(_, c)| c.active)
         {
             if let Some(ct) = e.try_borrow()?.get_ref::<Transform>() {
-                let display = &self.display;
+                let display = self.display.try_borrow()?;
                 let mut target = display.draw();
 
                 target.clear_color_and_depth(self.bg.into(), 1.0);
