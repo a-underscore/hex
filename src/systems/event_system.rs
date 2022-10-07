@@ -31,7 +31,11 @@ impl System for EventSystem {
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {
-        for (p, c) in unsafe { world.try_borrow_unguarded() }?.get_all_ref::<EventHandler>() {
+        for (p, c) in world
+            .try_borrow()
+            .and_then(|w| Ok(w.clone()))?
+            .get_all_ref::<EventHandler>()
+        {
             c.update(p, world, event, delta)?;
         }
 

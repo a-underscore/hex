@@ -17,7 +17,9 @@ pub fn update(
     event: &Event<()>,
     delta: Duration,
 ) -> anyhow::Result<()> {
-    for (_, s) in unsafe { world.try_borrow_unguarded() }?
+    for (_, s) in world
+        .try_borrow()
+        .and_then(|w| Ok(w.clone()))?
         .get_systems()
         .values()
     {
