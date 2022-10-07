@@ -1,10 +1,8 @@
 use super::{AsAny, Component, Entity, Id, System};
-use glium::glutin::event::Event;
 use std::{
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,
     rc::Rc,
-    time::Duration,
 };
 
 #[derive(Clone)]
@@ -146,17 +144,5 @@ impl World {
         S: Component + 'static,
     {
         self.remove_generic_system(&S::get_id())
-    }
-
-    pub fn update(
-        world: &Rc<RefCell<World>>,
-        event: &Event<()>,
-        delta: Duration,
-    ) -> anyhow::Result<()> {
-        for (_, s) in unsafe { world.try_borrow_unguarded() }?.systems.values() {
-            s.try_borrow_mut()?.update(world, event, delta)?;
-        }
-
-        Ok(())
     }
 }

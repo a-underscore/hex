@@ -1,4 +1,4 @@
-use crate::ecs::World;
+use crate::ecs::{self, World};
 use glium::{
     glutin::{
         event::{Event, WindowEvent},
@@ -39,7 +39,7 @@ pub fn init(world: Rc<RefCell<World>>, event_loop: EventLoop<()>) {
 
         old_frame_time = frame_time;
 
-        if let Err(e) = World::update(&world, &event, delta) {
+        if let Err(e) = ecs::update(&world, &event, delta) {
             println!("{:?}", e);
         }
 
