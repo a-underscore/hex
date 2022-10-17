@@ -1,11 +1,11 @@
-use super::Callback;
+use super::EventHandlerCallback;
 use crate::ecs::{self, Component, Entity, Id, World};
 use glium::glutin::event::Event;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 #[derive(Clone)]
 pub struct EventHandler {
-    pub callback: Rc<RefCell<dyn Callback>>,
+    pub callback: Rc<RefCell<dyn EventHandlerCallback>>,
     pub active: bool,
 }
 
@@ -14,7 +14,7 @@ impl EventHandler {
         pub static ID: Id = ecs::id("event_handler");
     }
 
-    pub fn new(callback: Rc<RefCell<dyn Callback>>, active: bool) -> Rc<RefCell<Self>> {
+    pub fn new(callback: Rc<RefCell<dyn EventHandlerCallback>>, active: bool) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self { callback, active }))
     }
 
