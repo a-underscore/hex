@@ -36,7 +36,7 @@ impl System for EventSystem {
             .map(|w| w.clone())?
             .get_all_ref::<EventHandler>()
         {
-            c.update(p, world, event, delta)?;
+            c.update(&p, world, event, delta)?;
         }
 
         Ok(())

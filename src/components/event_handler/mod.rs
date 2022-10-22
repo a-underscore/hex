@@ -2,7 +2,7 @@ pub mod event_handler_callback;
 
 pub use event_handler_callback::EventHandlerCallback;
 
-use crate::ecs::{self, Component, Entity, Id, World};
+use crate::ecs::{self, Component, GenericEntity, Id, World};
 use glium::glutin::event::Event;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
@@ -23,7 +23,7 @@ impl EventHandler {
 
     pub fn update(
         &self,
-        p: (Id, Rc<RefCell<Entity>>),
+        p: &GenericEntity,
         world: &Rc<RefCell<World>>,
         event: &Event<()>,
         delta: Duration,
@@ -31,7 +31,7 @@ impl EventHandler {
         if self.active {
             self.callback
                 .try_borrow_mut()?
-                .callback(&p, world, event, delta)?;
+                .callback(p, world, event, delta)?;
         }
 
         Ok(())
