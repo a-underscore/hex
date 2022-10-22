@@ -38,7 +38,7 @@ impl Entity {
 
     pub fn get_all(&self, ids: &[&Id]) -> Vec<(Id, Rc<RefCell<dyn AsAny>>)> {
         ids.iter()
-            .filter_map(|id| self.get(id).and_then(|c| Some(c.clone())))
+            .filter_map(|id| self.get(id).cloned())
             .collect()
     }
 

@@ -32,8 +32,7 @@ impl System for EventSystem {
         delta: Duration,
     ) -> anyhow::Result<()> {
         for (p, c) in world
-            .try_borrow()
-            .and_then(|w| Ok(w.clone()))?
+            .try_borrow().map(|w| w.clone())?
             .get_all_ref::<EventHandler>()
         {
             c.update(p, world, event, delta)?;
