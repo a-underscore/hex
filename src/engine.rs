@@ -45,14 +45,10 @@ pub fn init(world: Rc<RefCell<World>>, event_loop: EventLoop<()>) {
 
         *control_flow = ControlFlow::Poll;
 
-        match event {
-            Event::WindowEvent { event, .. } => match event {
-                WindowEvent::CloseRequested => {
-                    *control_flow = ControlFlow::Exit;
-                }
-                _ => {}
-            },
-            _ => {}
+        if let Event::WindowEvent { event, .. } = event {
+            if let WindowEvent::CloseRequested = event {
+                *control_flow = ControlFlow::Exit;
+            }
         }
     });
 }

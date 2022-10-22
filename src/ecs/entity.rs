@@ -37,9 +37,7 @@ impl Entity {
     }
 
     pub fn get_all(&self, ids: &[&Id]) -> Vec<(Id, Rc<RefCell<dyn AsAny>>)> {
-        ids.iter()
-            .filter_map(|id| self.get(id).cloned())
-            .collect()
+        ids.iter().filter_map(|id| self.get(id).cloned()).collect()
     }
 
     pub fn get_ref<C>(&self) -> Option<Ref<C>>

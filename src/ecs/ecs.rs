@@ -18,7 +18,8 @@ pub fn update(
     delta: Duration,
 ) -> anyhow::Result<()> {
     for (_, s) in world
-        .try_borrow().map(|w| w.clone())?
+        .try_borrow()
+        .map(|w| w.clone())?
         .get_systems()
         .values()
     {
