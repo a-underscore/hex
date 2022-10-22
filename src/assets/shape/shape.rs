@@ -16,7 +16,7 @@ impl Shape {
     ) -> anyhow::Result<Rc<RefCell<Self>>> {
         Ok(Rc::new(RefCell::new(Self {
             vertices: VertexBuffer::new(display, vertices)?,
-            indices: IndexBuffer::immutable(display, PrimitiveType::TrianglesList, &indices)?,
+            indices: IndexBuffer::immutable(display, PrimitiveType::TrianglesList, indices)?,
         })))
     }
 

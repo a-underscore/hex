@@ -1,6 +1,6 @@
 use crate::{
     components::{Camera, Sprite, Transform},
-    ecs::{self, Component, Id, System, ToRef, World},
+    ecs::{self, Component, Id, System, World, ToRef},
 };
 use cgmath::Vector4;
 use glium::{glutin::event::Event, Display, Surface};
