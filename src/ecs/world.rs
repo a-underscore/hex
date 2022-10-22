@@ -1,4 +1,4 @@
-use super::{AsAny, Component, Entity, Id, System, ToMut, ToRef};
+use super::{Component, GenericComponent, GenericEntity, GenericSystem, Id, System, ToMut, ToRef};
 use std::{
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,
@@ -7,8 +7,8 @@ use std::{
 
 #[derive(Clone)]
 pub struct World {
-    entities: HashMap<Id, (Id, Rc<RefCell<Entity>>)>,
-    systems: HashMap<Id, (Id, Rc<RefCell<dyn System>>)>,
+    entities: HashMap<Id, GenericEntity>,
+    systems: HashMap<Id, GenericSystem>,
 }
 
 impl World {
@@ -19,12 +19,8 @@ impl World {
         }))
     }
 
-    pub fn get_entities(&self) -> &HashMap<Id, (Id, Rc<RefCell<Entity>>)> {
+    pub fn get_entities(&self) -> &HashMap<Id, GenericEntity> {
         &self.entities
-    }
-
-    pub fn get_systems(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn System>>)> {
-        &self.systems
     }
 
     pub fn change_id(&mut self, old: &Id, new: &Id) {
@@ -33,25 +29,22 @@ impl World {
         };
     }
 
-    pub fn add(&mut self, e @ (id, _): &(Id, Rc<RefCell<Entity>>)) {
+    pub fn add(&mut self, e @ (id, _): &GenericEntity) {
         self.entities.insert(id.clone(), e.clone());
     }
 
-    pub fn get(&self, id: &Id) -> Option<(Id, Rc<RefCell<Entity>>)> {
+    pub fn get(&self, id: &Id) -> Option<GenericEntity> {
         Some(self.entities.get(id.as_ref())?.clone())
     }
 
-    pub fn get_all(
-        &self,
-        id: &Id,
-    ) -> Vec<((Id, Rc<RefCell<Entity>>), (Id, Rc<RefCell<dyn AsAny>>))> {
+    pub fn get_all(&self, id: &Id) -> Vec<(GenericEntity, GenericComponent)> {
         self.entities
             .values()
             .filter_map(|p @ (_, e)| Some((p.clone(), e.try_borrow().ok()?.get(id)?.clone())))
             .collect()
     }
 
-    pub fn get_all_ref<C>(&self) -> Vec<((Id, Rc<RefCell<Entity>>), Ref<C>)>
+    pub fn get_all_ref<C>(&self) -> Vec<(GenericEntity, Ref<C>)>
     where
         C: Component + 'static,
     {
@@ -66,7 +59,7 @@ impl World {
             .collect()
     }
 
-    pub fn get_all_mut<C>(&self) -> Vec<((Id, Rc<RefCell<Entity>>), RefMut<C>)>
+    pub fn get_all_mut<C>(&self) -> Vec<(GenericEntity, RefMut<C>)>
     where
         C: Component + 'static,
     {
@@ -81,10 +74,7 @@ impl World {
             .collect()
     }
 
-    pub fn get_all_with(
-        &self,
-        ids: &[&Id],
-    ) -> Vec<((Id, Rc<RefCell<Entity>>), Vec<(Id, Rc<RefCell<dyn AsAny>>)>)> {
+    pub fn get_all_with(&self, ids: &[&Id]) -> Vec<(GenericEntity, Vec<GenericComponent>)> {
         self.entities
             .values()
             .filter_map(|p @ (_, e)| {
@@ -98,11 +88,15 @@ impl World {
             .collect()
     }
 
-    pub fn remove(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<Entity>>)> {
+    pub fn remove(&mut self, id: &Id) -> Option<GenericEntity> {
         self.entities.remove(id.as_ref())
     }
 
-    pub fn add_generic_system(&mut self, s @ (id, _): &(Id, Rc<RefCell<dyn System>>)) {
+    pub fn get_systems(&self) -> &HashMap<Id, GenericSystem> {
+        &self.systems
+    }
+
+    pub fn add_generic_system(&mut self, s @ (id, _): &GenericSystem) {
         self.systems.insert(id.clone(), s.clone());
     }
 
@@ -113,7 +107,7 @@ impl World {
         self.add_generic_system(&(S::get_id(), system.clone()))
     }
 
-    pub fn get_system(&self, id: &Id) -> Option<&(Id, Rc<RefCell<dyn System>>)> {
+    pub fn get_system(&self, id: &Id) -> Option<&GenericSystem> {
         self.systems.get(id)
     }
 
@@ -133,11 +127,11 @@ impl World {
             .and_then(|(_, s)| RefMut::filter_map(s.try_borrow_mut().ok()?, |s| s.to_mut()).ok())
     }
 
-    pub fn remove_generic_system(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn System>>)> {
+    pub fn remove_generic_system(&mut self, id: &Id) -> Option<GenericSystem> {
         self.systems.remove(id.as_ref())
     }
 
-    pub fn remove_system<S>(&mut self) -> Option<(Id, Rc<RefCell<dyn System>>)>
+    pub fn remove_system<S>(&mut self) -> Option<GenericSystem>
     where
         S: Component + 'static,
     {

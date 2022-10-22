@@ -1,4 +1,4 @@
-use super::{AsAny, Component, Id, ToMut, ToRef};
+use super::{Component, GenericComponent, Id, ToMut, ToRef};
 use std::{
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,
@@ -7,7 +7,7 @@ use std::{
 
 #[derive(Clone)]
 pub struct Entity {
-    components: HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)>,
+    components: HashMap<Id, GenericComponent>,
 }
 
 impl Entity {
@@ -17,11 +17,11 @@ impl Entity {
         }))
     }
 
-    pub fn get_components(&self) -> &HashMap<Id, (Id, Rc<RefCell<dyn AsAny>>)> {
+    pub fn get_components(&self) -> &HashMap<Id, GenericComponent> {
         &self.components
     }
 
-    pub fn add_generic(&mut self, c @ (id, _): &(Id, Rc<RefCell<dyn AsAny>>)) {
+    pub fn add_generic(&mut self, c @ (id, _): &GenericComponent) {
         self.components.insert(id.clone(), c.clone());
     }
 
@@ -32,11 +32,11 @@ impl Entity {
         self.add_generic(&(C::get_id(), component.clone()));
     }
 
-    pub fn get(&self, id: &Id) -> Option<&(Id, Rc<RefCell<dyn AsAny>>)> {
+    pub fn get(&self, id: &Id) -> Option<&GenericComponent> {
         self.components.get(id)
     }
 
-    pub fn get_all(&self, ids: &[&Id]) -> Vec<(Id, Rc<RefCell<dyn AsAny>>)> {
+    pub fn get_all(&self, ids: &[&Id]) -> Vec<GenericComponent> {
         ids.iter().filter_map(|id| self.get(id).cloned()).collect()
     }
 
@@ -56,14 +56,16 @@ impl Entity {
             .and_then(|(_, c)| RefMut::filter_map(c.try_borrow_mut().ok()?, |c| c.to_mut()).ok())
     }
 
-    pub fn remove_generic(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn AsAny>>)> {
+    pub fn remove_generic(&mut self, id: &Id) -> Option<GenericComponent> {
         self.components.remove(id.as_ref())
     }
 
-    pub fn remove<C>(&mut self) -> Option<(Id, Rc<RefCell<dyn AsAny>>)>
+    pub fn remove<C>(&mut self) -> Option<GenericComponent>
     where
         C: Component,
     {
         self.remove_generic(&C::get_id())
     }
 }
+
+pub type GenericEntity = (Id, Rc<RefCell<Entity>>);

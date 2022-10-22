@@ -39,16 +39,18 @@ pub fn init(world: Rc<RefCell<World>>, event_loop: EventLoop<()>) {
 
         old_frame_time = frame_time;
 
+        *control_flow = ControlFlow::Poll;
+
         if let Err(e) = ecs::update(&world, &event, delta) {
             println!("{:?}", e);
         }
 
-        *control_flow = ControlFlow::Poll;
-
-        if let Event::WindowEvent { event, .. } = event {
-            if let WindowEvent::CloseRequested = event {
-                *control_flow = ControlFlow::Exit;
-            }
+        if let Event::WindowEvent {
+            event: WindowEvent::CloseRequested,
+            ..
+        } = event
+        {
+            *control_flow = ControlFlow::Exit;
         }
     });
 }

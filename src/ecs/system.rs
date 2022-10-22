@@ -1,4 +1,4 @@
-use super::{AsAny, Component, ToMut, ToRef, World};
+use super::{AsAny, Component, Id, ToMut, ToRef, World};
 use glium::glutin::event::Event;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
@@ -28,3 +28,5 @@ impl ToMut for dyn System {
         self.as_any_mut().downcast_mut()
     }
 }
+
+pub type GenericSystem = (Id, Rc<RefCell<dyn System>>);

@@ -1,5 +1,5 @@
 use super::{AsAny, Id};
-use std::any::Any;
+use std::{any::Any, cell::RefCell, rc::Rc};
 
 pub trait Component {
     fn get_id() -> Id;
@@ -17,3 +17,5 @@ where
         self
     }
 }
+
+pub type GenericComponent = (Id, Rc<RefCell<dyn AsAny>>);
