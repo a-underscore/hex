@@ -1,6 +1,6 @@
 use crate::{
     components::{Camera, Sprite, Transform},
-    ecs::{self, Component, Id, System, World},
+    ecs::{self, Component, Id, System, ToRef, World},
 };
 use cgmath::Vector4;
 use glium::{glutin::event::Event, Display, Surface};
@@ -58,14 +58,8 @@ impl System for DrawingSystem {
                 for (_, c) in world.get_all_with(&[&Sprite::get_id(), &Transform::get_id()]) {
                     if let [(_, s), (_, t)] = c.as_slice() {
                         if let (Some(s), Some(t)) = (
-                            Ref::filter_map(s.try_borrow()?, |s| {
-                                s.as_any_ref().downcast_ref::<Sprite>()
-                            })
-                            .ok(),
-                            Ref::filter_map(t.try_borrow()?, |t| {
-                                t.as_any_ref().downcast_ref::<Transform>()
-                            })
-                            .ok(),
+                            Ref::filter_map(s.try_borrow()?, |s| s.to_ref::<Sprite>()).ok(),
+                            Ref::filter_map(t.try_borrow()?, |t| t.to_ref::<Transform>()).ok(),
                         ) {
                             s.draw(&display, &mut target, &t, &ca, &ct)?;
                         }

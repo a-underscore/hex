@@ -1,4 +1,4 @@
-use super::{AsAny, World};
+use super::{AsAny, Component, ToMut, ToRef, World};
 use glium::glutin::event::Event;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
@@ -9,4 +9,22 @@ pub trait System: AsAny {
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()>;
+}
+
+impl ToRef for dyn System {
+    fn to_ref<C>(&self) -> Option<&C>
+    where
+        C: Component + 'static,
+    {
+        self.as_any_ref().downcast_ref()
+    }
+}
+
+impl ToMut for dyn System {
+    fn to_mut<C>(&mut self) -> Option<&mut C>
+    where
+        C: Component + 'static,
+    {
+        self.as_any_mut().downcast_mut()
+    }
 }

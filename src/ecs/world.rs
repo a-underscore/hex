@@ -1,4 +1,4 @@
-use super::{AsAny, Component, Entity, Id, System};
+use super::{AsAny, Component, Entity, Id, System, ToMut, ToRef};
 use std::{
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,
@@ -121,18 +121,16 @@ impl World {
     where
         S: Component + System + 'static,
     {
-        self.get_system(&S::get_id()).and_then(|(_, s)| {
-            Ref::filter_map(s.try_borrow().ok()?, |s| s.as_any_ref().downcast_ref()).ok()
-        })
+        self.get_system(&S::get_id())
+            .and_then(|(_, s)| Ref::filter_map(s.try_borrow().ok()?, |s| s.to_ref()).ok())
     }
 
     pub fn get_system_ref_mut<S>(&self) -> Option<RefMut<S>>
     where
         S: Component + System + 'static,
     {
-        self.get_system(&S::get_id()).and_then(|(_, s)| {
-            RefMut::filter_map(s.try_borrow_mut().ok()?, |s| s.as_any_mut().downcast_mut()).ok()
-        })
+        self.get_system(&S::get_id())
+            .and_then(|(_, s)| RefMut::filter_map(s.try_borrow_mut().ok()?, |s| s.to_mut()).ok())
     }
 
     pub fn remove_generic_system(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn System>>)> {

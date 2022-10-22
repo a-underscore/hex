@@ -1,4 +1,4 @@
-use super::{AsAny, Component, Id};
+use super::{AsAny, Component, Id, ToMut, ToRef};
 use std::{
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,
@@ -46,18 +46,16 @@ impl Entity {
     where
         C: Component + 'static,
     {
-        self.get(&C::get_id()).and_then(|(_, c)| {
-            Ref::filter_map(c.try_borrow().ok()?, |c| c.as_any_ref().downcast_ref()).ok()
-        })
+        self.get(&C::get_id())
+            .and_then(|(_, c)| Ref::filter_map(c.try_borrow().ok()?, |c| c.to_ref()).ok())
     }
 
     pub fn get_ref_mut<C>(&self) -> Option<RefMut<C>>
     where
         C: Component + 'static,
     {
-        self.get(&C::get_id()).and_then(|(_, c)| {
-            RefMut::filter_map(c.try_borrow_mut().ok()?, |c| c.as_any_mut().downcast_mut()).ok()
-        })
+        self.get(&C::get_id())
+            .and_then(|(_, c)| RefMut::filter_map(c.try_borrow_mut().ok()?, |c| c.to_mut()).ok())
     }
 
     pub fn remove_generic(&mut self, id: &Id) -> Option<(Id, Rc<RefCell<dyn AsAny>>)> {
