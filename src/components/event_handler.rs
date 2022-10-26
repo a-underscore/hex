@@ -3,7 +3,7 @@ use glium::glutin::event::Event;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub type EventHandlerCallback =
-    dyn FnMut(&GenericEntity, &Rc<RefCell<World>>, &Event<()>, Duration);
+    dyn FnMut(&GenericEntity, &Rc<RefCell<World>>, &Event<()>, Duration) -> anyhow::Result<()>;
 
 pub struct EventHandler<'a> {
     pub callback: &'a mut EventHandlerCallback,
@@ -27,7 +27,7 @@ impl<'a> EventHandler<'a> {
         delta: Duration,
     ) -> anyhow::Result<()> {
         if self.active {
-            (self.callback)(p, world, event, delta);
+            (self.callback)(p, world, event, delta)?;
         }
 
         Ok(())
