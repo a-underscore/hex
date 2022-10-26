@@ -5,36 +5,43 @@ use std::{cell::RefCell, rc::Rc, time::Duration};
 pub type EventHandlerCallback =
     dyn FnMut(&GenericEntity, &Rc<RefCell<World>>, &Event<()>, Duration) -> anyhow::Result<()>;
 
-pub struct EventHandler<'a> {
-    pub callback: &'a mut EventHandlerCallback,
+pub struct EventHandler {
+    pub callback: Rc<RefCell<EventHandlerCallback>>,
     pub active: bool,
 }
 
-impl<'a> EventHandler<'a> {
+impl EventHandler {
     thread_local! {
         pub static ID: Id = ecs::id("event_handler");
     }
 
-    pub fn new<E>(callback: &'a mut EventHandlerCallback, active: bool) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self { callback, active }))
+    pub fn new<E>(callback: &Rc<RefCell<E>>, active: bool) -> Rc<RefCell<Self>>
+    where
+        E: FnMut(&GenericEntity, &Rc<RefCell<World>>, &Event<()>, Duration) -> anyhow::Result<()>
+            + 'static,
+    {
+        Rc::new(RefCell::new(Self {
+            callback: callback.clone(),
+            active,
+        }))
     }
 
     pub fn update(
-        &mut self,
+        &self,
         p: &GenericEntity,
         world: &Rc<RefCell<World>>,
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {
         if self.active {
-            (self.callback)(p, world, event, delta)?;
+            (self.callback.try_borrow_mut()?)(p, world, event, delta)?;
         }
 
         Ok(())
     }
 }
 
-impl<'a> Component for EventHandler<'a> {
+impl Component for EventHandler {
     fn get_id() -> Id {
         ecs::tid(&Self::ID)
     }
