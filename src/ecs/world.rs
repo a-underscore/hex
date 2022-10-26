@@ -5,7 +5,6 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Clone)]
 pub struct World {
     entities: HashMap<Id, GenericEntity>,
     systems: HashMap<Id, GenericSystem>,
@@ -136,5 +135,12 @@ impl World {
         S: Component + 'static,
     {
         self.remove_generic_system(&S::get_id())
+    }
+
+    pub fn pool(&self) -> Self {
+        Self {
+            entities: self.entities.clone(),
+            systems: self.systems.clone(),
+        }
     }
 }

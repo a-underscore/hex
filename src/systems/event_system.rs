@@ -31,10 +31,10 @@ impl System for EventSystem {
         event: &Event<()>,
         delta: Duration,
     ) -> anyhow::Result<()> {
-        for (p, c) in world
+        for (p, mut c) in world
             .try_borrow()
-            .map(|w| w.clone())?
-            .get_all_ref::<EventHandler>()
+            .map(|w| w.pool())?
+            .get_all_mut::<EventHandler>()
         {
             c.update(&p, world, event, delta)?;
         }

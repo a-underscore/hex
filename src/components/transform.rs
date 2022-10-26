@@ -2,7 +2,6 @@ use crate::ecs::{self, Component, Id};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
 use std::{cell::RefCell, rc::Rc};
 
-#[derive(Clone)]
 pub struct Transform {
     position: Vector2<f32>,
     rotation: f32,

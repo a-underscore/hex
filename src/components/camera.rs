@@ -2,7 +2,6 @@ use crate::ecs::{self, Component, Id};
 use cgmath::Matrix4;
 use std::{cell::RefCell, rc::Rc};
 
-#[derive(Clone)]
 pub struct Camera {
     left: f32,
     right: f32,

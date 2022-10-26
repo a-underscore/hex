@@ -32,12 +32,7 @@ pub fn update(
     event: &Event<()>,
     delta: Duration,
 ) -> anyhow::Result<()> {
-    for (_, s) in world
-        .try_borrow()
-        .map(|w| w.clone())?
-        .get_systems()
-        .values()
-    {
+    for (_, s) in world.try_borrow().map(|w| w.pool())?.get_systems().values() {
         s.try_borrow_mut()?.update(world, event, delta)?;
     }
 

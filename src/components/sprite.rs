@@ -12,7 +12,6 @@ use glium::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-#[derive(Clone)]
 pub struct Sprite<'a> {
     pub color: Vector4<f32>,
     pub shape: Rc<RefCell<Shape>>,
