@@ -2,9 +2,9 @@ pub mod vertex;
 
 pub use vertex::Vertex;
 
+use crate::ecs::{self, Type};
 use cgmath::{Vector2, Zero};
 use glium::{index::PrimitiveType, Display, IndexBuffer, VertexBuffer};
-use std::{cell::RefCell, rc::Rc};
 
 pub struct Shape {
     pub vertices: VertexBuffer<Vertex>,
@@ -16,14 +16,14 @@ impl Shape {
         display: &Display,
         vertices: &[Vertex],
         indices: &[u32],
-    ) -> anyhow::Result<Rc<RefCell<Self>>> {
-        Ok(Rc::new(RefCell::new(Self {
+    ) -> anyhow::Result<Type<Self>> {
+        Ok(ecs::new(Self {
             vertices: VertexBuffer::new(display, vertices)?,
             indices: IndexBuffer::immutable(display, PrimitiveType::TrianglesList, indices)?,
-        })))
+        }))
     }
 
-    pub fn new_rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Rc<RefCell<Self>>> {
+    pub fn new_rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Type<Self>> {
         let indices = [0, 1, 2, 1, 3, 2];
         let vertices = {
             let dims = dims / 2.0;

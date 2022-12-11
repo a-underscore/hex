@@ -1,29 +1,25 @@
-use crate::ecs::{self, Component, Id};
+use crate::ecs::{self, Component, Id, Type};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
-use std::{cell::RefCell, rc::Rc};
 
+#[derive(Clone)]
 pub struct Transform {
     position: Vector2<f32>,
-    rotation: f32,
+    rotation: Rad<f32>,
     scale: Vector2<f32>,
     transform: Matrix3<f32>,
 }
 
 impl Transform {
-    thread_local! {
-        pub static ID: Id = ecs::id("transform");
-    }
-
-    pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
+    pub fn new(position: Vector2<f32>, rotation: Rad<f32>, scale: Vector2<f32>) -> Type<Self> {
+        ecs::new(Self {
             position,
             rotation,
             scale,
             transform: Self::calculate_transform(position, rotation, scale),
-        }))
+        })
     }
 
-    pub fn get_position(&self) -> Vector2<f32> {
+    pub fn position(&self) -> Vector2<f32> {
         self.position
     }
 
@@ -33,17 +29,17 @@ impl Transform {
         self.update_transform();
     }
 
-    pub fn get_rotation(&self) -> f32 {
+    pub fn rotation(&self) -> Rad<f32> {
         self.rotation
     }
 
-    pub fn set_rotation(&mut self, rotation: f32) {
+    pub fn set_rotation(&mut self, rotation: Rad<f32>) {
         self.rotation = rotation;
 
         self.update_transform();
     }
 
-    pub fn get_scale(&self) -> Vector2<f32> {
+    pub fn scale(&self) -> Vector2<f32> {
         self.scale
     }
 
@@ -53,7 +49,7 @@ impl Transform {
         self.update_transform();
     }
 
-    pub fn get_transform(&self) -> Matrix3<f32> {
+    pub fn transform(&self) -> Matrix3<f32> {
         self.transform
     }
 
@@ -63,17 +59,17 @@ impl Transform {
 
     fn calculate_transform(
         position: Vector2<f32>,
-        rotation: f32,
+        rotation: Rad<f32>,
         scale: Vector2<f32>,
     ) -> Matrix3<f32> {
         Matrix3::from_translation(position)
-            * Matrix3::from(Matrix2::from_angle(Rad(rotation)))
+            * Matrix3::from(Matrix2::from_angle(rotation))
             * Matrix3::from_nonuniform_scale(scale.x, scale.y)
     }
 }
 
 impl Component for Transform {
-    fn get_id() -> Id {
-        ecs::tid(&Self::ID)
+    fn id() -> Id {
+        ecs::id("transform")
     }
 }

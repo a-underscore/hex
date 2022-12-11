@@ -1,146 +1,79 @@
-use super::{Component, GenericComponent, GenericEntity, GenericSystem, Id, System, ToMut, ToRef};
-use std::{
-    cell::{Ref, RefCell, RefMut},
-    collections::HashMap,
-    rc::Rc,
-};
+use super::{cast, new, Component, Entity, Id, System, Type};
+use glium::glutin::event::Event;
+use std::collections::BTreeMap;
 
+#[derive(Clone)]
 pub struct World {
-    entities: HashMap<Id, GenericEntity>,
-    systems: HashMap<Id, GenericSystem>,
+    pub entities: BTreeMap<Id, (Id, Type<Entity>)>,
+    pub systems: BTreeMap<Id, (Id, Type<dyn System>)>,
 }
 
 impl World {
-    pub fn new() -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
-            entities: HashMap::new(),
-            systems: HashMap::new(),
-        }))
+    pub fn new() -> Type<Self> {
+        new(Self {
+            entities: BTreeMap::new(),
+            systems: BTreeMap::new(),
+        })
     }
 
-    pub fn get_entities(&self) -> &HashMap<Id, GenericEntity> {
-        &self.entities
+    pub fn entities(&self) -> Vec<(Id, Type<Entity>)> {
+        self.entities.values().cloned().collect()
     }
 
-    pub fn change_id(&mut self, old: &Id, new: &Id) {
-        if let Some((_, e)) = self.remove(old) {
-            self.add(&(new.clone(), e));
-        };
-    }
-
-    pub fn add(&mut self, e @ (id, _): &GenericEntity) {
+    pub fn add(&mut self, e @ (id, _): &(Id, Type<Entity>)) {
         self.entities.insert(id.clone(), e.clone());
     }
 
-    pub fn get(&self, id: &Id) -> Option<GenericEntity> {
-        Some(self.entities.get(id.as_ref())?.clone())
+    pub fn get(&self, id: &Id) -> Option<(Id, Type<Entity>)> {
+        Some(self.entities.get(id)?.clone())
     }
 
-    pub fn get_all(&self, id: &Id) -> Vec<(GenericEntity, GenericComponent)> {
-        self.entities
-            .values()
-            .filter_map(|p @ (_, e)| Some((p.clone(), e.try_borrow().ok()?.get(id)?.clone())))
-            .collect()
+    pub fn remove(&mut self, id: &Id) -> Option<(Id, Type<Entity>)> {
+        self.entities.remove(id)
     }
 
-    pub fn get_all_ref<C>(&self) -> Vec<(GenericEntity, Ref<C>)>
-    where
-        C: Component + 'static,
-    {
-        self.entities
-            .values()
-            .filter_map(|p @ (_, e)| {
-                Some((
-                    p.clone(),
-                    unsafe { e.try_borrow_unguarded() }.ok()?.get_ref()?,
-                ))
-            })
-            .collect()
+    pub fn systems(&self) -> Vec<(Id, Type<dyn System>)> {
+        self.systems.values().cloned().collect()
     }
 
-    pub fn get_all_mut<C>(&self) -> Vec<(GenericEntity, RefMut<C>)>
-    where
-        C: Component + 'static,
-    {
-        self.entities
-            .values()
-            .filter_map(|p @ (_, e)| {
-                Some((
-                    p.clone(),
-                    unsafe { e.try_borrow_unguarded() }.ok()?.get_ref_mut()?,
-                ))
-            })
-            .collect()
-    }
-
-    pub fn get_all_with(&self, ids: &[&Id]) -> Vec<(GenericEntity, Vec<GenericComponent>)> {
-        self.entities
-            .values()
-            .filter_map(|p @ (_, e)| {
-                Some((
-                    p.clone(),
-                    ids.iter()
-                        .map(|id| Some(e.try_borrow().ok()?.get(id)?.clone()))
-                        .collect::<Option<Vec<_>>>()?,
-                ))
-            })
-            .collect()
-    }
-
-    pub fn remove(&mut self, id: &Id) -> Option<GenericEntity> {
-        self.entities.remove(id.as_ref())
-    }
-
-    pub fn get_systems(&self) -> &HashMap<Id, GenericSystem> {
-        &self.systems
-    }
-
-    pub fn add_generic_system(&mut self, s @ (id, _): &GenericSystem) {
+    pub fn add_generic_system(&mut self, s @ (id, _): &(Id, Type<dyn System>)) {
         self.systems.insert(id.clone(), s.clone());
     }
 
-    pub fn add_system<S>(&mut self, system: &Rc<RefCell<S>>)
+    pub fn add_system<S>(&mut self, s: &Type<S>)
     where
         S: System + Component + 'static,
     {
-        self.add_generic_system(&(S::get_id(), system.clone()))
+        self.add_generic_system(&(S::id(), s.clone()))
     }
 
-    pub fn get_system(&self, id: &Id) -> Option<&GenericSystem> {
+    pub fn system_generic(&self, id: &Id) -> Option<&(Id, Type<dyn System>)> {
         self.systems.get(id)
     }
 
-    pub fn get_system_ref<S>(&self) -> Option<Ref<S>>
+    pub fn system<S>(&self) -> Option<Type<S>>
     where
-        S: Component + System + 'static,
+        S: System + Component,
     {
-        self.get_system(&S::get_id())
-            .and_then(|(_, s)| Ref::filter_map(s.try_borrow().ok()?, |s| s.to_ref()).ok())
+        self.system_generic(&S::id()).map(|(_, s)| cast(s))
     }
 
-    pub fn get_system_ref_mut<S>(&self) -> Option<RefMut<S>>
+    pub fn remove_generic_system(&mut self, id: &Id) -> Option<(Id, Type<dyn System>)> {
+        self.systems.remove(id)
+    }
+
+    pub fn remove_system<S>(&mut self) -> Option<(Id, Type<dyn System>)>
     where
-        S: Component + System + 'static,
+        S: Component,
     {
-        self.get_system(&S::get_id())
-            .and_then(|(_, s)| RefMut::filter_map(s.try_borrow_mut().ok()?, |s| s.to_mut()).ok())
+        self.remove_generic_system(&S::id())
     }
 
-    pub fn remove_generic_system(&mut self, id: &Id) -> Option<GenericSystem> {
-        self.systems.remove(id.as_ref())
-    }
-
-    pub fn remove_system<S>(&mut self) -> Option<GenericSystem>
-    where
-        S: Component + 'static,
-    {
-        self.remove_generic_system(&S::get_id())
-    }
-
-    pub fn pool(&self) -> Self {
-        Self {
-            entities: self.entities.clone(),
-            systems: self.systems.clone(),
+    pub fn update(&mut self, event: &Event<()>) -> anyhow::Result<()> {
+        for (_, s) in self.systems.clone().values() {
+            s.try_borrow_mut()?.update(self, event)?;
         }
+
+        Ok(())
     }
 }

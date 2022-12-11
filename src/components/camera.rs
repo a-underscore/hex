@@ -1,7 +1,7 @@
-use crate::ecs::{self, Component, Id};
+use crate::ecs::{self, Component, Id, Type};
 use cgmath::Matrix4;
-use std::{cell::RefCell, rc::Rc};
 
+#[derive(Clone)]
 pub struct Camera {
     left: f32,
     right: f32,
@@ -14,10 +14,6 @@ pub struct Camera {
 }
 
 impl Camera {
-    thread_local! {
-        pub static ID: Id = ecs::id("camera");
-    }
-
     pub fn new(
         left: f32,
         right: f32,
@@ -26,8 +22,8 @@ impl Camera {
         near: f32,
         far: f32,
         active: bool,
-    ) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
+    ) -> Type<Self> {
+        ecs::new(Self {
             left,
             right,
             bottom,
@@ -36,10 +32,10 @@ impl Camera {
             far,
             view: Self::calculate_view(left, right, bottom, top, near, far),
             active,
-        }))
+        })
     }
 
-    pub fn get_left(&self) -> f32 {
+    pub fn left(&self) -> f32 {
         self.left
     }
 
@@ -49,7 +45,7 @@ impl Camera {
         self.update_view();
     }
 
-    pub fn get_right(&self) -> f32 {
+    pub fn right(&self) -> f32 {
         self.right
     }
 
@@ -59,7 +55,7 @@ impl Camera {
         self.update_view();
     }
 
-    pub fn get_bottom(&self) -> f32 {
+    pub fn bottom(&self) -> f32 {
         self.bottom
     }
 
@@ -69,7 +65,7 @@ impl Camera {
         self.update_view();
     }
 
-    pub fn get_top(&self) -> f32 {
+    pub fn top(&self) -> f32 {
         self.top
     }
 
@@ -79,7 +75,7 @@ impl Camera {
         self.update_view();
     }
 
-    pub fn get_near(&self) -> f32 {
+    pub fn near(&self) -> f32 {
         self.near
     }
 
@@ -89,7 +85,7 @@ impl Camera {
         self.update_view();
     }
 
-    pub fn get_far(&self) -> f32 {
+    pub fn far(&self) -> f32 {
         self.far
     }
 
@@ -99,7 +95,7 @@ impl Camera {
         self.update_view();
     }
 
-    pub fn get_view(&self) -> Matrix4<f32> {
+    pub fn view(&self) -> Matrix4<f32> {
         self.view
     }
 
@@ -115,7 +111,7 @@ impl Camera {
     }
 
     fn update_view(&mut self) {
-        Self::calculate_view(
+        self.view = Self::calculate_view(
             self.left,
             self.right,
             self.bottom,
@@ -127,7 +123,7 @@ impl Camera {
 }
 
 impl Component for Camera {
-    fn get_id() -> Id {
-        ecs::tid(&Self::ID)
+    fn id() -> Id {
+        ecs::id("camera")
     }
 }

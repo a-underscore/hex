@@ -1,17 +1,23 @@
-#version 440
+#version 330
 
-#extension GL_ARB_bindless_texture : require
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+
+precision highp float;
+
+#else
+
+precision mediump float;
+
+#endif
 
 in vec2 tex_pos;
 
 out vec4 frag_color;
 
-layout(std140, binding = 0) uniform Uniform {
-	sampler2D image;
-};
+uniform sampler2D image;
 
 uniform vec4 color;
 
-void main() {
+void main(void) {
 	frag_color = texture(image, tex_pos) * color;
 }

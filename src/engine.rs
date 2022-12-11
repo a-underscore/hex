@@ -1,4 +1,4 @@
-use crate::ecs::{self, World};
+use crate::ecs::{self, Id, Type, World};
 use glium::{
     glutin::{
         event::{Event, WindowEvent},
@@ -8,41 +8,33 @@ use glium::{
     },
     Display,
 };
-use std::{cell::RefCell, rc::Rc, time::Instant};
 
 pub fn setup_display(
     wb: WindowBuilder,
     cb: ContextBuilder<'_, NotCurrent>,
-) -> anyhow::Result<(EventLoop<()>, Rc<RefCell<Display>>)> {
+) -> anyhow::Result<(EventLoop<()>, Type<Display>)> {
     let event_loop = EventLoop::new();
-    let display = Rc::new(RefCell::new(Display::new(wb, cb, &event_loop)?));
+    let display = ecs::new(Display::new(wb, cb, &event_loop)?);
 
     Ok((event_loop, display))
 }
 
 pub fn basic_display(
-    name: &String,
+    name: &Id,
     sample_count: u16,
-) -> anyhow::Result<(EventLoop<()>, Rc<RefCell<Display>>)> {
+) -> anyhow::Result<(EventLoop<()>, Type<Display>)> {
     let wb = WindowBuilder::new().with_title(name);
     let cb = ContextBuilder::new().with_multisampling(sample_count);
 
     setup_display(wb, cb)
 }
 
-pub fn init(world: Rc<RefCell<World>>, event_loop: EventLoop<()>) {
-    let mut old_frame_time = Instant::now();
-
+pub fn init(world: Type<World>, event_loop: EventLoop<()>) {
     event_loop.run(move |event, _, control_flow| {
-        let frame_time = Instant::now();
-        let delta = frame_time.duration_since(old_frame_time);
-
-        old_frame_time = frame_time;
-
         *control_flow = ControlFlow::Poll;
 
-        if let Err(e) = ecs::update(&world, &event, delta) {
-            println!("{:?}", e);
+        if let Err(e) = ecs::update(&world, &event) {
+            eprintln!("{:?}", e);
         }
 
         if let Event::WindowEvent {

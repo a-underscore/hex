@@ -1,42 +1,38 @@
 use crate::{
-    assets::{shaders::Uniforms, texture::TextureBuffer, Shaders, Shape},
+    assets::{Shaders, Shape, Texture},
     components::{Camera, Transform},
-    ecs::{self, Component, Id},
+    ecs::{self, Component, Id, Type},
 };
 use cgmath::Vector4;
 use glium::{
     draw_parameters::{Blend, DepthTest},
     uniform,
-    uniforms::UniformBuffer,
-    Depth, Display, DrawParameters, Frame, Surface,
+    uniforms::Sampler,
+    Depth, DrawParameters, Frame, Surface,
 };
-use std::{cell::RefCell, rc::Rc};
 
+#[derive(Clone)]
 pub struct Sprite<'a> {
     pub color: Vector4<f32>,
-    pub shape: Rc<RefCell<Shape>>,
-    pub texture: Rc<RefCell<dyn TextureBuffer>>,
-    pub shaders: Rc<RefCell<Shaders>>,
-    pub draw_parameters: Rc<RefCell<DrawParameters<'a>>>,
+    pub shape: Type<Shape>,
+    pub texture: Type<Texture>,
+    pub shaders: Type<Shaders>,
+    pub draw_parameters: Type<DrawParameters<'a>>,
     pub z: f32,
     pub active: bool,
 }
 
 impl<'a> Sprite<'a> {
-    thread_local! {
-        pub static ID: Id = ecs::id("sprite");
-    }
-
     pub fn new(
         color: Vector4<f32>,
-        shape: Rc<RefCell<Shape>>,
-        texture: Rc<RefCell<dyn TextureBuffer>>,
-        shaders: Rc<RefCell<Shaders>>,
-        draw_parameters: Rc<RefCell<DrawParameters<'a>>>,
+        shape: Type<Shape>,
+        texture: Type<Texture>,
+        shaders: Type<Shaders>,
+        draw_parameters: Type<DrawParameters<'a>>,
         z: f32,
         active: bool,
-    ) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
+    ) -> Type<Self> {
+        ecs::new(Self {
             color,
             shape,
             texture,
@@ -44,23 +40,23 @@ impl<'a> Sprite<'a> {
             draw_parameters,
             z,
             active,
-        }))
+        })
     }
 
     pub fn new_default(
         color: Vector4<f32>,
-        shape: Rc<RefCell<Shape>>,
-        texture: Rc<RefCell<dyn TextureBuffer>>,
-        shaders: Rc<RefCell<Shaders>>,
+        shape: Type<Shape>,
+        texture: Type<Texture>,
+        shaders: Type<Shaders>,
         z: f32,
         active: bool,
-    ) -> Rc<RefCell<Self>> {
+    ) -> Type<Self> {
         Self::new(
             color,
             shape,
             texture,
             shaders,
-            Rc::new(RefCell::new(DrawParameters {
+            ecs::new(DrawParameters {
                 depth: Depth {
                     test: DepthTest::IfLess,
                     write: true,
@@ -68,7 +64,7 @@ impl<'a> Sprite<'a> {
                 },
                 blend: Blend::alpha_blending(),
                 ..Default::default()
-            })),
+            }),
             z,
             active,
         )
@@ -76,7 +72,6 @@ impl<'a> Sprite<'a> {
 
     pub fn draw(
         &self,
-        display: &Display,
         target: &mut Frame,
         transform: &Transform,
         camera: &Camera,
@@ -84,19 +79,18 @@ impl<'a> Sprite<'a> {
     ) -> anyhow::Result<()> {
         if self.active {
             let color: [f32; 4] = self.color.into();
-            let transform: [[f32; 3]; 3] = transform.get_transform().into();
-            let camera_view: [[f32; 4]; 4] = camera.get_view().into();
-            let camera_transform: [[f32; 3]; 3] = camera_transform.get_transform().into();
-            let mut texture = self.texture.try_borrow_mut()?;
-            let image = texture.handle()?;
-            let buffer = UniformBuffer::new(display, Uniforms::new(image))?;
+            let transform: [[f32; 3]; 3] = transform.transform().into();
+            let camera_view: [[f32; 4]; 4] = camera.view().into();
+            let camera_transform: [[f32; 3]; 3] = camera_transform.transform().into();
+            let texture = self.texture.try_borrow()?;
+            let image = Sampler(&texture.buffer, texture.sampler_behaviour);
             let uniform = uniform! {
                 z: self.z,
                 transform: transform,
                 camera_transform: camera_transform,
                 camera_view: camera_view,
                 color: color,
-                Uniform: &*buffer
+                image: image,
             };
             let shape = self.shape.try_borrow()?;
             let shaders = self.shaders.try_borrow()?;
@@ -115,8 +109,8 @@ impl<'a> Sprite<'a> {
     }
 }
 
-impl Component for Sprite<'static> {
-    fn get_id() -> Id {
-        ecs::tid(&Self::ID)
+impl<'a> Component for Sprite<'a> {
+    fn id() -> Id {
+        ecs::id("sprite")
     }
 }

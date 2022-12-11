@@ -2,39 +2,35 @@ pub mod as_any;
 pub mod component;
 pub mod entity;
 pub mod system;
-pub mod to_mut;
-pub mod to_ref;
 pub mod world;
 
 pub use as_any::AsAny;
-pub use component::{Component, GenericComponent};
-pub use entity::{Entity, GenericEntity};
-pub use system::{GenericSystem, System};
-pub use to_mut::ToMut;
-pub use to_ref::ToRef;
+pub use component::Component;
+pub use entity::Entity;
+pub use system::System;
 pub use world::World;
 
 use glium::glutin::event::Event;
-use std::{cell::RefCell, rc::Rc, thread::LocalKey, time::Duration};
+use std::{cell::RefCell, mem, rc::Rc};
 
-pub type Id = Rc<String>;
+pub type Id = String;
+pub type Type<T> = Rc<RefCell<T>>;
+
+pub fn new<T>(t: T) -> Type<T> {
+    Rc::new(RefCell::new(t))
+}
 
 pub fn id(id: &str) -> Id {
-    Rc::new(id.to_string())
+    id.to_string()
 }
 
-pub fn tid(id: &'static LocalKey<Id>) -> Id {
-    id.with(|c| c.clone())
+pub fn cast<F, T>(f: &Type<F>) -> Type<T>
+where
+    F: ?Sized,
+{
+    unsafe { mem::transmute::<_, &Type<T>>(f) }.clone()
 }
 
-pub fn update(
-    world: &Rc<RefCell<World>>,
-    event: &Event<()>,
-    delta: Duration,
-) -> anyhow::Result<()> {
-    for (_, s) in world.try_borrow().map(|w| w.pool())?.get_systems().values() {
-        s.try_borrow_mut()?.update(world, event, delta)?;
-    }
-
-    Ok(())
+pub fn update(world: &Type<World>, event: &Event<()>) -> anyhow::Result<()> {
+    world.try_borrow_mut()?.update(event)
 }
