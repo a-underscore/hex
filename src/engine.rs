@@ -22,9 +22,12 @@ pub fn setup_display(
 pub fn basic_display(
     name: &Id,
     sample_count: u16,
+    vsync: bool,
 ) -> anyhow::Result<(EventLoop<()>, Type<Display>)> {
     let wb = WindowBuilder::new().with_title(name);
-    let cb = ContextBuilder::new().with_multisampling(sample_count);
+    let cb = ContextBuilder::new()
+        .with_multisampling(sample_count)
+        .with_vsync(vsync);
 
     setup_display(wb, cb)
 }
