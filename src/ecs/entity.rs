@@ -1,15 +1,15 @@
 use super::{cast, new, AsAny, Component, Id, Type};
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct Entity {
-    pub components: BTreeMap<Id, (Id, Type<dyn AsAny>)>,
+    pub components: HashMap<Id, (Id, Type<dyn AsAny>)>,
 }
 
 impl Entity {
     pub fn new() -> Type<Self> {
         new(Self {
-            components: BTreeMap::new(),
+            components: HashMap::new(),
         })
     }
 

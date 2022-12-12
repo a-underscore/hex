@@ -1,18 +1,18 @@
 use super::{cast, new, Component, Entity, Id, System, Type};
 use glium::glutin::event::Event;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct World {
-    pub entities: BTreeMap<Id, (Id, Type<Entity>)>,
-    pub systems: BTreeMap<Id, (Id, Type<dyn System>)>,
+    pub entities: HashMap<Id, (Id, Type<Entity>)>,
+    pub systems: HashMap<Id, (Id, Type<dyn System>)>,
 }
 
 impl World {
     pub fn new() -> Type<Self> {
         new(Self {
-            entities: BTreeMap::new(),
-            systems: BTreeMap::new(),
+            entities: HashMap::new(),
+            systems: HashMap::new(),
         })
     }
 

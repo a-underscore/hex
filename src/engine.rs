@@ -24,7 +24,7 @@ pub fn basic_display(
     sample_count: u16,
     vsync: bool,
 ) -> anyhow::Result<(EventLoop<()>, Type<Display>)> {
-    let wb = WindowBuilder::new().with_title(name);
+    let wb = WindowBuilder::new().with_title((**name).clone());
     let cb = ContextBuilder::new()
         .with_multisampling(sample_count)
         .with_vsync(vsync);

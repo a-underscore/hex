@@ -13,7 +13,7 @@ pub use world::World;
 use glium::glutin::event::Event;
 use std::{cell::RefCell, mem, rc::Rc};
 
-pub type Id = String;
+pub type Id = Rc<String>;
 pub type Type<T> = Rc<RefCell<T>>;
 
 pub fn new<T>(t: T) -> Type<T> {
@@ -21,7 +21,7 @@ pub fn new<T>(t: T) -> Type<T> {
 }
 
 pub fn id(id: &str) -> Id {
-    id.to_string()
+    Rc::new(id.to_string())
 }
 
 pub fn cast<F, T>(f: &Type<F>) -> Type<T>
