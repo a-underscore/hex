@@ -70,12 +70,8 @@ impl World {
     }
 
     pub fn update(&mut self, event: &Event<()>) -> anyhow::Result<()> {
-        for s @ (id, sy) in self.systems.clone().values() {
-            self.remove_generic_system(id);
-
-            sy.try_borrow_mut()?.update(self, event)?;
-
-            self.add_generic_system(s);
+        for (_, s) in self.systems.clone().values() {
+            s.try_borrow_mut()?.update(self, event)?;
         }
 
         Ok(())
