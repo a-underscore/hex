@@ -32,6 +32,14 @@ impl World {
         self.entities.remove(id)
     }
 
+    pub fn update_id(&mut self, id: &Id, new: &Id) -> Option<()> {
+        let (_, entity) = self.entities.remove(id)?;
+
+        self.add(&(new.clone(), entity));
+
+        Some(())
+    }
+
     pub fn systems(&self) -> Vec<(Id, Type<dyn System>)> {
         self.systems.values().cloned().collect()
     }
