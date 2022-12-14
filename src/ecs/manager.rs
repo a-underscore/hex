@@ -1,9 +1,9 @@
-use super::{cast_mut, cast_ref, Component, Components, Entities};
+use super::{cast_mut, cast_ref, Component, Components};
 use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct Manager {
-    pub entities: Entities,
+    pub components: HashMap<usize, Components>,
 }
 
 impl Manager {
@@ -11,7 +11,7 @@ impl Manager {
     where
         C: Component + 'static,
     {
-        self.entities
+        self.components
             .get_mut(&eid)
             .map(|c| c.insert(C::id(), (C::id(), Box::new(component))));
     }
@@ -20,14 +20,14 @@ impl Manager {
     where
         C: Component,
     {
-        self.entities.get_mut(&eid).map(|c| c.remove(&C::id()));
+        self.components.get_mut(&eid).map(|c| c.remove(&C::id()));
     }
 
     pub fn get_c<C>(&self, eid: usize) -> Option<&C>
     where
         C: Component,
     {
-        self.entities
+        self.components
             .get(&eid)?
             .get(&C::id())
             .map(|(_, c)| cast_ref(c))
@@ -37,25 +37,29 @@ impl Manager {
     where
         C: Component,
     {
-        self.entities
+        self.components
             .get_mut(&eid)?
             .get_mut(&C::id())
             .map(|(_, c)| cast_mut(c))
     }
 
     pub fn add_e(&mut self, eid: usize) {
-        self.entities.insert(eid, HashMap::new());
+        self.components.insert(eid, HashMap::new());
     }
 
     pub fn get_e(&self, eid: usize) -> Option<&Components> {
-        self.entities.get(&eid)
+        self.components.get(&eid)
     }
 
     pub fn get_e_mut(&mut self, eid: usize) -> Option<&mut Components> {
-        self.entities.get_mut(&eid)
+        self.components.get_mut(&eid)
     }
 
     pub fn rm_e(&mut self, eid: usize) {
-        self.entities.remove(&eid);
+        self.components.remove(&eid);
+    }
+
+    pub fn entities(&self) -> Vec<usize> {
+        self.components.keys().cloned().collect()
     }
 }

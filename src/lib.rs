@@ -9,7 +9,7 @@ pub use cgmath;
 pub use glium;
 pub use once_cell;
 
-use std::sync::atomic::{Ordering, AtomicUsize};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub fn nid() -> usize {
     static COUNT: AtomicUsize = AtomicUsize::new(0);

@@ -1,28 +1,30 @@
 use crate::{
+    ecs::{Component, Manager},
     id,
-    ecs::{Component, Entities, Components},
 };
 use glium::glutin::event::Event;
-use std::collections::HashMap;
+use std::rc::Rc;
 
 pub struct EventHandler {
-    pub callback: Box<dyn Fn(usize, &mut Entities, &Event<()>)>,
+    pub callback: Rc<dyn Fn(usize, &mut Manager, &Event<()>)>,
     pub active: bool,
 }
 
 impl EventHandler {
-    pub fn new<F>(callback: Box<F>, active: bool) -> Self 
-    where F: Fn(usize, &mut Entities, &Event<()>) + 'static {
+    pub fn new<F>(callback: Rc<F>, active: bool) -> Self
+    where
+        F: Fn(usize, &mut Manager, &Event<()>) + 'static,
+    {
         Self { callback, active }
     }
 
     pub fn update(
-        &mut self,
+        &self,
         parent: usize,
-        entities: &mut HashMap<usize, Components>,
+        manager: &mut Manager,
         event: &Event<()>,
     ) -> anyhow::Result<()> {
-        (self.callback)(parent, entities, event);
+        (self.callback)(parent, manager, event);
 
         Ok(())
     }

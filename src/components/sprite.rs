@@ -65,7 +65,8 @@ impl<'a> Sprite<'a> {
                 blend: Blend::alpha_blending(),
                 ..Default::default()
             },
-            z, active,
+            z,
+            active,
         )
     }
 

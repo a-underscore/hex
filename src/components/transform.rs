@@ -1,4 +1,4 @@
-use crate::{id, ecs::Component};
+use crate::{ecs::Component, id};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
 
 #[derive(Clone)]
