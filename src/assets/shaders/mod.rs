@@ -1,4 +1,3 @@
-use crate::ecs::{self, Type};
 use glium::{Display, Program};
 
 pub const VERTEX_SRC: &str = include_str!("vertex.vsh");
@@ -9,11 +8,11 @@ pub struct Shaders {
 }
 
 impl Shaders {
-    pub fn new(program: Program) -> Type<Self> {
-        ecs::new(Self { program })
+    pub fn new(program: Program) -> Self {
+        Self { program }
     }
 
-    pub fn new_default(display: &Display) -> anyhow::Result<Type<Self>> {
+    pub fn new_default(display: &Display) -> anyhow::Result<Self> {
         let program = Program::from_source(display, VERTEX_SRC, FRAGMENT_SRC, None)?;
 
         Ok(Self::new(program))

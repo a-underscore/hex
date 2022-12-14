@@ -1,6 +1,6 @@
-use super::World;
+use super::Manager;
 use glium::glutin::event::Event;
 
 pub trait System {
-    fn update(&mut self, world: &mut World, event: &Event<()>) -> anyhow::Result<()>;
+    fn update(&mut self, manager: &mut Manager, event: &Event<()>) -> anyhow::Result<()>;
 }

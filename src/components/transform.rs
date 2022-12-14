@@ -1,4 +1,4 @@
-use crate::ecs::{self, Component, Id, Type};
+use crate::{id, ecs::Component};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
 
 #[derive(Clone)]
@@ -10,13 +10,13 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn new(position: Vector2<f32>, rotation: Rad<f32>, scale: Vector2<f32>) -> Type<Self> {
-        ecs::new(Self {
+    pub fn new(position: Vector2<f32>, rotation: Rad<f32>, scale: Vector2<f32>) -> Self {
+        Self {
             position,
             rotation,
             scale,
             transform: Self::calculate_transform(position, rotation, scale),
-        })
+        }
     }
 
     pub fn position(&self) -> Vector2<f32> {
@@ -69,7 +69,7 @@ impl Transform {
 }
 
 impl Component for Transform {
-    fn id() -> Id {
-        ecs::id("transform")
+    fn id() -> usize {
+        id!()
     }
 }

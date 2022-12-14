@@ -1,5 +1,7 @@
-use crate::ecs::{self, Component, Id, Type};
+use crate::ecs::Component;
+use crate::id;
 use cgmath::Matrix4;
+use once_cell::sync::Lazy;
 
 #[derive(Clone)]
 pub struct Camera {
@@ -22,8 +24,8 @@ impl Camera {
         near: f32,
         far: f32,
         active: bool,
-    ) -> Type<Self> {
-        ecs::new(Self {
+    ) -> Self {
+        Self {
             left,
             right,
             bottom,
@@ -32,7 +34,7 @@ impl Camera {
             far,
             view: Self::calculate_view(left, right, bottom, top, near, far),
             active,
-        })
+        }
     }
 
     pub fn left(&self) -> f32 {
@@ -123,7 +125,9 @@ impl Camera {
 }
 
 impl Component for Camera {
-    fn id() -> Id {
-        ecs::id("camera")
+    fn id() -> usize {
+        static ID: Lazy<usize> = Lazy::new(|| id!());
+
+        *ID
     }
 }

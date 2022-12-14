@@ -1,7 +1,8 @@
 use crate::{
     assets::{Shaders, Shape, Texture},
     components::{Camera, Transform},
-    ecs::{self, Component, Id, Type},
+    ecs::Component,
+    id,
 };
 use cgmath::Vector4;
 use glium::{
@@ -11,13 +12,12 @@ use glium::{
     Depth, DrawParameters, Frame, Surface,
 };
 
-#[derive(Clone)]
 pub struct Sprite<'a> {
     pub color: Vector4<f32>,
-    pub shape: Type<Shape>,
-    pub texture: Type<Texture>,
-    pub shaders: Type<Shaders>,
-    pub draw_parameters: Type<DrawParameters<'a>>,
+    pub shape: Shape,
+    pub texture: Texture,
+    pub shaders: Shaders,
+    pub draw_parameters: DrawParameters<'a>,
     pub z: f32,
     pub active: bool,
 }
@@ -25,14 +25,14 @@ pub struct Sprite<'a> {
 impl<'a> Sprite<'a> {
     pub fn new(
         color: Vector4<f32>,
-        shape: Type<Shape>,
-        texture: Type<Texture>,
-        shaders: Type<Shaders>,
-        draw_parameters: Type<DrawParameters<'a>>,
+        shape: Shape,
+        texture: Texture,
+        shaders: Shaders,
+        draw_parameters: DrawParameters<'a>,
         z: f32,
         active: bool,
-    ) -> Type<Self> {
-        ecs::new(Self {
+    ) -> Self {
+        Self {
             color,
             shape,
             texture,
@@ -40,23 +40,23 @@ impl<'a> Sprite<'a> {
             draw_parameters,
             z,
             active,
-        })
+        }
     }
 
     pub fn new_default(
         color: Vector4<f32>,
-        shape: Type<Shape>,
-        texture: Type<Texture>,
-        shaders: Type<Shaders>,
+        shape: Shape,
+        texture: Texture,
+        shaders: Shaders,
         z: f32,
         active: bool,
-    ) -> Type<Self> {
+    ) -> Self {
         Self::new(
             color,
             shape,
             texture,
             shaders,
-            ecs::new(DrawParameters {
+            DrawParameters {
                 depth: Depth {
                     test: DepthTest::IfLess,
                     write: true,
@@ -64,9 +64,8 @@ impl<'a> Sprite<'a> {
                 },
                 blend: Blend::alpha_blending(),
                 ..Default::default()
-            }),
-            z,
-            active,
+            },
+            z, active,
         )
     }
 
@@ -82,8 +81,7 @@ impl<'a> Sprite<'a> {
             let transform: [[f32; 3]; 3] = transform.transform().into();
             let camera_view: [[f32; 4]; 4] = camera.view().into();
             let camera_transform: [[f32; 3]; 3] = camera_transform.transform().into();
-            let texture = self.texture.try_borrow()?;
-            let image = Sampler(&texture.buffer, texture.sampler_behaviour);
+            let image = Sampler(&self.texture.buffer, self.texture.sampler_behaviour);
             let uniform = uniform! {
                 z: self.z,
                 transform: transform,
@@ -92,16 +90,13 @@ impl<'a> Sprite<'a> {
                 color: color,
                 image: image,
             };
-            let shape = self.shape.try_borrow()?;
-            let shaders = self.shaders.try_borrow()?;
-            let draw_parameters = self.draw_parameters.try_borrow()?;
 
             target.draw(
-                &shape.vertices,
-                &shape.indices,
-                &shaders.program,
+                &self.shape.vertices,
+                &self.shape.indices,
+                &self.shaders.program,
                 &uniform,
-                &draw_parameters,
+                &self.draw_parameters,
             )?;
         }
 
@@ -110,7 +105,7 @@ impl<'a> Sprite<'a> {
 }
 
 impl<'a> Component for Sprite<'a> {
-    fn id() -> Id {
-        ecs::id("sprite")
+    fn id() -> usize {
+        id!()
     }
 }

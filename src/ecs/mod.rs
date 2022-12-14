@@ -1,36 +1,30 @@
+use std::{collections::HashMap, mem};
+
 pub mod as_any;
 pub mod component;
-pub mod entity;
+pub mod manager;
 pub mod system;
 pub mod world;
 
 pub use as_any::AsAny;
 pub use component::Component;
-pub use entity::Entity;
+pub use manager::Manager;
 pub use system::System;
 pub use world::World;
 
-use glium::glutin::event::Event;
-use std::{cell::RefCell, mem, rc::Rc};
+pub type Components = HashMap<usize, (usize, Box<dyn AsAny>)>;
+pub type Entities = HashMap<usize, Components>;
 
-pub type Id = Rc<String>;
-pub type Type<T> = Rc<RefCell<T>>;
-
-pub fn new<T>(t: T) -> Type<T> {
-    Rc::new(RefCell::new(t))
-}
-
-pub fn id(id: &str) -> Id {
-    Rc::new(id.to_string())
-}
-
-pub fn cast<F, T>(f: &Type<F>) -> Type<T>
+pub fn cast_ref<F, T>(f: &F) -> &T
 where
     F: ?Sized,
 {
-    unsafe { mem::transmute::<_, &Type<T>>(f) }.clone()
+    unsafe { mem::transmute(&f) }
 }
 
-pub fn update(world: &Type<World>, event: &Event<()>) -> anyhow::Result<()> {
-    world.try_borrow_mut()?.update(event)
+pub fn cast_mut<F, T>(f: &mut Box<F>) -> &mut T
+where
+    F: ?Sized,
+{
+    unsafe { mem::transmute(f) }
 }

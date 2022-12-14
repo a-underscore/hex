@@ -1,4 +1,3 @@
-use crate::ecs::{self, Type};
 use glium::{
     texture::{MipmapsOption, RawImage2d, Texture2d},
     uniforms::SamplerBehavior,
@@ -16,10 +15,10 @@ impl Texture {
         image: RawImage2d<u8>,
         sampler_behaviour: SamplerBehavior,
         mipmaps_option: MipmapsOption,
-    ) -> anyhow::Result<Type<Self>> {
-        Ok(ecs::new(Self {
+    ) -> anyhow::Result<Self> {
+        Ok(Self {
             buffer: Texture2d::with_mipmaps(display, image, mipmaps_option)?,
             sampler_behaviour,
-        }))
+        })
     }
 }

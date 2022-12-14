@@ -7,3 +7,5 @@ edition = "2021"
 anyhow = "1.0.58"
 cgmath = { version = "0.18.0", features = ["swizzle"] }
 glium = "0.32.1"
+once_cell = "1.16.0"
+rand = "0.8.5"
