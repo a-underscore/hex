@@ -13,6 +13,7 @@ use glium::{
 };
 use std::rc::Rc;
 
+#[derive(Clone)]
 pub struct Sprite<'a> {
     pub draw_parameters: DrawParameters<'a>,
     pub shape: Rc<Shape>,
