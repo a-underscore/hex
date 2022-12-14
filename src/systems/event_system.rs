@@ -10,8 +10,11 @@ pub struct EventSystem;
 impl System for EventSystem {
     fn update(&mut self, manager: &mut Manager, event: &Event<()>) -> anyhow::Result<()> {
         for e in manager.entities() {
-            if let Some(ev) = manager.get_c::<EventHandler>(e) {
-                (ev.callback.clone())(e, manager, event);
+            if let Some(callback) = manager
+                .get_c::<EventHandler>(e)
+                .map(|ev| ev.callback.clone())
+            {
+                callback.update(e, manager, event)?;
             }
         }
 

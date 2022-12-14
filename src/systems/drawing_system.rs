@@ -34,7 +34,7 @@ impl System for DrawingSystem {
                         .get_c::<Sprite>(e)
                         .and_then(|s| Some((s, manager.get_c::<Transform>(e)?)))
                     {
-                        s.draw(&mut target, &t, &c, &ct)?;
+                        s.draw(&mut target, t, c, ct)?;
                     }
                 }
             }

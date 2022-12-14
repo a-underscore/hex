@@ -11,51 +11,48 @@ use glium::{
     uniforms::Sampler,
     Depth, DrawParameters, Frame, Surface,
 };
+use std::rc::Rc;
 
 pub struct Sprite<'a> {
-    pub color: Vector4<f32>,
-    pub shape: Shape,
-    pub texture: Texture,
-    pub shaders: Shaders,
     pub draw_parameters: DrawParameters<'a>,
+    pub shape: Rc<Shape>,
+    pub texture: Rc<Texture>,
+    pub shaders: Rc<Shaders>,
+    pub color: Vector4<f32>,
     pub z: f32,
     pub active: bool,
 }
 
 impl<'a> Sprite<'a> {
     pub fn new(
-        color: Vector4<f32>,
-        shape: Shape,
-        texture: Texture,
-        shaders: Shaders,
         draw_parameters: DrawParameters<'a>,
+        shape: Rc<Shape>,
+        texture: Rc<Texture>,
+        shaders: Rc<Shaders>,
+        color: Vector4<f32>,
         z: f32,
         active: bool,
     ) -> Self {
         Self {
-            color,
+            draw_parameters,
             shape,
             texture,
             shaders,
-            draw_parameters,
+            color,
             z,
             active,
         }
     }
 
     pub fn new_default(
+        shape: Rc<Shape>,
+        texture: Rc<Texture>,
+        shaders: Rc<Shaders>,
         color: Vector4<f32>,
-        shape: Shape,
-        texture: Texture,
-        shaders: Shaders,
         z: f32,
         active: bool,
     ) -> Self {
         Self::new(
-            color,
-            shape,
-            texture,
-            shaders,
             DrawParameters {
                 depth: Depth {
                     test: DepthTest::IfLess,
@@ -65,6 +62,10 @@ impl<'a> Sprite<'a> {
                 blend: Blend::alpha_blending(),
                 ..Default::default()
             },
+            shape,
+            texture,
+            shaders,
+            color,
             z,
             active,
         )
