@@ -32,7 +32,7 @@ pub fn basic_display(
     setup_display(wb, cb)
 }
 
-pub fn init(mut world: World<'static>, event_loop: EventLoop<()>) {
+pub fn init(mut world: World<'static, 'static>, event_loop: EventLoop<()>) {
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
 

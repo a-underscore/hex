@@ -2,15 +2,15 @@ use super::{Manager, System};
 use glium::glutin::event::Event;
 
 #[derive(Default)]
-pub struct World<'a> {
+pub struct World<'a, 'b> {
     pub manager: Manager<'a>,
-    pub systems: Vec<Box<dyn System>>,
+    pub systems: Vec<Box<dyn System<'b>>>,
 }
 
-impl<'a> World<'a> {
+impl<'a, 'b> World<'a, 'b> {
     pub fn add_s<S>(&mut self, s: S)
     where
-        S: System + 'static,
+        S: System<'b>,
     {
         self.systems.push(Box::new(s));
     }

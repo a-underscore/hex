@@ -16,7 +16,7 @@ impl DrawingSystem {
     }
 }
 
-impl System for DrawingSystem {
+impl<'b> System<'b> for DrawingSystem {
     fn update(&mut self, manager: &mut Manager, event: &Event<()>) -> anyhow::Result<()> {
         if let Event::MainEventsCleared = event {
             if let Some((c, ct)) = manager.entities().into_iter().find_map(|e| {
