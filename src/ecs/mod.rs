@@ -12,7 +12,7 @@ pub use manager::Manager;
 pub use system::System;
 pub use world::World;
 
-pub type Components<'a> = HashMap<usize, (usize, Box<dyn AsAny<'a>>)>;
+pub type Components<'a> = HashMap<usize, Box<dyn AsAny<'a>>>;
 
 pub fn cast_ref<F, T>(f: &F) -> &T
 where

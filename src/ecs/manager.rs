@@ -13,7 +13,7 @@ impl<'a> Manager<'a> {
     {
         self.components
             .get_mut(&eid)
-            .map(|c| c.insert(C::id(), (C::id(), Box::new(component))));
+            .map(|c| c.insert(C::id(), Box::new(component)));
     }
 
     pub fn rm_c<C>(&mut self, eid: usize)
@@ -30,7 +30,7 @@ impl<'a> Manager<'a> {
         self.components
             .get(&eid)?
             .get(&C::id())
-            .map(|(_, c)| cast_ref(c))
+            .map(|c| cast_ref(c))
     }
 
     pub fn get_c_mut<C>(&mut self, eid: usize) -> Option<&mut C>
@@ -40,7 +40,7 @@ impl<'a> Manager<'a> {
         self.components
             .get_mut(&eid)?
             .get_mut(&C::id())
-            .map(|(_, c)| cast_mut(c))
+            .map(|c| cast_mut(c))
     }
 
     pub fn add_e(&mut self, eid: usize) {
