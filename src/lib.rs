@@ -8,6 +8,7 @@ pub use anyhow;
 pub use cgmath;
 pub use glium;
 pub use once_cell;
+pub use rand;
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 
