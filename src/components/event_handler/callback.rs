@@ -7,5 +7,5 @@ pub trait Callback<'a>: 'a {
         id: usize,
         manager: &mut Manager,
         event: &Event<()>,
-    ) -> anyhow::Result<()>;
+    ) -> anyhow::Result<bool>;
 }

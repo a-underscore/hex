@@ -12,7 +12,7 @@ impl System for EventSystem {
         for e in manager.entities() {
             if let Some(mut ev) = manager.rm_c::<EventHandler>(e) {
                 if ev.active {
-                    ev.callback.callback(e, manager, event)?;
+                    ev.active = ev.callback.callback(e, manager, event)?;
                 }
 
                 manager.add_c(e, ev);
