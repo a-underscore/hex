@@ -12,9 +12,9 @@ impl System for EventSystem {
         for e in manager.entities() {
             if let Some(callback) = manager
                 .get_c::<EventHandler>(e)
-                .map(|ev| ev.callback.clone())
+                .and_then(|ev| ev.active.then_some(ev.callback.clone()))
             {
-                callback.update(e, manager, event)?;
+                callback.callback(e, manager, event)?;
             }
         }
 

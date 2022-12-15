@@ -30,10 +30,9 @@ impl System for DrawingSystem {
                 target.clear_color_and_depth(self.bg.into(), 1.0);
 
                 for e in manager.entities() {
-                    if let Some((s, t)) = manager
-                        .get_c::<Sprite>(e)
-                        .and_then(|s| Some((s, manager.get_c::<Transform>(e)?)))
-                    {
+                    if let Some((s, t)) = manager.get_c::<Sprite>(e).and_then(|s| {
+                        Some((s.active.then_some(s)?, manager.get_c::<Transform>(e)?))
+                    }) {
                         s.draw(&mut target, t, c, ct)?;
                     }
                 }
