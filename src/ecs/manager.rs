@@ -2,14 +2,14 @@ use super::{cast_mut, cast_ref, Component, Components};
 use std::collections::HashMap;
 
 #[derive(Default)]
-pub struct Manager {
-    pub components: HashMap<usize, Components>,
+pub struct Manager<'a> {
+    pub components: HashMap<usize, Components<'a>>,
 }
 
-impl Manager {
+impl<'a> Manager<'a> {
     pub fn add_c<C>(&mut self, eid: usize, component: C)
     where
-        C: Component + 'static,
+        C: Component + 'a,
     {
         self.components
             .get_mut(&eid)
@@ -47,11 +47,17 @@ impl Manager {
         self.components.insert(eid, HashMap::new());
     }
 
-    pub fn get_e(&self, eid: usize) -> Option<&Components> {
+    pub fn get_e<'b>(&'b self, eid: usize) -> Option<&'b Components<'a>>
+    where
+        'a: 'b,
+    {
         self.components.get(&eid)
     }
 
-    pub fn get_e_mut(&mut self, eid: usize) -> Option<&mut Components> {
+    pub fn get_e_mut<'b>(&'b mut self, eid: usize) -> Option<&'b mut Components<'a>>
+    where
+        'a: 'b,
+    {
         self.components.get_mut(&eid)
     }
 

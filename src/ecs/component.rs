@@ -1,7 +1,7 @@
 use super::AsAny;
 
-pub trait Component: AsAny {
+pub trait Component {
     fn id() -> usize;
 }
 
-impl<C> AsAny for C where C: Component {}
+impl<'a, C> AsAny<'a> for C where C: Component + 'a {}

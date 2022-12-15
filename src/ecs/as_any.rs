@@ -1,1 +1,1 @@
-pub trait AsAny {}
+pub trait AsAny<'a>: 'a {}
