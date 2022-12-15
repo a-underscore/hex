@@ -1,4 +1,4 @@
-use super::{cast_mut, cast_ref, Component, Components};
+use super::{cast, cast_mut, cast_ref, Component, Components};
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -16,11 +16,14 @@ impl<'a> Manager<'a> {
             .map(|c| c.insert(C::id(), Box::new(component)));
     }
 
-    pub fn rm_c<C>(&mut self, eid: usize)
+    pub fn rm_c<C>(&mut self, eid: usize) -> Option<C>
     where
         C: Component,
     {
-        self.components.get_mut(&eid).map(|c| c.remove(&C::id()));
+        self.components
+            .get_mut(&eid)
+            .and_then(|c| c.remove(&C::id()))
+            .map(|c| cast(c))
     }
 
     pub fn get_c<C>(&self, eid: usize) -> Option<&C>

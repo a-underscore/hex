@@ -3,23 +3,25 @@ mod callback;
 pub use callback::Callback;
 
 use crate::{ecs::Component, id};
-use std::rc::Rc;
 
-pub struct EventHandler {
-    pub callback: Rc<dyn Callback>,
+pub struct EventHandler<'a> {
+    pub callback: Box<dyn Callback<'a>>,
     pub active: bool,
 }
 
-impl EventHandler {
-    pub fn new<F>(callback: Rc<F>, active: bool) -> Self
+impl<'a> EventHandler<'a> {
+    pub fn new<C>(callback: C, active: bool) -> Self
     where
-        F: Callback + 'static,
+        C: Callback<'a>,
     {
-        Self { callback, active }
+        Self {
+            callback: Box::new(callback),
+            active,
+        }
     }
 }
 
-impl Component for EventHandler {
+impl<'a> Component for EventHandler<'a> {
     fn id() -> usize {
         id!()
     }

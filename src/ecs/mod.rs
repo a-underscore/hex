@@ -14,6 +14,13 @@ pub use world::World;
 
 pub type Components<'a> = HashMap<usize, Box<dyn AsAny<'a>>>;
 
+pub fn cast<F, T>(f: Box<F>) -> T
+where
+    F: ?Sized,
+{
+    unsafe { mem::transmute_copy(&f) }
+}
+
 pub fn cast_ref<F, T>(f: &F) -> &T
 where
     F: ?Sized,
