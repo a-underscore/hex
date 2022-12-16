@@ -11,14 +11,13 @@ use glium::{
     uniforms::Sampler,
     Depth, DrawParameters, Frame, Surface,
 };
-use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct Sprite<'a> {
     pub draw_parameters: DrawParameters<'a>,
-    pub shape: Rc<Shape>,
-    pub texture: Rc<Texture>,
-    pub shaders: Rc<Shaders>,
+    pub shape: &'a Shape,
+    pub texture: &'a Texture,
+    pub shaders: &'a Shaders,
     pub color: Vector4<f32>,
     pub z: f32,
     pub active: bool,
@@ -27,9 +26,9 @@ pub struct Sprite<'a> {
 impl<'a> Sprite<'a> {
     pub fn new(
         draw_parameters: DrawParameters<'a>,
-        shape: Rc<Shape>,
-        texture: Rc<Texture>,
-        shaders: Rc<Shaders>,
+        shape: &'a Shape,
+        texture: &'a Texture,
+        shaders: &'a Shaders,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -46,9 +45,9 @@ impl<'a> Sprite<'a> {
     }
 
     pub fn new_default(
-        shape: Rc<Shape>,
-        texture: Rc<Texture>,
-        shaders: Rc<Shaders>,
+        shape: &'a Shape,
+        texture: &'a Texture,
+        shaders: &'a Shaders,
         color: Vector4<f32>,
         z: f32,
         active: bool,
