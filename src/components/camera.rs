@@ -1,5 +1,5 @@
+use crate::cid;
 use crate::ecs::Component;
-use crate::id;
 use cgmath::Matrix4;
 use once_cell::sync::Lazy;
 
@@ -126,7 +126,7 @@ impl Camera {
 
 impl Component for Camera {
     fn id() -> usize {
-        static ID: Lazy<usize> = Lazy::new(|| id!());
+        static ID: Lazy<usize> = Lazy::new(|| cid!());
 
         *ID
     }

@@ -1,8 +1,8 @@
 use crate::{
     assets::{Shaders, Shape, Texture},
+    cid,
     components::{Camera, Transform},
     ecs::Component,
-    id,
 };
 use cgmath::Vector4;
 use glium::{
@@ -108,6 +108,6 @@ impl<'a, 'b, 'c, 'd> Sprite<'a, 'b, 'c, 'd> {
 
 impl<'a, 'b, 'c, 'd> Component for Sprite<'a, 'b, 'c, 'd> {
     fn id() -> usize {
-        id!()
+        cid!()
     }
 }
