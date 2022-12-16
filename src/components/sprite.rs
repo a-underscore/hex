@@ -13,22 +13,22 @@ use glium::{
 };
 
 #[derive(Clone)]
-pub struct Sprite<'a> {
+pub struct Sprite<'a, 'b, 'c, 'd> {
     pub draw_parameters: DrawParameters<'a>,
-    pub shape: &'a Shape,
-    pub texture: &'a Texture,
-    pub shaders: &'a Shaders,
+    pub shape: &'b Shape,
+    pub texture: &'c Texture,
+    pub shaders: &'d Shaders,
     pub color: Vector4<f32>,
     pub z: f32,
     pub active: bool,
 }
 
-impl<'a> Sprite<'a> {
+impl<'a, 'b, 'c, 'd> Sprite<'a, 'b, 'c, 'd> {
     pub fn new(
         draw_parameters: DrawParameters<'a>,
-        shape: &'a Shape,
-        texture: &'a Texture,
-        shaders: &'a Shaders,
+        shape: &'b Shape,
+        texture: &'c Texture,
+        shaders: &'d Shaders,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -45,9 +45,9 @@ impl<'a> Sprite<'a> {
     }
 
     pub fn new_default(
-        shape: &'a Shape,
-        texture: &'a Texture,
-        shaders: &'a Shaders,
+        shape: &'b Shape,
+        texture: &'c Texture,
+        shaders: &'d Shaders,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -106,7 +106,7 @@ impl<'a> Sprite<'a> {
     }
 }
 
-impl<'a> Component for Sprite<'a> {
+impl<'a, 'b, 'c, 'd> Component for Sprite<'a, 'b, 'c, 'd> {
     fn id() -> usize {
         id!()
     }
