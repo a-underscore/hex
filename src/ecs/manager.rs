@@ -45,7 +45,7 @@ impl<'a> Manager<'a> {
     pub fn get_c_gen(&self, eid: usize, cid: usize) -> Option<&dyn AsAny<'a>> {
         self.components
             .get(&eid)
-            .and_then(|c| c.get(&cid).map(|cid| *cid))
+            .and_then(|c| c.get(&cid).copied())
             .and_then(|cid| self.get_c_gen_cached(cid))
     }
 
@@ -116,11 +116,11 @@ impl<'a> Manager<'a> {
         self.components.insert(eid, HashMap::new());
     }
 
-    pub fn get_e<'b>(&'b self, eid: usize) -> Option<&'b HashMap<usize, usize>> {
+    pub fn get_e(&self, eid: usize) -> Option<&HashMap<usize, usize>> {
         self.components.get(&eid)
     }
 
-    pub fn get_e_mut<'b>(&'b mut self, eid: usize) -> Option<&'b mut HashMap<usize, usize>> {
+    pub fn get_e_mut(&mut self, eid: usize) -> Option<&mut HashMap<usize, usize>> {
         self.components.get_mut(&eid)
     }
 
