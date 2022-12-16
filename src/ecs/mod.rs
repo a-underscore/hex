@@ -1,4 +1,4 @@
-use std::{collections::HashMap, mem};
+use std::mem;
 
 pub mod as_any;
 pub mod component;
@@ -11,8 +11,6 @@ pub use component::Component;
 pub use manager::Manager;
 pub use system::System;
 pub use world::World;
-
-pub type Components<'a> = HashMap<usize, Box<dyn AsAny<'a>>>;
 
 pub fn cast<F, T>(f: Box<F>) -> T
 where
