@@ -111,8 +111,8 @@ impl<'a> Manager<'a> {
 
     pub fn rm_e(&mut self, eid: usize) {
         if let Some(e) = self.components.remove(&eid) {
-            for v in e.values() {
-                self.rm_c_gen(eid, *v);
+            for v in e.values().cloned() {
+                self.cache.remove(v);
             }
         }
     }
