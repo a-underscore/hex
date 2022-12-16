@@ -8,11 +8,19 @@ pub struct Manager<'a> {
 }
 
 impl<'a> Manager<'a> {
-    pub fn add_c_generic(&mut self, eid: usize, cid: usize, component: Box<dyn AsAny<'a>>) -> Option<usize> {
+    pub fn add_c_generic(
+        &mut self,
+        eid: usize,
+        cid: usize,
+        component: Box<dyn AsAny<'a>>,
+    ) -> Option<usize> {
         let id = self.cache.len();
 
         self.cache.push(component);
-        self.components.get_mut(&eid).map(|c| c.insert(cid, id)).map(|_| id)
+        self.components
+            .get_mut(&eid)
+            .map(|c| c.insert(cid, id))
+            .map(|_| id)
     }
 
     pub fn add_c<C>(&mut self, eid: usize, component: C) -> Option<usize>
