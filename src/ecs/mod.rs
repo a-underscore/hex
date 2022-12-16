@@ -12,13 +12,6 @@ pub use manager::Manager;
 pub use system::System;
 pub use world::World;
 
-pub fn cast<F, T>(f: Box<F>) -> T
-where
-    F: ?Sized,
-{
-    unsafe { mem::transmute_copy(&f) }
-}
-
 pub fn cast_ref<F, T>(f: &Box<F>) -> &Box<T>
 where
     F: ?Sized,

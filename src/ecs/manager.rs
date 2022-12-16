@@ -16,11 +16,12 @@ impl<'a> Manager<'a> {
     ) -> Option<usize> {
         let id = self.cache.len();
 
-        self.cache.push(component);
         self.components
             .get_mut(&eid)
-            .map(|c| c.insert(cid, id))
-            .map(|_| id)
+            .map(|c| c.insert(cid, id))?;
+        self.cache.push(component);
+        
+        Some(id)
     }
 
     pub fn add_c<C>(&mut self, eid: usize, component: C) -> Option<usize>
