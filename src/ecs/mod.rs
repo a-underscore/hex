@@ -12,16 +12,16 @@ pub use manager::Manager;
 pub use system::System;
 pub use world::World;
 
-pub fn cast_ref<F, T>(f: &Box<F>) -> &Box<T>
+pub fn cast_ref<F, T>(f: &F) -> &T
 where
     F: ?Sized,
 {
-    unsafe { mem::transmute(f) }
+    *unsafe { mem::transmute::<&&F, &&T>(&f) }
 }
 
-pub fn cast_mut<F, T>(f: &mut Box<F>) -> &mut Box<T>
+pub fn cast_mut<F, T>(mut f: &mut F) -> &mut T
 where
     F: ?Sized,
 {
-    unsafe { mem::transmute(f) }
+    *unsafe { mem::transmute::<&mut &mut F, &mut &mut T>(&mut f) }
 }

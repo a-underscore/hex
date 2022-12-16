@@ -16,11 +16,9 @@ impl<'a> Manager<'a> {
     ) -> Option<usize> {
         let id = self.cache.len();
 
-        self.components
-            .get_mut(&eid)
-            .map(|c| c.insert(cid, id))?;
+        self.components.get_mut(&eid).map(|c| c.insert(cid, id))?;
         self.cache.push(component);
-        
+
         Some(id)
     }
 
@@ -44,48 +42,48 @@ impl<'a> Manager<'a> {
         self.rm_c_gen(eid, C::id());
     }
 
-    pub fn get_c_gen(&self, eid: usize, cid: usize) -> Option<&Box<dyn AsAny<'a>>> {
+    pub fn get_c_gen(&self, eid: usize, cid: usize) -> Option<&dyn AsAny<'a>> {
         self.components
             .get(&eid)
-            .and_then(|c| c.get(&cid).map(|c| &self.cache[*c]))
+            .and_then(|c| c.get(&cid).map(|c| self.cache[*c].as_ref()))
     }
 
-    pub fn get_c<C>(&self, eid: usize) -> Option<&Box<C>>
+    pub fn get_c<C>(&self, eid: usize) -> Option<&C>
     where
         C: Component,
     {
-        self.get_c_gen(eid, C::id()).map(|c| cast_ref(c))
+        self.get_c_gen(eid, C::id()).map(cast_ref)
     }
 
-    pub fn get_c_gen_mut(&mut self, eid: usize, cid: usize) -> Option<&mut Box<dyn AsAny<'a>>> {
+    pub fn get_c_gen_mut(&mut self, eid: usize, cid: usize) -> Option<&mut dyn AsAny<'a>> {
         self.components
             .get_mut(&eid)
-            .and_then(|c| c.get_mut(&cid).map(|c| &mut self.cache[*c]))
+            .and_then(|c| c.get_mut(&cid).map(|c| self.cache[*c].as_mut()))
     }
 
-    pub fn get_c_mut<C>(&mut self, eid: usize) -> Option<&mut Box<C>>
+    pub fn get_c_mut<C>(&mut self, eid: usize) -> Option<&mut C>
     where
         C: Component,
     {
         self.get_c_gen_mut(eid, C::id()).map(|c| cast_mut(c))
     }
 
-    pub fn get_c_gen_cached(&mut self, cid: usize) -> Option<&Box<dyn AsAny<'a>>> {
-        self.cache.get(cid)
+    pub fn get_c_gen_cached(&mut self, cid: usize) -> Option<&dyn AsAny<'a>> {
+        self.cache.get(cid).map(|c| c.as_ref())
     }
 
-    pub fn get_c_cached<C>(&mut self, cid: usize) -> Option<&Box<C>>
+    pub fn get_c_cached<C>(&mut self, cid: usize) -> Option<&C>
     where
         C: Component,
     {
-        self.get_c_gen_cached(cid).map(|c| cast_ref(c))
+        self.get_c_gen_cached(cid).map(cast_ref)
     }
 
-    pub fn get_c_gen_cached_mut(&mut self, cid: usize) -> Option<&mut Box<dyn AsAny<'a>>> {
-        self.cache.get_mut(cid)
+    pub fn get_c_gen_cached_mut(&mut self, cid: usize) -> Option<&mut dyn AsAny<'a>> {
+        self.cache.get_mut(cid).map(|c| c.as_mut())
     }
 
-    pub fn get_c_cached_mut<C>(&mut self, cid: usize) -> Option<&mut Box<C>>
+    pub fn get_c_cached_mut<C>(&mut self, cid: usize) -> Option<&mut C>
     where
         C: Component,
     {
