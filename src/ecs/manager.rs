@@ -8,7 +8,7 @@ pub struct Manager<'a> {
 }
 
 impl<'a> Manager<'a> {
-    pub fn add_c_generic(
+    pub fn add_c_gen(
         &mut self,
         eid: usize,
         cid: usize,
@@ -27,10 +27,10 @@ impl<'a> Manager<'a> {
     where
         C: Component + 'a,
     {
-        self.add_c_generic(eid, C::id(), Box::new(component))
+        self.add_c_gen(eid, C::id(), Box::new(component))
     }
 
-    pub fn rm_c_generic(&mut self, eid: usize, cid: usize) {
+    pub fn rm_c_gen(&mut self, eid: usize, cid: usize) {
         if let Some(c) = self.components.get_mut(&eid).and_then(|c| c.remove(&cid)) {
             self.cache.remove(c);
         }
@@ -40,23 +40,23 @@ impl<'a> Manager<'a> {
     where
         C: Component,
     {
-        self.rm_c_generic(eid, C::id());
+        self.rm_c_gen(eid, C::id());
     }
 
-    pub fn get_c_generic(&self, eid: usize, cid: usize) -> Option<&dyn AsAny<'a>> {
+    pub fn get_c_gen(&self, eid: usize, cid: usize) -> Option<&dyn AsAny<'a>> {
         self.components
             .get(&eid)
-            .and_then(|c| c.get(&cid).map(|c| &*self.cache[*c]))
+            .and_then(|c| c.get(&cid).map(|c| self.cache[*c].as_ref()))
     }
 
     pub fn get_c<C>(&self, eid: usize) -> Option<&C>
     where
         C: Component,
     {
-        self.get_c_generic(eid, C::id()).map(|c| cast_ref(c))
+        self.get_c_gen(eid, C::id()).map(|c| cast_ref(c))
     }
 
-    pub fn get_c_generic_mut(&mut self, eid: usize, cid: usize) -> Option<&mut Box<dyn AsAny<'a>>> {
+    pub fn get_c_gen_mut(&mut self, eid: usize, cid: usize) -> Option<&mut Box<dyn AsAny<'a>>> {
         self.components
             .get_mut(&eid)
             .and_then(|c| c.get_mut(&cid).map(|c| &mut self.cache[*c]))
@@ -66,7 +66,29 @@ impl<'a> Manager<'a> {
     where
         C: Component,
     {
-        self.get_c_generic_mut(eid, C::id()).map(|c| cast_mut(c))
+        self.get_c_gen_mut(eid, C::id()).map(|c| cast_mut(c))
+    }
+
+    pub fn get_c_gen_cached(&mut self, cid: usize) -> Option<&dyn AsAny<'a>> {
+        self.cache.get(cid).map(|c| c.as_ref())
+    }
+
+    pub fn get_c_cached<C>(&mut self, cid: usize) -> Option<&C>
+    where
+        C: Component,
+    {
+        self.get_c_gen_cached(cid).map(|c| cast_ref(c))
+    }
+
+    pub fn get_c_gen_cached_mut(&mut self, cid: usize) -> Option<&mut Box<dyn AsAny<'a>>> {
+        self.cache.get_mut(cid)
+    }
+
+    pub fn get_c_cached_mut<C>(&mut self, cid: usize) -> Option<&mut C>
+    where
+        C: Component,
+    {
+        self.get_c_gen_cached_mut(cid).map(|c| cast_mut(c))
     }
 
     pub fn add_e(&mut self, eid: usize) {
@@ -90,7 +112,7 @@ impl<'a> Manager<'a> {
     pub fn rm_e(&mut self, eid: usize) {
         if let Some(e) = self.components.remove(&eid) {
             for v in e.values() {
-                self.rm_c_generic(eid, *v);
+                self.rm_c_gen(eid, *v);
             }
         }
     }
