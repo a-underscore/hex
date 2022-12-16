@@ -19,14 +19,14 @@ where
     unsafe { mem::transmute_copy(&f) }
 }
 
-pub fn cast_ref<F, T>(f: &F) -> &T
+pub fn cast_ref<F, T>(f: &Box<F>) -> &Box<T>
 where
     F: ?Sized,
 {
-    unsafe { mem::transmute(&f) }
+    unsafe { mem::transmute(f) }
 }
 
-pub fn cast_mut<F, T>(f: &mut Box<F>) -> &mut T
+pub fn cast_mut<F, T>(f: &mut Box<F>) -> &mut Box<T>
 where
     F: ?Sized,
 {

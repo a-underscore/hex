@@ -43,13 +43,13 @@ impl<'a> Manager<'a> {
         self.rm_c_gen(eid, C::id());
     }
 
-    pub fn get_c_gen(&self, eid: usize, cid: usize) -> Option<&dyn AsAny<'a>> {
+    pub fn get_c_gen(&self, eid: usize, cid: usize) -> Option<&Box<dyn AsAny<'a>>> {
         self.components
             .get(&eid)
-            .and_then(|c| c.get(&cid).map(|c| self.cache[*c].as_ref()))
+            .and_then(|c| c.get(&cid).map(|c| &self.cache[*c]))
     }
 
-    pub fn get_c<C>(&self, eid: usize) -> Option<&C>
+    pub fn get_c<C>(&self, eid: usize) -> Option<&Box<C>>
     where
         C: Component,
     {
@@ -62,18 +62,18 @@ impl<'a> Manager<'a> {
             .and_then(|c| c.get_mut(&cid).map(|c| &mut self.cache[*c]))
     }
 
-    pub fn get_c_mut<C>(&mut self, eid: usize) -> Option<&mut C>
+    pub fn get_c_mut<C>(&mut self, eid: usize) -> Option<&mut Box<C>>
     where
         C: Component,
     {
         self.get_c_gen_mut(eid, C::id()).map(|c| cast_mut(c))
     }
 
-    pub fn get_c_gen_cached(&mut self, cid: usize) -> Option<&dyn AsAny<'a>> {
-        self.cache.get(cid).map(|c| c.as_ref())
+    pub fn get_c_gen_cached(&mut self, cid: usize) -> Option<&Box<dyn AsAny<'a>>> {
+        self.cache.get(cid)
     }
 
-    pub fn get_c_cached<C>(&mut self, cid: usize) -> Option<&C>
+    pub fn get_c_cached<C>(&mut self, cid: usize) -> Option<&Box<C>>
     where
         C: Component,
     {
@@ -84,14 +84,34 @@ impl<'a> Manager<'a> {
         self.cache.get_mut(cid)
     }
 
-    pub fn get_c_cached_mut<C>(&mut self, cid: usize) -> Option<&mut C>
+    pub fn get_c_cached_mut<C>(&mut self, cid: usize) -> Option<&mut Box<C>>
     where
         C: Component,
     {
         self.get_c_gen_cached_mut(cid).map(|c| cast_mut(c))
     }
 
+    pub fn add_e_next(&mut self) -> Option<usize> {
+        let mut entities = self.entities();
+
+        entities.sort();
+
+        let eid = entities
+            .into_iter()
+            .enumerate()
+            .take_while(|(i, id)| i == id)
+            .last()
+            .map(|(_, id)| id + 1)
+            .unwrap_or(0);
+
+        self.add_e(eid);
+
+        Some(eid)
+    }
+
     pub fn add_e(&mut self, eid: usize) {
+        self.rm_e(eid);
+
         self.components.insert(eid, HashMap::new());
     }
 
