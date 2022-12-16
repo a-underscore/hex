@@ -45,7 +45,8 @@ impl<'a> Manager<'a> {
     pub fn get_c_gen(&self, eid: usize, cid: usize) -> Option<&dyn AsAny<'a>> {
         self.components
             .get(&eid)
-            .and_then(|c| c.get(&cid).map(|c| self.cache[*c].as_ref()))
+            .and_then(|c| c.get(&cid).map(|cid| *cid))
+            .and_then(|cid| self.get_c_gen_cached(cid))
     }
 
     pub fn get_c<C>(&self, eid: usize) -> Option<&C>
@@ -58,7 +59,8 @@ impl<'a> Manager<'a> {
     pub fn get_c_gen_mut(&mut self, eid: usize, cid: usize) -> Option<&mut dyn AsAny<'a>> {
         self.components
             .get_mut(&eid)
-            .and_then(|c| c.get_mut(&cid).map(|c| self.cache[*c].as_mut()))
+            .and_then(|c| c.get_mut(&cid).map(|cid| *cid))
+            .and_then(|cid| self.get_c_gen_cached_mut(cid))
     }
 
     pub fn get_c_mut<C>(&mut self, eid: usize) -> Option<&mut C>
@@ -68,11 +70,11 @@ impl<'a> Manager<'a> {
         self.get_c_gen_mut(eid, C::id()).map(|c| cast_mut(c))
     }
 
-    pub fn get_c_gen_cached(&mut self, cid: usize) -> Option<&dyn AsAny<'a>> {
+    pub fn get_c_gen_cached(&self, cid: usize) -> Option<&dyn AsAny<'a>> {
         self.cache.get(cid).map(|c| c.as_ref())
     }
 
-    pub fn get_c_cached<C>(&mut self, cid: usize) -> Option<&C>
+    pub fn get_c_cached<C>(&self, cid: usize) -> Option<&C>
     where
         C: Component,
     {
@@ -114,17 +116,11 @@ impl<'a> Manager<'a> {
         self.components.insert(eid, HashMap::new());
     }
 
-    pub fn get_e<'b>(&'b self, eid: usize) -> Option<&'b HashMap<usize, usize>>
-    where
-        'a: 'b,
-    {
+    pub fn get_e<'b>(&'b self, eid: usize) -> Option<&'b HashMap<usize, usize>> {
         self.components.get(&eid)
     }
 
-    pub fn get_e_mut<'b>(&'b mut self, eid: usize) -> Option<&'b mut HashMap<usize, usize>>
-    where
-        'a: 'b,
-    {
+    pub fn get_e_mut<'b>(&'b mut self, eid: usize) -> Option<&'b mut HashMap<usize, usize>> {
         self.components.get_mut(&eid)
     }
 
