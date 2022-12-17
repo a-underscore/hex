@@ -15,6 +15,14 @@ impl<'a, 'b> World<'a, 'b> {
         self.systems.push(Box::new(s));
     }
 
+    pub fn init(&mut self) -> anyhow::Result<()> {
+        for s in &mut self.systems {
+            s.init(&mut self.manager)?;
+        }
+
+        Ok(())
+    }
+
     pub fn update(&mut self, event: &Event<()>) -> anyhow::Result<()> {
         for s in &mut self.systems {
             s.update(&mut self.manager, event)?;
