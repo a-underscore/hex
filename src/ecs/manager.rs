@@ -92,7 +92,7 @@ impl<'a> Manager<'a> {
         self.get_c_gen_cached_mut(cid).map(|c| cast_mut(c))
     }
 
-    pub fn add_e_next(&mut self) -> Option<usize> {
+    pub fn add_e_next(&mut self) -> usize {
         let mut entities = self.entities();
 
         entities.sort();
@@ -107,7 +107,7 @@ impl<'a> Manager<'a> {
 
         self.add_e(eid);
 
-        Some(eid)
+        eid
     }
 
     pub fn add_e(&mut self, eid: usize) {
