@@ -1,5 +1,5 @@
 use crate::{
-    assets::{Shaders, Shape, Texture},
+    assets::{Shader, Shape, Texture},
     cid,
     components::{Camera, Transform},
     ecs::Component,
@@ -11,14 +11,12 @@ use glium::{
     uniforms::Sampler,
     Depth, DrawParameters, Frame, Surface,
 };
-use std::rc::Rc;
 
-#[derive(Clone)]
 pub struct Sprite<'a> {
     pub draw_parameters: DrawParameters<'a>,
-    pub shape: Rc<Shape>,
-    pub texture: Rc<Texture>,
-    pub shaders: Rc<Shaders>,
+    pub shape: Shape,
+    pub texture: Texture,
+    pub shader: Shader,
     pub color: Vector4<f32>,
     pub z: f32,
     pub active: bool,
@@ -27,9 +25,9 @@ pub struct Sprite<'a> {
 impl<'a> Sprite<'a> {
     pub fn new(
         draw_parameters: DrawParameters<'a>,
-        shape: Rc<Shape>,
-        texture: Rc<Texture>,
-        shaders: Rc<Shaders>,
+        shape: Shape,
+        texture: Texture,
+        shader: Shader,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -38,7 +36,7 @@ impl<'a> Sprite<'a> {
             draw_parameters,
             shape,
             texture,
-            shaders,
+            shader,
             color,
             z,
             active,
@@ -46,9 +44,9 @@ impl<'a> Sprite<'a> {
     }
 
     pub fn new_default(
-        shape: Rc<Shape>,
-        texture: Rc<Texture>,
-        shaders: Rc<Shaders>,
+        shape: Shape,
+        texture: Texture,
+        shader: Shader,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -65,7 +63,7 @@ impl<'a> Sprite<'a> {
             },
             shape,
             texture,
-            shaders,
+            shader,
             color,
             z,
             active,
@@ -97,7 +95,7 @@ impl<'a> Sprite<'a> {
             target.draw(
                 &self.shape.vertices,
                 &self.shape.indices,
-                &self.shaders.program,
+                &self.shader.program,
                 &uniform,
                 &self.draw_parameters,
             )?;

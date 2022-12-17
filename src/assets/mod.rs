@@ -1,7 +1,7 @@
-pub mod shaders;
+pub mod shader;
 pub mod shape;
 pub mod texture;
 
-pub use shaders::Shaders;
+pub use shader::Shader;
 pub use shape::Shape;
 pub use texture::Texture;

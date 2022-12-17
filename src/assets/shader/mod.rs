@@ -3,11 +3,11 @@ use glium::{Display, Program};
 pub const VERTEX_SRC: &str = include_str!("vertex.vsh");
 pub const FRAGMENT_SRC: &str = include_str!("fragment.fsh");
 
-pub struct Shaders {
+pub struct Shader {
     pub program: Program,
 }
 
-impl Shaders {
+impl Shader {
     pub fn new(program: Program) -> Self {
         Self { program }
     }
