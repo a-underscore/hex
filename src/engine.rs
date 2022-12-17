@@ -19,11 +19,14 @@ pub fn setup_display(
     Ok((event_loop, display))
 }
 
-pub fn basic_display(
-    name: &String,
+pub fn basic_display<S>(
+    name: S,
     sample_count: u16,
     vsync: bool,
-) -> anyhow::Result<(EventLoop<()>, Display)> {
+) -> anyhow::Result<(EventLoop<()>, Display)>
+where
+    S: Into<String>,
+{
     let wb = WindowBuilder::new().with_title(name);
     let cb = ContextBuilder::new()
         .with_multisampling(sample_count)
