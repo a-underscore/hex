@@ -1,21 +1,22 @@
-    use std::sync::atomic::{AtomicUsize, Ordering};
 
-    pub fn eid() -> usize {
-        static COUNT: AtomicUsize = AtomicUsize::new(0);
+use std::sync::atomic::{AtomicUsize, Ordering};
 
-        let id = COUNT.load(Ordering::Acquire);
+pub fn eid() -> usize {
+    static COUNT: AtomicUsize = AtomicUsize::new(0);
 
-        COUNT.store(id + 1, Ordering::Release);
+    let id = COUNT.load(Ordering::Acquire);
 
-        id
-    }
+    COUNT.store(id + 1, Ordering::Release);
 
-    pub fn cid() -> usize {
-        static COUNT: AtomicUsize = AtomicUsize::new(0);
+    id
+}
 
-        let id = COUNT.load(Ordering::Acquire);
+pub fn cid() -> usize {
+    static COUNT: AtomicUsize = AtomicUsize::new(0);
 
-        COUNT.store(id + 1, Ordering::Release);
+    let id = COUNT.load(Ordering::Acquire);
 
-        id
-    }
+    COUNT.store(id + 1, Ordering::Release);
+
+    id
+}
