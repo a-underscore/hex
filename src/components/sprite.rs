@@ -11,24 +11,25 @@ use glium::{
     uniforms::Sampler,
     Depth, DrawParameters, Frame, Surface,
 };
+use std::rc::Rc;
 
 #[derive(Clone)]
-pub struct Sprite<'a, 'b, 'c, 'd> {
+pub struct Sprite<'a> {
     pub draw_parameters: DrawParameters<'a>,
-    pub shape: &'b Shape,
-    pub texture: &'c Texture,
-    pub shaders: &'d Shaders,
+    pub shape: Rc<Shape>,
+    pub texture: Rc<Texture>,
+    pub shaders: Rc<Shaders>,
     pub color: Vector4<f32>,
     pub z: f32,
     pub active: bool,
 }
 
-impl<'a, 'b, 'c, 'd> Sprite<'a, 'b, 'c, 'd> {
+impl<'a> Sprite<'a> {
     pub fn new(
         draw_parameters: DrawParameters<'a>,
-        shape: &'b Shape,
-        texture: &'c Texture,
-        shaders: &'d Shaders,
+        shape: Rc<Shape>,
+        texture: Rc<Texture>,
+        shaders: Rc<Shaders>,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -45,9 +46,9 @@ impl<'a, 'b, 'c, 'd> Sprite<'a, 'b, 'c, 'd> {
     }
 
     pub fn new_default(
-        shape: &'b Shape,
-        texture: &'c Texture,
-        shaders: &'d Shaders,
+        shape: Rc<Shape>,
+        texture: Rc<Texture>,
+        shaders: Rc<Shaders>,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -106,7 +107,7 @@ impl<'a, 'b, 'c, 'd> Sprite<'a, 'b, 'c, 'd> {
     }
 }
 
-impl<'a, 'b, 'c, 'd> Component for Sprite<'a, 'b, 'c, 'd> {
+impl<'a> Component for Sprite<'a> {
     fn id() -> usize {
         cid!()
     }
