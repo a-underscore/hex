@@ -12,22 +12,23 @@ use glium::{
     Depth, DrawParameters, Frame, Surface,
 };
 
-pub struct Sprite<'a> {
+#[derive(Clone)]
+pub struct Sprite<'a, 'b, 'c, 'd> {
     pub draw_parameters: DrawParameters<'a>,
-    pub shape: Shape,
-    pub texture: Texture,
-    pub shader: Shader,
+    pub shape: &'b Shape,
+    pub texture: &'c Texture,
+    pub shaders: &'d Shader,
     pub color: Vector4<f32>,
     pub z: f32,
     pub active: bool,
 }
 
-impl<'a> Sprite<'a> {
+impl<'a, 'b, 'c, 'd> Sprite<'a, 'b, 'c, 'd> {
     pub fn new(
         draw_parameters: DrawParameters<'a>,
-        shape: Shape,
-        texture: Texture,
-        shader: Shader,
+        shape: &'b Shape,
+        texture: &'c Texture,
+        shaders: &'d Shader,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -36,7 +37,7 @@ impl<'a> Sprite<'a> {
             draw_parameters,
             shape,
             texture,
-            shader,
+            shaders,
             color,
             z,
             active,
@@ -44,9 +45,9 @@ impl<'a> Sprite<'a> {
     }
 
     pub fn new_default(
-        shape: Shape,
-        texture: Texture,
-        shader: Shader,
+        shape: &'b Shape,
+        texture: &'c Texture,
+        shaders: &'d Shader,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -63,7 +64,7 @@ impl<'a> Sprite<'a> {
             },
             shape,
             texture,
-            shader,
+            shaders,
             color,
             z,
             active,
@@ -95,7 +96,7 @@ impl<'a> Sprite<'a> {
             target.draw(
                 &self.shape.vertices,
                 &self.shape.indices,
-                &self.shader.program,
+                &self.shaders.program,
                 &uniform,
                 &self.draw_parameters,
             )?;
@@ -105,7 +106,7 @@ impl<'a> Sprite<'a> {
     }
 }
 
-impl<'a> Component for Sprite<'a> {
+impl<'a, 'b, 'c, 'd> Component for Sprite<'a, 'b, 'c, 'd> {
     fn id() -> usize {
         cid!()
     }
