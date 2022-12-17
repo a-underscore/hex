@@ -101,17 +101,6 @@ impl Camera {
         self.view
     }
 
-    fn calculate_view(
-        left: f32,
-        right: f32,
-        bottom: f32,
-        top: f32,
-        near: f32,
-        far: f32,
-    ) -> Matrix4<f32> {
-        cgmath::ortho(left, right, bottom, top, near, far)
-    }
-
     fn update_view(&mut self) {
         self.view = Self::calculate_view(
             self.left,
@@ -121,6 +110,17 @@ impl Camera {
             self.near,
             self.far,
         );
+    }
+
+    fn calculate_view(
+        left: f32,
+        right: f32,
+        bottom: f32,
+        top: f32,
+        near: f32,
+        far: f32,
+    ) -> Matrix4<f32> {
+        cgmath::ortho(left, right, bottom, top, near, far)
     }
 }
 
