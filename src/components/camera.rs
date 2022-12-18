@@ -1,19 +1,21 @@
 use crate::cid;
 use crate::ecs::Component;
-use cgmath::{Matrix4, Vector3};
+use cgmath::{Matrix4, Vector3, Vector4};
 
 #[derive(Clone)]
 pub struct Camera {
     dims: Vector3<f32>,
     view: Matrix4<f32>,
+    pub bg: Vector4<f32>,
     pub active: bool,
 }
 
 impl Camera {
-    pub fn new(dims: Vector3<f32>, active: bool) -> Self {
+    pub fn new(dims: Vector3<f32>, bg: Vector4<f32>, active: bool) -> Self {
         Self {
             dims,
             view: Self::calculate_view(dims),
+            bg,
             active,
         }
     }

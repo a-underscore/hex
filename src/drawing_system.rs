@@ -2,23 +2,18 @@ use crate::{
     components::{Camera, Sprite, Transform},
     ecs::{Manager, System},
 };
-use cgmath::Vector4;
 use glium::{glutin::event::Event, Display, Surface};
-use std::rc::Rc;
 
-pub struct DrawingSystem {
-    pub display: Rc<Display>,
-    pub bg: Vector4<f32>,
-}
-
-impl DrawingSystem {
-    pub fn new(display: Rc<Display>, bg: Vector4<f32>) -> Self {
-        Self { display, bg }
-    }
-}
+#[derive(Default)]
+pub struct DrawingSystem;
 
 impl<'a> System<'a> for DrawingSystem {
-    fn update(&mut self, manager: &mut Manager, event: &Event<()>) -> anyhow::Result<()> {
+    fn update(
+        &mut self,
+        manager: &mut Manager,
+        display: &Display,
+        event: &Event<()>,
+    ) -> anyhow::Result<()> {
         if let Event::MainEventsCleared = event {
             if let Some((c, ct)) = manager.entities().into_iter().find_map(|e| {
                 manager
@@ -26,9 +21,9 @@ impl<'a> System<'a> for DrawingSystem {
                     .and_then(|c| c.active.then_some(c))
                     .and_then(|c| Some((c, manager.get_c::<Transform>(e)?)))
             }) {
-                let mut target = self.display.draw();
+                let mut target = display.draw();
 
-                target.clear_color_and_depth(self.bg.into(), 1.0);
+                target.clear_color_and_depth(c.bg.into(), 1.0);
 
                 for e in manager.entities() {
                     if let Some((s, t)) = manager.get_c::<Sprite>(e).and_then(|s| {
