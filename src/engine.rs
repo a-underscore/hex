@@ -10,9 +10,9 @@ use glium::{
 };
 use std::rc::Rc;
 
-pub fn setup_display<'a>(
+pub fn setup_display(
     wb: WindowBuilder,
-    cb: ContextBuilder<'a, NotCurrent>,
+    cb: ContextBuilder<'_, NotCurrent>,
 ) -> anyhow::Result<(EventLoop<()>, Rc<Display>)> {
     let event_loop = EventLoop::new();
     let display = Rc::new(Display::new(wb, cb, &event_loop)?);
