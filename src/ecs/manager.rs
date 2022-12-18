@@ -60,7 +60,7 @@ impl<'a> Manager<'a> {
 
     pub fn get_c_gen_mut(&mut self, eid: usize, cid: usize) -> Option<&mut dyn AsAny<'a>> {
         self.entities
-            .get_mut(&eid)
+            .get(&eid)
             .and_then(|c| c.get(&cid).copied())
             .and_then(|cid| self.get_c_gen_cached_mut(cid))
     }
