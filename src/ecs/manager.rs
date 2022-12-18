@@ -47,7 +47,7 @@ impl<'a> Manager<'a> {
     pub fn get_c_gen(&self, eid: usize, cid: usize) -> Option<&dyn AsAny<'a>> {
         self.entities
             .get(&eid)
-            .and_then(|c| c.get(&cid).map(|cid| *cid))
+            .and_then(|c| c.get(&cid).copied())
             .and_then(|cid| self.get_c_gen_cached(cid))
     }
 
