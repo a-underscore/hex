@@ -72,6 +72,17 @@ impl<'a> Manager<'a> {
         self.get_c_gen_mut(eid, C::id()).map(|c| cast_mut(c))
     }
 
+    pub fn add_c_gen_cached(&mut self, eid: usize, cid: usize, ci: usize) {
+        self.entities.get_mut(&eid).map(|c| c.insert(cid, ci));
+    }
+
+    pub fn add_c_cached<C>(&mut self, eid: usize, ci: usize)
+    where
+        C: Component,
+    {
+        self.entities.get_mut(&eid).map(|c| c.insert(C::id(), ci));
+    }
+
     pub fn get_c_gen_cached(&self, cid: usize) -> Option<&dyn AsAny<'a>> {
         self.cache.get(&cid).map(|c| c.as_ref())
     }
