@@ -36,8 +36,6 @@ where
 }
 
 pub fn init(mut world: World<'static, 'static>, event_loop: EventLoop<()>) -> anyhow::Result<()> {
-    world.init()?;
-
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
 
