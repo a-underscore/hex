@@ -44,7 +44,7 @@ impl<'a, 'b, 'c, 'd> Sprite<'a, 'b, 'c, 'd> {
         }
     }
 
-    pub fn new_default(
+    pub fn default(
         shape: &'b Shape,
         texture: &'c Texture,
         shader: &'d Shader,

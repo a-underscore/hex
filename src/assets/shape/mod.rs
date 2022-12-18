@@ -20,7 +20,7 @@ impl Shape {
         })
     }
 
-    pub fn new_rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Self> {
+    pub fn rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Self> {
         let vertices = {
             let dims = dims / 2.0;
 

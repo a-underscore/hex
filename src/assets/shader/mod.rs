@@ -12,7 +12,7 @@ impl Shader {
         Self { program }
     }
 
-    pub fn new_default(display: &Display) -> anyhow::Result<Self> {
+    pub fn default(display: &Display) -> anyhow::Result<Self> {
         let program = Program::from_source(display, VERTEX_SRC, FRAGMENT_SRC, None)?;
 
         Ok(Self::new(program))
