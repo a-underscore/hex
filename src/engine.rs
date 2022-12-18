@@ -8,13 +8,14 @@ use glium::{
     },
     Display,
 };
+use std::rc::Rc;
 
-pub fn setup_display(
+pub fn setup_display<'a>(
     wb: WindowBuilder,
-    cb: ContextBuilder<'_, NotCurrent>,
-) -> anyhow::Result<(EventLoop<()>, Display)> {
+    cb: ContextBuilder<'a, NotCurrent>,
+) -> anyhow::Result<(EventLoop<()>, Rc<Display>)> {
     let event_loop = EventLoop::new();
-    let display = Display::new(wb, cb, &event_loop)?;
+    let display = Rc::new(Display::new(wb, cb, &event_loop)?);
 
     Ok((event_loop, display))
 }
@@ -23,7 +24,7 @@ pub fn basic_display<S>(
     name: S,
     sample_count: u16,
     vsync: bool,
-) -> anyhow::Result<(EventLoop<()>, Display)>
+) -> anyhow::Result<(EventLoop<()>, Rc<Display>)>
 where
     S: Into<String>,
 {

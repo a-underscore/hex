@@ -4,14 +4,15 @@ use crate::{
 };
 use cgmath::Vector4;
 use glium::{glutin::event::Event, Display, Surface};
+use std::rc::Rc;
 
 pub struct DrawingSystem {
-    pub display: Display,
+    pub display: Rc<Display>,
     pub bg: Vector4<f32>,
 }
 
 impl DrawingSystem {
-    pub fn new(display: Display, bg: Vector4<f32>) -> Self {
+    pub fn new(display: Rc<Display>, bg: Vector4<f32>) -> Self {
         Self { display, bg }
     }
 }
