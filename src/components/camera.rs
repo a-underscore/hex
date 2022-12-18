@@ -1,6 +1,6 @@
 use crate::cid;
 use crate::ecs::Component;
-use cgmath::{Vector3, Matrix4};
+use cgmath::{Matrix4, Vector3};
 use once_cell::sync::Lazy;
 
 #[derive(Clone)]
@@ -11,10 +11,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(
-        dims: Vector3<f32>,
-        active: bool,
-    ) -> Self {
+    pub fn new(dims: Vector3<f32>, active: bool) -> Self {
         Self {
             dims,
             view: Self::calculate_view(dims),
@@ -37,14 +34,10 @@ impl Camera {
     }
 
     fn update_view(&mut self) {
-        self.view = Self::calculate_view(
-            self.dims
-        );
+        self.view = Self::calculate_view(self.dims);
     }
 
-    fn calculate_view(
-        dims: Vector3<f32>,
-    ) -> Matrix4<f32> {
+    fn calculate_view(dims: Vector3<f32>) -> Matrix4<f32> {
         let dims = dims / 2.0;
 
         cgmath::ortho(-dims.x, dims.x, -dims.y, dims.y, -dims.z, dims.z)
