@@ -1,7 +1,6 @@
 use crate::cid;
 use crate::ecs::Component;
 use cgmath::{Matrix4, Vector3};
-use once_cell::sync::Lazy;
 
 #[derive(Clone)]
 pub struct Camera {
@@ -46,8 +45,6 @@ impl Camera {
 
 impl Component for Camera {
     fn id() -> usize {
-        static ID: Lazy<usize> = Lazy::new(|| cid!());
-
-        *ID
+        cid!()
     }
 }

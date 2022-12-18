@@ -5,6 +5,8 @@ pub use vertex::Vertex;
 use cgmath::{Vector2, Zero};
 use glium::{index::PrimitiveType, Display, IndexBuffer, VertexBuffer};
 
+pub static INDICES: [u32; 6] = [0, 1, 2, 1, 3, 2];
+
 pub struct Shape {
     pub vertices: VertexBuffer<Vertex>,
     pub indices: IndexBuffer<u32>,
@@ -19,7 +21,6 @@ impl Shape {
     }
 
     pub fn new_rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Self> {
-        let indices = [0, 1, 2, 1, 3, 2];
         let vertices = {
             let dims = dims / 2.0;
 
@@ -31,6 +32,6 @@ impl Shape {
             ]
         };
 
-        Self::new(display, &vertices, &indices)
+        Self::new(display, &vertices, &INDICES)
     }
 }

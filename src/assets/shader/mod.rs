@@ -1,7 +1,7 @@
 use glium::{Display, Program};
 
-pub const VERTEX_SRC: &str = include_str!("vertex.vsh");
-pub const FRAGMENT_SRC: &str = include_str!("fragment.fsh");
+pub static VERTEX_SRC: &str = include_str!("vertex.vsh");
+pub static FRAGMENT_SRC: &str = include_str!("fragment.fsh");
 
 pub struct Shader {
     pub program: Program,
