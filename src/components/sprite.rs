@@ -25,7 +25,6 @@ pub struct Sprite<'a> {
 
 impl<'a> Sprite<'a> {
     pub fn new(
-        draw_parameters: DrawParameters<'a>,
         shape: Shape,
         texture: Texture,
         shader: Shader,
@@ -34,26 +33,7 @@ impl<'a> Sprite<'a> {
         active: bool,
     ) -> Self {
         Self {
-            draw_parameters,
-            shape,
-            texture,
-            shader,
-            color,
-            z,
-            active,
-        }
-    }
-
-    pub fn default(
-        shape: Shape,
-        texture: Texture,
-        shader: Shader,
-        color: Vector4<f32>,
-        z: f32,
-        active: bool,
-    ) -> Self {
-        Self::new(
-            DrawParameters {
+            draw_parameters: DrawParameters {
                 depth: Depth {
                     test: DepthTest::IfLess,
                     write: true,
@@ -68,7 +48,7 @@ impl<'a> Sprite<'a> {
             color,
             z,
             active,
-        )
+        }
     }
 
     pub fn draw(
