@@ -11,14 +11,13 @@ use glium::{
     uniforms::Sampler,
     Depth, DrawParameters, Frame, Surface,
 };
-use std::{cell::RefCell, rc::Rc};
 
 #[derive(Clone)]
 pub struct Sprite<'a> {
     pub draw_parameters: DrawParameters<'a>,
-    pub shape: Rc<RefCell<Shape>>,
-    pub texture: Rc<RefCell<Texture>>,
-    pub shader: Rc<RefCell<Shader>>,
+    pub shape: Shape,
+    pub texture: Texture,
+    pub shader: Shader,
     pub color: Vector4<f32>,
     pub z: f32,
     pub active: bool,
@@ -27,9 +26,9 @@ pub struct Sprite<'a> {
 impl<'a> Sprite<'a> {
     pub fn new(
         draw_parameters: DrawParameters<'a>,
-        shape: Rc<RefCell<Shape>>,
-        texture: Rc<RefCell<Texture>>,
-        shader: Rc<RefCell<Shader>>,
+        shape: Shape,
+        texture: Texture,
+        shader: Shader,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -46,9 +45,9 @@ impl<'a> Sprite<'a> {
     }
 
     pub fn default(
-        shape: Rc<RefCell<Shape>>,
-        texture: Rc<RefCell<Texture>>,
-        shader: Rc<RefCell<Shader>>,
+        shape: Shape,
+        texture: Texture,
+        shader: Shader,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -84,8 +83,10 @@ impl<'a> Sprite<'a> {
             let transform: [[f32; 3]; 3] = transform.transform().into();
             let camera_view: [[f32; 4]; 4] = camera.view().into();
             let camera_transform: [[f32; 3]; 3] = camera_transform.transform().into();
-            let texture = self.texture.try_borrow()?;
-            let image = Sampler(&texture.buffer, texture.sampler_behaviour);
+            let image = Sampler(
+                &*self.texture.buffer,
+                self.texture.sampler_behaviour,
+            );
             let uniform = uniform! {
                 z: self.z,
                 transform: transform,
@@ -94,13 +95,11 @@ impl<'a> Sprite<'a> {
                 color: color,
                 image: image,
             };
-            let shape = self.shape.try_borrow()?;
-            let shader = self.shader.try_borrow()?;
 
             target.draw(
-                &shape.vertices,
-                &shape.indices,
-                &shader.program,
+                &*self.shape.vertices,
+                &*self.shape.indices,
+                &self.shader.program,
                 &uniform,
                 &self.draw_parameters,
             )?;
