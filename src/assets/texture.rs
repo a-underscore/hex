@@ -3,7 +3,7 @@ use glium::{
     uniforms::SamplerBehavior,
     Display,
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Texture {
     pub buffer: Texture2d,
@@ -16,10 +16,10 @@ impl Texture {
         image: RawImage2d<u8>,
         sampler_behaviour: SamplerBehavior,
         mipmaps_option: MipmapsOption,
-    ) -> anyhow::Result<Rc<Self>> {
-        Ok(Rc::new(Self {
+    ) -> anyhow::Result<Rc<RefCell<Self>>> {
+        Ok(Rc::new(RefCell::new(Self {
             buffer: Texture2d::with_mipmaps(display, image, mipmaps_option)?,
             sampler_behaviour,
-        }))
+        })))
     }
 }
