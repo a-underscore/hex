@@ -4,6 +4,7 @@ pub use vertex::Vertex;
 
 use cgmath::{Vector2, Zero};
 use glium::{index::PrimitiveType, Display, IndexBuffer, VertexBuffer};
+use std::rc::Rc;
 
 pub static INDICES: [u32; 6] = [0, 1, 2, 1, 3, 2];
 
@@ -13,14 +14,18 @@ pub struct Shape {
 }
 
 impl Shape {
-    pub fn new(display: &Display, vertices: &[Vertex], indices: &[u32]) -> anyhow::Result<Self> {
-        Ok(Self {
+    pub fn new(
+        display: &Display,
+        vertices: &[Vertex],
+        indices: &[u32],
+    ) -> anyhow::Result<Rc<Self>> {
+        Ok(Rc::new(Self {
             vertices: VertexBuffer::new(display, vertices)?,
             indices: IndexBuffer::immutable(display, PrimitiveType::TrianglesList, indices)?,
-        })
+        }))
     }
 
-    pub fn rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Self> {
+    pub fn rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Rc<Self>> {
         let vertices = {
             let dims = dims / 2.0;
 
