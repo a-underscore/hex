@@ -32,6 +32,8 @@ impl<'a> System<'a> for DrawingSystem {
                         s.draw(&mut target, t, c, ct)?;
                     }
                 }
+
+                target.finish()?;
             }
         }
 
