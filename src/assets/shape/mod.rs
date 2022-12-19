@@ -17,8 +17,8 @@ pub struct Shape {
 impl Shape {
     pub fn new(display: &Display, vertices: &[Vertex], indices: &[u32]) -> anyhow::Result<Self> {
         Ok(Self {
-            vertices: Rc::new(VertexBuffer::new(display, vertices)?),
-            indices: Rc::new(IndexBuffer::new(
+            vertices: Rc::new(VertexBuffer::immutable(display, vertices)?),
+            indices: Rc::new(IndexBuffer::immutable(
                 display,
                 PrimitiveType::TrianglesList,
                 indices,
