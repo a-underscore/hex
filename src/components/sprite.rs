@@ -11,14 +11,14 @@ use glium::{
     uniforms::Sampler,
     Depth, DrawParameters, Frame, Surface,
 };
-use std::{cell::Cell, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 #[derive(Clone)]
 pub struct Sprite<'a> {
     pub draw_parameters: DrawParameters<'a>,
-    pub shape: Rc<Cell<Shape>>,
-    pub texture: Rc<Cell<Texture>>,
-    pub shader: Rc<Cell<Shader>>,
+    pub shape: Rc<RefCell<Shape>>,
+    pub texture: Rc<RefCell<Texture>>,
+    pub shader: Rc<RefCell<Shader>>,
     pub color: Vector4<f32>,
     pub z: f32,
     pub active: bool,
@@ -27,9 +27,9 @@ pub struct Sprite<'a> {
 impl<'a> Sprite<'a> {
     pub fn new(
         draw_parameters: DrawParameters<'a>,
-        shape: Rc<Cell<Shape>>,
-        texture: Rc<Cell<Texture>>,
-        shader: Rc<Cell<Shader>>,
+        shape: Rc<RefCell<Shape>>,
+        texture: Rc<RefCell<Texture>>,
+        shader: Rc<RefCell<Shader>>,
         color: Vector4<f32>,
         z: f32,
         active: bool,
@@ -46,9 +46,9 @@ impl<'a> Sprite<'a> {
     }
 
     pub fn default(
-        shape: Rc<Cell<Shape>>,
-        texture: Rc<Cell<Texture>>,
-        shader: Rc<Cell<Shader>>,
+        shape: Rc<RefCell<Shape>>,
+        texture: Rc<RefCell<Texture>>,
+        shader: Rc<RefCell<Shader>>,
         color: Vector4<f32>,
         z: f32,
         active: bool,
