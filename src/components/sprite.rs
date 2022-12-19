@@ -83,10 +83,7 @@ impl<'a> Sprite<'a> {
             let transform: [[f32; 3]; 3] = transform.transform().into();
             let camera_view: [[f32; 4]; 4] = camera.view().into();
             let camera_transform: [[f32; 3]; 3] = camera_transform.transform().into();
-            let image = Sampler(
-                &*self.texture.buffer,
-                self.texture.sampler_behaviour,
-            );
+            let image = Sampler(&*self.texture.buffer, self.texture.sampler_behaviour);
             let uniform = uniform! {
                 z: self.z,
                 transform: transform,
