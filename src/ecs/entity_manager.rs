@@ -32,8 +32,8 @@ impl EntityManager {
         if let Some(e) = self.entities.remove(&id) {
             self.freed.push(id);
 
-            for v in e.values() {
-                component_manager.rm_gen(self, id, *v);
+            for cid in e.values() {
+                component_manager.rm_gen(self, id, *cid);
             }
         }
     }
