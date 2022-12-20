@@ -5,7 +5,8 @@ use std::collections::HashMap;
 pub struct Manager<'a> {
     pub entities: HashMap<usize, HashMap<usize, usize>>,
     pub cache: HashMap<usize, Box<dyn AsAny<'a>>>,
-    pub freed: Vec<usize>,
+    efreed: Vec<usize>,
+    cfreed: Vec<usize>,
 }
 
 impl<'a> Manager<'a> {
@@ -15,7 +16,7 @@ impl<'a> Manager<'a> {
         cid: usize,
         component: Box<dyn AsAny<'a>>,
     ) -> Option<usize> {
-        let id = self.freed.pop().unwrap_or(self.cache.len());
+        let id = self.cfreed.pop().unwrap_or(self.cache.len());
 
         self.entities.get_mut(&eid).map(|c| c.insert(cid, id))?;
         self.cache.insert(id, component);
@@ -33,7 +34,7 @@ impl<'a> Manager<'a> {
     pub fn rm_c_gen(&mut self, eid: usize, cid: usize) {
         if let Some(c) = self.entities.get_mut(&eid).and_then(|c| c.remove(&cid)) {
             self.cache.remove(&c);
-            self.freed.push(c);
+            self.cfreed.push(c);
         }
     }
 
@@ -94,25 +95,15 @@ impl<'a> Manager<'a> {
         self.get_c_gen_cached_mut(cid).map(|c| cast_mut(c))
     }
 
-    pub fn add_e_next(&mut self) -> usize {
-        let mut entities = self.entities();
+    pub fn add_e(&mut self) -> usize {
+        let id = self.efreed.pop().unwrap_or(self.entities.len());
 
-        entities.sort();
+        self.add_e_gen(id);
 
-        let eid = entities
-            .into_iter()
-            .enumerate()
-            .take_while(|(i, id)| i == id)
-            .last()
-            .map(|(_, id)| id + 1)
-            .unwrap_or(0);
-
-        self.add_e(eid);
-
-        eid
+        id
     }
 
-    pub fn add_e(&mut self, eid: usize) {
+    pub fn add_e_gen(&mut self, eid: usize) {
         self.rm_e(eid);
 
         self.entities.insert(eid, HashMap::new());
@@ -128,9 +119,11 @@ impl<'a> Manager<'a> {
 
     pub fn rm_e(&mut self, eid: usize) {
         if let Some(e) = self.entities.remove(&eid) {
+            self.efreed.push(eid);
+
             for v in e.values().cloned() {
                 self.cache.remove(&v);
-                self.freed.push(v);
+                self.cfreed.push(v);
             }
         }
     }
