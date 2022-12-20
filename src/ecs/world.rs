@@ -1,9 +1,10 @@
-use super::{Manager, System};
+use super::{ComponentManager, EntityManager, System};
 use glium::{glutin::event::Event, Display};
 
 #[derive(Default)]
 pub struct World<'a, 'b> {
-    pub manager: Manager<'a>,
+    pub entity_manager: EntityManager,
+    pub component_manager: ComponentManager<'a>,
     pub systems: Vec<Box<dyn System<'b>>>,
 }
 
@@ -17,7 +18,11 @@ impl<'a, 'b> World<'a, 'b> {
 
     pub fn init(&mut self, display: &Display) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.init(&mut self.manager, display)?;
+            s.init(
+                &mut self.entity_manager,
+                &mut self.component_manager,
+                display,
+            )?;
         }
 
         Ok(())
@@ -25,7 +30,12 @@ impl<'a, 'b> World<'a, 'b> {
 
     pub fn update(&mut self, display: &Display, event: &Event<()>) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.update(&mut self.manager, display, event)?;
+            s.update(
+                &mut self.entity_manager,
+                &mut self.component_manager,
+                display,
+                event,
+            )?;
         }
 
         Ok(())

@@ -2,13 +2,15 @@ use std::mem;
 
 pub mod as_any;
 pub mod component;
-pub mod manager;
+pub mod component_manager;
+pub mod entity_manager;
 pub mod system;
 pub mod world;
 
 pub use as_any::AsAny;
 pub use component::Component;
-pub use manager::Manager;
+pub use component_manager::ComponentManager;
+pub use entity_manager::EntityManager;
 pub use system::System;
 pub use world::World;
 
