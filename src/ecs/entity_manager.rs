@@ -26,18 +26,18 @@ impl EntityManager {
         id
     }
 
-    pub fn get(&self, id: usize) -> Option<&BTreeMap<usize, usize>> {
-        self.entities.get(&id)
+    pub fn get(&self, eid: usize) -> Option<&BTreeMap<usize, usize>> {
+        self.entities.get(&eid)
     }
 
-    pub fn get_mut(&mut self, id: usize) -> Option<&mut BTreeMap<usize, usize>> {
-        self.entities.get_mut(&id)
+    pub fn get_mut(&mut self, eid: usize) -> Option<&mut BTreeMap<usize, usize>> {
+        self.entities.get_mut(&eid)
     }
 
-    pub fn rm(&mut self, id: usize, component_manager: &mut ComponentManager) {
-        if let Some(e) = self.entities.remove(&id) {
+    pub fn rm(&mut self, eid: usize, component_manager: &mut ComponentManager) {
+        if let Some(e) = self.entities.remove(&eid) {
             for cid in e.values() {
-                component_manager.rm_gen(id, *cid, self);
+                component_manager.rm_gen(eid, *cid, self);
             }
         }
     }
