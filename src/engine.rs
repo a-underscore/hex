@@ -23,9 +23,9 @@ pub fn setup_display(
 }
 
 pub fn init(
+    event_loop: EventLoop<()>,
     mut world: World<'static>,
     mut system_manager: SystemManager<'static>,
-    event_loop: EventLoop<()>,
 ) -> anyhow::Result<()> {
     fn update(
         event: &Event<()>,
