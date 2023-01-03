@@ -29,7 +29,7 @@ impl<'a> System<'a> for Renderer {
         entity_manager: &mut EntityManager,
         component_manager: &mut ComponentManager,
     ) -> anyhow::Result<()> {
-        if let Ev::Draw((_, target)) = event {
+        if let Ev::Draw((_, target, _)) = event {
             if let Some((c, ct)) = entity_manager.entities.keys().find_map(|e| {
                 component_manager
                     .get::<Camera>(*e, entity_manager)

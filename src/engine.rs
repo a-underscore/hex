@@ -24,12 +24,12 @@ pub fn init(
     mut world: World<'static, 'static>,
     event_loop: EventLoop<()>,
     display: Display,
-    bg: Vector4<f32>,
+    mut bg: Vector4<f32>,
 ) -> anyhow::Result<()> {
     fn update(
         world: &mut World,
         display: &Display,
-        bg: Vector4<f32>,
+        bg: &mut Vector4<f32>,
         event: &Event<()>,
         control_flow: &mut ControlFlow,
     ) -> anyhow::Result<()> {
@@ -43,11 +43,11 @@ pub fn init(
         if let Event::MainEventsCleared = event {
             let mut target = display.draw();
 
-            target.clear_color_and_depth(bg.into(), 1.0);
+            target.clear_color_and_depth((*bg).into(), 1.0);
 
             world.system_manager.update(
                 display,
-                &mut Ev::Draw((event, &mut target)),
+                &mut Ev::Draw((event, &mut target, bg)),
                 &mut world.entity_manager,
                 &mut world.component_manager,
             )?;
@@ -73,6 +73,6 @@ pub fn init(
     )?;
 
     event_loop.run(move |event, _, control_flow| {
-        update(&mut world, &display, bg, &event, control_flow).unwrap();
+        update(&mut world, &display, &mut bg, &event, control_flow).unwrap();
     });
 }
