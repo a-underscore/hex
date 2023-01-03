@@ -4,8 +4,7 @@ pub mod system;
 pub use ev::Ev;
 pub use system::System;
 
-use crate::ecs::{component_manager::ComponentManager, entity_manager::EntityManager};
-use glium::Display;
+use crate::ecs::world::World;
 
 #[derive(Default)]
 pub struct SystemManager<'a> {
@@ -24,28 +23,17 @@ impl<'a> SystemManager<'a> {
         self.systems.pop();
     }
 
-    pub fn init(
-        &mut self,
-        display: &Display,
-        entity_manager: &mut EntityManager,
-        component_manager: &mut ComponentManager,
-    ) -> anyhow::Result<()> {
+    pub fn init(&mut self, world: &mut World) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.init(display, entity_manager, component_manager)?;
+            s.init(world)?;
         }
 
         Ok(())
     }
 
-    pub fn update(
-        &mut self,
-        display: &Display,
-        event: &mut Ev,
-        entity_manager: &mut EntityManager,
-        component_manager: &mut ComponentManager,
-    ) -> anyhow::Result<()> {
+    pub fn update(&mut self, event: &mut Ev, world: &mut World) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.update(display, event, entity_manager, component_manager)?;
+            s.update(event, world)?;
         }
 
         Ok(())

@@ -1,5 +1,7 @@
-use crate::ecs::{system_manager::Ev, world::World};
-use cgmath::Vector4;
+use crate::ecs::{
+    system_manager::{Ev, SystemManager},
+    world::World,
+};
 use glium::{
     glutin::{
         event::{Event, WindowEvent},
@@ -21,36 +23,24 @@ pub fn setup_display(
 }
 
 pub fn init(
-    mut world: World<'static, 'static>,
+    mut world: World<'static>,
+    mut system_manager: SystemManager<'static>,
     event_loop: EventLoop<()>,
-    display: Display,
-    mut bg: Vector4<f32>,
 ) -> anyhow::Result<()> {
     fn update(
-        world: &mut World,
-        display: &Display,
-        bg: &mut Vector4<f32>,
         event: &Event<()>,
         control_flow: &mut ControlFlow,
+        world: &mut World,
+        system_manager: &mut SystemManager<'static>,
     ) -> anyhow::Result<()> {
-        world.system_manager.update(
-            display,
-            &mut Ev::Event(event),
-            &mut world.entity_manager,
-            &mut world.component_manager,
-        )?;
+        system_manager.update(&mut Ev::Event(event), world)?;
 
         if let Event::MainEventsCleared = event {
-            let mut target = display.draw();
+            let mut target = world.display.draw();
 
-            target.clear_color_and_depth((*bg).into(), 1.0);
+            target.clear_color_and_depth(world.bg.into(), 1.0);
 
-            world.system_manager.update(
-                display,
-                &mut Ev::Draw((event, &mut target, bg)),
-                &mut world.entity_manager,
-                &mut world.component_manager,
-            )?;
+            system_manager.update(&mut Ev::Draw((event, &mut target)), world)?;
 
             target.finish()?;
         } else if let Event::WindowEvent {
@@ -66,13 +56,9 @@ pub fn init(
         Ok(())
     }
 
-    world.system_manager.init(
-        &display,
-        &mut world.entity_manager,
-        &mut world.component_manager,
-    )?;
+    system_manager.init(&mut world)?;
 
     event_loop.run(move |event, _, control_flow| {
-        update(&mut world, &display, &mut bg, &event, control_flow).unwrap();
+        update(&event, control_flow, &mut world, &mut system_manager).unwrap();
     });
 }

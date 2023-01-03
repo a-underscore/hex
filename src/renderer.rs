@@ -2,9 +2,8 @@ use crate::{
     assets::Shader,
     components::{Camera, Sprite, Transform},
     ecs::{
-        component_manager::ComponentManager,
-        entity_manager::EntityManager,
         system_manager::{Ev, System},
+        world::World,
     },
 };
 use glium::{uniform, uniforms::Sampler, Display, Surface};
@@ -22,31 +21,31 @@ impl Renderer {
 }
 
 impl<'a> System<'a> for Renderer {
-    fn update(
-        &mut self,
-        _: &Display,
-        event: &mut Ev,
-        entity_manager: &mut EntityManager,
-        component_manager: &mut ComponentManager,
-    ) -> anyhow::Result<()> {
-        if let Ev::Draw((_, target, _)) = event {
-            if let Some((c, ct)) = entity_manager.entities.keys().find_map(|e| {
-                component_manager
-                    .get::<Camera>(*e, entity_manager)
+    fn update(&mut self, event: &mut Ev, world: &mut World) -> anyhow::Result<()> {
+        if let Ev::Draw((_, target)) = event {
+            if let Some((c, ct)) = world.entity_manager.entities.keys().cloned().find_map(|e| {
+                world
+                    .component_manager
+                    .get::<Camera>(e, &world.entity_manager)
                     .and_then(|c| {
                         Some((
                             c.active.then_some(c)?,
-                            component_manager.get::<Transform>(*e, entity_manager)?,
+                            world
+                                .component_manager
+                                .get::<Transform>(e, &world.entity_manager)?,
                         ))
                     })
             }) {
-                for e in entity_manager.entities.keys() {
-                    if let Some((s, t)) = component_manager
-                        .get::<Sprite>(*e, entity_manager)
+                for e in world.entity_manager.entities.keys().cloned() {
+                    if let Some((s, t)) = world
+                        .component_manager
+                        .get::<Sprite>(e, &world.entity_manager)
                         .and_then(|s| {
                             Some((
                                 s.active.then_some(s)?,
-                                component_manager.get::<Transform>(*e, entity_manager)?,
+                                world
+                                    .component_manager
+                                    .get::<Transform>(e, &world.entity_manager)?,
                             ))
                         })
                     {
