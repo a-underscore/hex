@@ -7,7 +7,6 @@ use crate::{
     },
 };
 use glium::{uniform, uniforms::Sampler, Display, Surface};
-use std::cmp::Ordering;
 
 pub struct Renderer {
     pub shader: Shader,
@@ -57,8 +56,7 @@ impl<'a> System<'a> for Renderer {
                     })
                     .collect();
 
-                sprites
-                    .sort_by(|(s1, _), (s2, _)| s1.z.partial_cmp(&s2.z).unwrap_or(Ordering::Equal));
+                sprites.sort_by(|(s1, _), (s2, _)| s1.z.total_cmp(&s2.z));
 
                 for (s, t) in sprites {
                     let color: [f32; 4] = s.color.into();
