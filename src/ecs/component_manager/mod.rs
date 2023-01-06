@@ -67,7 +67,7 @@ impl<'a> ComponentManager<'a> {
         cid: usize,
         entity_manager: &EntityManager,
     ) -> Option<&dyn AsAny<'a>> {
-        self.get_gen_cached_val(eid, cid, entity_manager)
+        self.get_gen_cached_id(eid, cid, entity_manager)
             .and_then(|cid| self.get_gen_cached(cid))
     }
 
@@ -84,7 +84,7 @@ impl<'a> ComponentManager<'a> {
         cid: usize,
         entity_manager: &EntityManager,
     ) -> Option<&mut dyn AsAny<'a>> {
-        self.get_gen_cached_val(eid, cid, entity_manager)
+        self.get_gen_cached_id(eid, cid, entity_manager)
             .and_then(|cid| self.get_gen_cached_mut(cid))
     }
 
@@ -95,7 +95,7 @@ impl<'a> ComponentManager<'a> {
         self.get_gen_mut(eid, C::id(), entity_manager).map(cast_mut)
     }
 
-    pub fn get_gen_cached_val(
+    pub fn get_gen_cached_id(
         &self,
         eid: usize,
         cid: usize,
@@ -104,11 +104,11 @@ impl<'a> ComponentManager<'a> {
         entity_manager.get(eid)?.get(&cid).copied()
     }
 
-    pub fn get_cached_val<C>(&self, eid: usize, entity_manager: &EntityManager) -> Option<usize>
+    pub fn get_cached_id<C>(&self, eid: usize, entity_manager: &EntityManager) -> Option<usize>
     where
         C: Component,
     {
-        self.get_gen_cached_val(eid, C::id(), entity_manager)
+        self.get_gen_cached_id(eid, C::id(), entity_manager)
     }
 
     pub fn get_gen_cached(&self, cid: usize) -> Option<&dyn AsAny<'a>> {
