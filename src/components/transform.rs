@@ -7,15 +7,22 @@ pub struct Transform {
     rotation: Rad<f32>,
     scale: Vector2<f32>,
     matrix: Matrix3<f32>,
+    pub active: bool,
 }
 
 impl Transform {
-    pub fn new(position: Vector2<f32>, rotation: Rad<f32>, scale: Vector2<f32>) -> Self {
+    pub fn new(
+        position: Vector2<f32>,
+        rotation: Rad<f32>,
+        scale: Vector2<f32>,
+        active: bool,
+    ) -> Self {
         Self {
             position,
             rotation,
             scale,
             matrix: Self::calculate_matrix(position, rotation, scale),
+            active,
         }
     }
 
