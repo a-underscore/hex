@@ -2,7 +2,7 @@ pub mod vertex;
 
 pub use vertex::Vertex;
 
-use cgmath::{Vector2, Zero};
+use cgmath::{InnerSpace, Vector2, Zero};
 use glium::{index::PrimitiveType, Display, IndexBuffer, VertexBuffer};
 use std::rc::Rc;
 
@@ -15,14 +15,15 @@ pub struct Shape {
 }
 
 impl Shape {
-    pub fn new(display: &Display, vertices: &[Vertex], indices: &[u32]) -> anyhow::Result<Self> {
+    pub fn new(
+        display: &Display,
+        vertices: &[Vertex],
+        indices: &[u32],
+        t: PrimitiveType,
+    ) -> anyhow::Result<Self> {
         Ok(Self {
             vertices: Rc::new(VertexBuffer::immutable(display, vertices)?),
-            indices: Rc::new(IndexBuffer::immutable(
-                display,
-                PrimitiveType::TrianglesList,
-                indices,
-            )?),
+            indices: Rc::new(IndexBuffer::immutable(display, t, indices)?),
         })
     }
 
@@ -38,6 +39,20 @@ impl Shape {
             ]
         };
 
-        Self::new(display, &vertices, &INDICES)
+        Self::new(display, &vertices, &INDICES, PrimitiveType::TrianglesList)
+    }
+
+    pub fn fan(
+        display: &Display,
+        center: Vector2<f32>,
+        points: &[Vector2<f32>],
+    ) -> anyhow::Result<Self> {
+        let vertices: Vec<_> = [center]
+            .into_iter()
+            .chain(points.iter().cloned())
+            .map(|p| Vertex::new(p, p.normalize()))
+            .collect();
+
+        Self::new(display, &vertices, &INDICES, PrimitiveType::TriangleFan)
     }
 }
