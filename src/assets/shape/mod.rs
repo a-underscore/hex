@@ -2,7 +2,7 @@ pub mod vertex;
 
 pub use vertex::Vertex;
 
-use cgmath::{InnerSpace, Vector2, Zero};
+use cgmath::{Vector2, Zero};
 use glium::{index::PrimitiveType, Display, IndexBuffer, VertexBuffer};
 use std::rc::Rc;
 
