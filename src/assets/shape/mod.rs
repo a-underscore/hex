@@ -41,18 +41,4 @@ impl Shape {
 
         Self::new(display, &vertices, &INDICES, PrimitiveType::TrianglesList)
     }
-
-    pub fn fan(
-        display: &Display,
-        center: Vector2<f32>,
-        points: &[Vector2<f32>],
-    ) -> anyhow::Result<Self> {
-        let vertices: Vec<_> = [center]
-            .into_iter()
-            .chain(points.iter().cloned())
-            .map(|p| Vertex::new(p, p.normalize()))
-            .collect();
-
-        Self::new(display, &vertices, &INDICES, PrimitiveType::TriangleFan)
-    }
 }
