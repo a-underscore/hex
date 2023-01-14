@@ -3,8 +3,8 @@ use cgmath::Vector4;
 use glium::Display;
 
 pub struct World<'a> {
-    pub entity_manager: EntityManager,
-    pub component_manager: ComponentManager<'a>,
+    pub em: EntityManager,
+    pub cm: ComponentManager<'a>,
     pub display: Display,
     pub bg: Vector4<f32>,
 }
@@ -12,8 +12,8 @@ pub struct World<'a> {
 impl<'a> World<'a> {
     pub fn new(display: Display, bg: Vector4<f32>) -> Self {
         Self {
-            entity_manager: EntityManager::default(),
-            component_manager: ComponentManager::default(),
+            em: EntityManager::default(),
+            cm: ComponentManager::default(),
             display,
             bg,
         }

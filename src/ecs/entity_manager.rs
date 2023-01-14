@@ -34,10 +34,10 @@ impl EntityManager {
         self.entities.get_mut(&eid)
     }
 
-    pub fn rm(&mut self, eid: usize, component_manager: &mut ComponentManager) {
+    pub fn rm(&mut self, eid: usize, cm: &mut ComponentManager) {
         if let Some(e) = self.entities.remove(&eid) {
             for cid in e.values() {
-                component_manager.rm_gen(eid, *cid, self);
+                cm.rm_gen(eid, *cid, self);
             }
         }
     }

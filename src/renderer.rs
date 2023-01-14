@@ -23,32 +23,32 @@ impl Renderer {
 impl<'a> System<'a> for Renderer {
     fn update(&mut self, event: &mut Ev, world: &mut World) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = event {
-            if let Some((c, ct)) = world.entity_manager.entities.keys().cloned().find_map(|e| {
+            if let Some((c, ct)) = world.em.entities.keys().cloned().find_map(|e| {
                 Some((
                     world
-                        .component_manager
-                        .get::<Camera>(e, &world.entity_manager)
+                        .cm
+                        .get::<Camera>(e, &world.em)
                         .and_then(|c| c.active.then_some(c))?,
                     world
-                        .component_manager
-                        .get::<Transform>(e, &world.entity_manager)
+                        .cm
+                        .get::<Transform>(e, &world.em)
                         .and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
                 let mut sprites: Vec<_> = world
-                    .entity_manager
+                    .em
                     .entities
                     .keys()
                     .cloned()
                     .filter_map(|e| {
                         Some((
                             world
-                                .component_manager
-                                .get::<Sprite>(e, &world.entity_manager)
+                                .cm
+                                .get::<Sprite>(e, &world.em)
                                 .and_then(|s| s.active.then_some(s))?,
                             world
-                                .component_manager
-                                .get::<Transform>(e, &world.entity_manager)
+                                .cm
+                                .get::<Transform>(e, &world.em)
                                 .and_then(|t| t.active.then_some(t))?,
                         ))
                     })

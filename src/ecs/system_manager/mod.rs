@@ -4,7 +4,7 @@ pub mod system;
 pub use ev::Ev;
 pub use system::System;
 
-use crate::ecs::world::World;
+use super::world::World;
 
 #[derive(Default)]
 pub struct SystemManager<'a> {

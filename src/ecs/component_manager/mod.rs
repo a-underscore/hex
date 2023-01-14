@@ -4,7 +4,7 @@ pub mod component;
 pub use as_any::AsAny;
 pub use component::Component;
 
-use crate::ecs::{cast, cast_mut, entity_manager::EntityManager};
+use super::{cast, cast_mut, entity_manager::EntityManager};
 use std::collections::BTreeMap;
 
 #[derive(Default)]
@@ -18,7 +18,7 @@ impl<'a> ComponentManager<'a> {
         eid: usize,
         cid: usize,
         component: Box<dyn AsAny<'a>>,
-        entity_manager: &mut EntityManager,
+        em: &mut EntityManager,
     ) -> Option<usize> {
         let id = self
             .cache
@@ -29,86 +29,71 @@ impl<'a> ComponentManager<'a> {
             .map(|(_, id)| id - 1)
             .unwrap_or(self.cache.len());
 
-        entity_manager.get_mut(eid)?.insert(cid, id);
+        em.get_mut(eid)?.insert(cid, id);
 
         self.cache.insert(id, component);
 
         Some(id)
     }
 
-    pub fn add<C>(
-        &mut self,
-        eid: usize,
-        component: C,
-        entity_manager: &mut EntityManager,
-    ) -> Option<usize>
+    pub fn add<C>(&mut self, eid: usize, component: C, em: &mut EntityManager) -> Option<usize>
     where
         C: Component + 'a,
     {
-        self.add_gen(eid, C::id(), Box::new(component), entity_manager)
+        self.add_gen(eid, C::id(), Box::new(component), em)
     }
 
-    pub fn rm_gen(&mut self, eid: usize, cid: usize, entity_manager: &mut EntityManager) {
-        if let Some(c) = entity_manager.get_mut(eid).and_then(|c| c.remove(&cid)) {
+    pub fn rm_gen(&mut self, eid: usize, cid: usize, em: &mut EntityManager) {
+        if let Some(c) = em.get_mut(eid).and_then(|c| c.remove(&cid)) {
             self.cache.remove(&c);
         }
     }
 
-    pub fn rm<C>(&mut self, eid: usize, entity_manager: &mut EntityManager)
+    pub fn rm<C>(&mut self, eid: usize, em: &mut EntityManager)
     where
         C: Component,
     {
-        self.rm_gen(eid, C::id(), entity_manager);
+        self.rm_gen(eid, C::id(), em);
     }
 
-    pub fn get_gen(
-        &self,
-        eid: usize,
-        cid: usize,
-        entity_manager: &EntityManager,
-    ) -> Option<&dyn AsAny<'a>> {
-        self.get_gen_cached_id(eid, cid, entity_manager)
+    pub fn get_gen(&self, eid: usize, cid: usize, em: &EntityManager) -> Option<&dyn AsAny<'a>> {
+        self.get_gen_cached_id(eid, cid, em)
             .and_then(|cid| self.get_gen_cached(cid))
     }
 
-    pub fn get<C>(&self, eid: usize, entity_manager: &EntityManager) -> Option<&C>
+    pub fn get<C>(&self, eid: usize, em: &EntityManager) -> Option<&C>
     where
         C: Component,
     {
-        self.get_gen(eid, C::id(), entity_manager).map(cast)
+        self.get_gen(eid, C::id(), em).map(cast)
     }
 
     pub fn get_gen_mut(
         &mut self,
         eid: usize,
         cid: usize,
-        entity_manager: &EntityManager,
+        em: &EntityManager,
     ) -> Option<&mut dyn AsAny<'a>> {
-        self.get_gen_cached_id(eid, cid, entity_manager)
+        self.get_gen_cached_id(eid, cid, em)
             .and_then(|cid| self.get_gen_cached_mut(cid))
     }
 
-    pub fn get_mut<C>(&mut self, eid: usize, entity_manager: &EntityManager) -> Option<&mut C>
+    pub fn get_mut<C>(&mut self, eid: usize, em: &EntityManager) -> Option<&mut C>
     where
         C: Component,
     {
-        self.get_gen_mut(eid, C::id(), entity_manager).map(cast_mut)
+        self.get_gen_mut(eid, C::id(), em).map(cast_mut)
     }
 
-    pub fn get_gen_cached_id(
-        &self,
-        eid: usize,
-        cid: usize,
-        entity_manager: &EntityManager,
-    ) -> Option<usize> {
-        entity_manager.get(eid)?.get(&cid).copied()
+    pub fn get_gen_cached_id(&self, eid: usize, cid: usize, em: &EntityManager) -> Option<usize> {
+        em.get(eid)?.get(&cid).copied()
     }
 
-    pub fn get_cached_id<C>(&self, eid: usize, entity_manager: &EntityManager) -> Option<usize>
+    pub fn get_cached_id<C>(&self, eid: usize, em: &EntityManager) -> Option<usize>
     where
         C: Component,
     {
-        self.get_gen_cached_id(eid, C::id(), entity_manager)
+        self.get_gen_cached_id(eid, C::id(), em)
     }
 
     pub fn get_gen_cached(&self, cid: usize) -> Option<&dyn AsAny<'a>> {
