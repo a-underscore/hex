@@ -21,7 +21,7 @@ impl Renderer {
 }
 
 impl<'a> System<'a> for Renderer {
-    fn update(&mut self, event: &mut Ev, world: &mut World) -> anyhow::Result<()> {
+    fn update(&mut self, event: &mut Ev, world: &mut World<'a>) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = event {
             if let Some((c, ct)) = world.em.entities.keys().cloned().find_map(|e| {
                 Some((
