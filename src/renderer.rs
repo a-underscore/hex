@@ -35,26 +35,30 @@ impl<'a> System<'a> for Renderer {
                         .and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
-                let mut sprites: Vec<_> = world
-                    .em
-                    .entities
-                    .keys()
-                    .cloned()
-                    .filter_map(|e| {
-                        Some((
-                            world
-                                .cm
-                                .get::<Sprite>(e, &world.em)
-                                .and_then(|s| s.active.then_some(s))?,
-                            world
-                                .cm
-                                .get::<Transform>(e, &world.em)
-                                .and_then(|t| t.active.then_some(t))?,
-                        ))
-                    })
-                    .collect();
+                let sprites = {
+                    let mut sprites: Vec<_> = world
+                        .em
+                        .entities
+                        .keys()
+                        .cloned()
+                        .filter_map(|e| {
+                            Some((
+                                world
+                                    .cm
+                                    .get::<Sprite>(e, &world.em)
+                                    .and_then(|s| s.active.then_some(s))?,
+                                world
+                                    .cm
+                                    .get::<Transform>(e, &world.em)
+                                    .and_then(|t| t.active.then_some(t))?,
+                            ))
+                        })
+                        .collect();
 
-                sprites.sort_by(|(s1, _), (s2, _)| s1.z.total_cmp(&s2.z));
+                    sprites.sort_by(|(s1, _), (s2, _)| s1.z.total_cmp(&s2.z));
+
+                    sprites
+                };
 
                 for (s, t) in sprites {
                     let color: [f32; 4] = s.color.into();
