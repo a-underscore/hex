@@ -3,12 +3,12 @@
 in vec2 position;
 in vec2 uv;
 
+out vec2 tex_pos;
+
 uniform float z;
 uniform mat3 transform;
 uniform mat3 camera_transform;
 uniform mat4 camera_view;
-
-out vec2 tex_pos;
 
 void main(void) {
 	tex_pos = uv;
