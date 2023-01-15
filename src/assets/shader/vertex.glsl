@@ -13,7 +13,7 @@ uniform mat4 camera_view;
 void main(void) {
 	tex_pos = uv;
 
-        vec3 pos = vec3((inverse(camera_transform) * transform * vec3(position, 1.0)).xy, z);
+        vec2 pos = (inverse(camera_transform) * transform * vec3(position, 1.0)).xy;
 
-        gl_Position = camera_view * vec4(pos, 1.0);
+        gl_Position = camera_view * vec4(vec3(pos, z), 1.0);
 }
