@@ -23,7 +23,7 @@ impl<'a> SystemManager<'a> {
         self.systems.pop();
     }
 
-    pub fn init(&mut self, world: &mut World) -> anyhow::Result<()> {
+    pub fn init(&mut self, world: &mut World<'a>) -> anyhow::Result<()> {
         for s in &mut self.systems {
             s.init(world)?;
         }
@@ -31,7 +31,7 @@ impl<'a> SystemManager<'a> {
         Ok(())
     }
 
-    pub fn update(&mut self, event: &mut Ev, world: &mut World) -> anyhow::Result<()> {
+    pub fn update(&mut self, event: &mut Ev, world: &mut World<'a>) -> anyhow::Result<()> {
         for s in &mut self.systems {
             s.update(event, world)?;
         }

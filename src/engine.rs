@@ -30,7 +30,7 @@ pub fn init(
     fn update(
         event: &Event<()>,
         control_flow: &mut ControlFlow,
-        world: &mut World,
+        world: &mut World<'static>,
         system_manager: &mut SystemManager<'static>,
     ) -> anyhow::Result<()> {
         system_manager.update(&mut Ev::Event(event), world)?;
