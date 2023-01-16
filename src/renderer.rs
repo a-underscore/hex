@@ -60,11 +60,12 @@ impl<'a> System<'a> for Renderer {
                     sprites
                 };
 
+                let camera_view: [[f32; 4]; 4] = c.view().into();
+                let camera_transform: [[f32; 3]; 3] = ct.matrix().into();
+
                 for (s, t) in sprites {
                     let color: [f32; 4] = s.color.into();
                     let transform: [[f32; 3]; 3] = t.matrix().into();
-                    let camera_view: [[f32; 4]; 4] = c.view().into();
-                    let camera_transform: [[f32; 3]; 3] = ct.matrix().into();
                     let uniform = uniform! {
                         z: s.z,
                         transform: transform,
