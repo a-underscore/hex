@@ -3,27 +3,24 @@ pub mod vertex;
 pub use vertex::Vertex;
 
 use cgmath::{Vector2, Zero};
-use glium::{index::PrimitiveType, Display, IndexBuffer, VertexBuffer};
+use glium::{index::PrimitiveType, Display, VertexBuffer};
 use std::rc::Rc;
-
-pub static INDICES: [u32; 6] = [0, 1, 2, 1, 3, 2];
 
 #[derive(Clone)]
 pub struct Shape {
     pub vertices: Rc<VertexBuffer<Vertex>>,
-    pub indices: Rc<IndexBuffer<u32>>,
+    pub format: PrimitiveType,
 }
 
 impl Shape {
     pub fn new(
         display: &Display,
         vertices: &[Vertex],
-        indices: &[u32],
-        t: PrimitiveType,
+        format: PrimitiveType,
     ) -> anyhow::Result<Self> {
         Ok(Self {
             vertices: Rc::new(VertexBuffer::immutable(display, vertices)?),
-            indices: Rc::new(IndexBuffer::immutable(display, t, indices)?),
+            format,
         })
     }
 
@@ -33,12 +30,12 @@ impl Shape {
 
             [
                 Vertex::new(Vector2::new(-dims.x, -dims.y), Vector2::zero()),
-                Vertex::new(Vector2::new(-dims.x, dims.y), Vector2::new(0.0, 1.0)),
                 Vertex::new(Vector2::new(dims.x, -dims.y), Vector2::new(1.0, 0.0)),
                 Vertex::new(Vector2::new(dims.x, dims.y), Vector2::new(1.0, 1.0)),
+                Vertex::new(Vector2::new(-dims.x, dims.y), Vector2::new(0.0, 1.0)),
             ]
         };
 
-        Self::new(display, &vertices, &INDICES, PrimitiveType::TrianglesList)
+        Self::new(display, &vertices, PrimitiveType::TriangleFan)
     }
 }

@@ -6,7 +6,7 @@ use crate::{
         world::World,
     },
 };
-use glium::{uniform, uniforms::Sampler, Display, Surface};
+use glium::{index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 
 pub struct Renderer {
     pub shader: Shader,
@@ -76,7 +76,7 @@ impl<'a> System<'a> for Renderer {
 
                     target.draw(
                         &*s.shape.vertices,
-                        &*s.shape.indices,
+                        NoIndices(s.shape.format),
                         &self.shader.program,
                         &uniform,
                         &s.draw_parameters,
