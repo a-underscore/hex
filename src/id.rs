@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-fn id(count: &AtomicUsize) -> usize {
+pub fn id(count: &AtomicUsize) -> usize {
     let id = count.load(Ordering::Acquire);
 
     count.store(id + 1, Ordering::Release);
