@@ -72,7 +72,7 @@ impl<'a> System<'a> for Renderer {
                         camera_transform: camera_transform,
                         camera_view: camera_view,
                         color: color,
-                        image: Sampler(&*s.texture.buffer, s.texture.sampler_behaviour),
+                        tex: Sampler(&*s.texture.buffer, s.texture.sampler_behaviour),
                     };
 
                     target.draw(
