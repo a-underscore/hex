@@ -1,5 +1,6 @@
 pub mod component_manager;
 pub mod entity_manager;
+pub mod id;
 pub mod system_manager;
 pub mod world;
 
