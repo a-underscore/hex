@@ -1,9 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub fn id(count: &AtomicUsize) -> usize {
-    let id = count.load(Ordering::Acquire);
-
-    count.store(id + 1, Ordering::Release);
+    let id = count.fetch_add(1, Ordering::SeqCst);
 
     id
 }
