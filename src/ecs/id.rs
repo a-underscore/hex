@@ -1,9 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub fn id(count: &AtomicUsize) -> usize {
-    let id = count.fetch_add(1, Ordering::SeqCst);
-
-    id
+    count.fetch_add(1, Ordering::SeqCst)
 }
 
 pub fn eid() -> usize {
