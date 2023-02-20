@@ -1,5 +1,5 @@
 use glium::{
-    texture::{MipmapsOption, RawImage2d, Texture2d},
+    texture::{MipmapsOption, Texture2d, Texture2dDataSource},
     uniforms::SamplerBehavior,
     Display,
 };
@@ -12,12 +12,15 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn new(
+    pub fn new<'a, T>(
         display: &Display,
-        image: RawImage2d<u8>,
-        sampler_behaviour: SamplerBehavior,
+        image: T,
         mipmaps_option: MipmapsOption,
-    ) -> anyhow::Result<Self> {
+        sampler_behaviour: SamplerBehavior,
+    ) -> anyhow::Result<Self>
+    where
+        T: Texture2dDataSource<'a>,
+    {
         Ok(Self {
             buffer: Rc::new(Texture2d::with_mipmaps(display, image, mipmaps_option)?),
             sampler_behaviour,
