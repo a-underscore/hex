@@ -6,7 +6,7 @@ use crate::{
         world::World,
     },
 };
-use glium::{index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
+use glium::{index::NoIndices, glutin::event::Event, uniform, uniforms::Sampler, Display, Surface};
 
 pub static VERTEX_SRC: &str = include_str!("vertex.glsl");
 pub static FRAGMENT_SRC: &str = include_str!("fragment.glsl");
@@ -25,7 +25,7 @@ impl Renderer {
 
 impl<'a> System<'a> for Renderer {
     fn update(&mut self, event: &mut Ev, world: &mut World<'a>) -> anyhow::Result<()> {
-        if let Ev::Draw((_, target)) = event {
+        if let Ev::Draw((Event::MainEventsCleared, target)) = event {
             if let Some((c, ct)) = world.em.entities.keys().cloned().find_map(|e| {
                 Some((
                     world
