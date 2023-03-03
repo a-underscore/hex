@@ -1,9 +1,8 @@
-pub mod ev;
 pub mod system;
 
-pub use ev::Ev;
 pub use system::System;
 
+use super::ev::Ev;
 use super::world::World;
 
 #[derive(Default)]

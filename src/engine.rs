@@ -1,5 +1,6 @@
 use crate::ecs::{
-    system_manager::{Ev, SystemManager},
+    ev::{control::Control, Ev},
+    system_manager::SystemManager,
     world::World,
 };
 use glium::{
@@ -28,29 +29,28 @@ pub fn init(
     mut system_manager: SystemManager<'static>,
 ) -> anyhow::Result<()> {
     fn update(
-        event: &Event<()>,
-        control_flow: &mut ControlFlow,
+        mut control: Control,
         world: &mut World<'static>,
         system_manager: &mut SystemManager<'static>,
     ) -> anyhow::Result<()> {
-        system_manager.update(&mut Ev::Event(event), world)?;
+        system_manager.update(&mut Ev::Event(&mut control), world)?;
 
-        if let Event::MainEventsCleared = event {
+        if let Event::MainEventsCleared = &control.event {
             let mut target = world.display.draw();
 
             target.clear_color_and_depth(world.bg.into(), 1.0);
 
-            system_manager.update(&mut Ev::Draw((event, &mut target)), world)?;
+            system_manager.update(&mut Ev::Draw((&mut control, &mut target)), world)?;
 
             target.finish()?;
         } else if let Event::WindowEvent {
             event: WindowEvent::CloseRequested,
             ..
-        } = event
+        } = &control.event
         {
-            *control_flow = ControlFlow::Exit;
+            *control.flow = ControlFlow::Exit;
         } else {
-            *control_flow = ControlFlow::Poll;
+            *control.flow = ControlFlow::Poll;
         }
 
         Ok(())
@@ -59,6 +59,11 @@ pub fn init(
     system_manager.init(&mut world)?;
 
     event_loop.run(move |event, _, control_flow| {
-        update(&event, control_flow, &mut world, &mut system_manager).unwrap();
+        update(
+            Control::new(event, control_flow),
+            &mut world,
+            &mut system_manager,
+        )
+        .unwrap();
     });
 }
