@@ -1,12 +1,12 @@
 use glium::glutin::{event::Event, event_loop::ControlFlow};
 
-pub struct Control<'a, 'b> {
+pub struct Control<'a> {
     pub event: Event<'a, ()>,
-    pub flow: &'b mut ControlFlow,
+    pub flow: Option<ControlFlow>,
 }
 
-impl<'a, 'b> Control<'a, 'b> {
-    pub fn new(event: Event<'a, ()>, flow: &'b mut ControlFlow) -> Self {
-        Self { event, flow }
+impl<'a> Control<'a> {
+    pub fn new(event: Event<'a, ()>) -> Self {
+        Self { event, flow: None }
     }
 }

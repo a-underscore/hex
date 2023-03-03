@@ -4,7 +4,7 @@ pub use control::Control;
 
 use glium::Frame;
 
-pub enum Ev<'a, 'b, 'c, 'd> {
-    Event(&'a mut Control<'b, 'c>),
-    Draw((&'a mut Control<'b, 'c>, &'d mut Frame)),
+pub enum Ev<'a, 'b, 'c> {
+    Event(&'a mut Control<'b>),
+    Draw((&'a mut Control<'b>, &'c mut Frame)),
 }

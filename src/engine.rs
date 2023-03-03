@@ -30,6 +30,7 @@ pub fn init(
 ) -> anyhow::Result<()> {
     fn update(
         mut control: Control,
+        flow: &mut ControlFlow,
         world: &mut World<'static>,
         system_manager: &mut SystemManager<'static>,
     ) -> anyhow::Result<()> {
@@ -43,14 +44,18 @@ pub fn init(
             system_manager.update(&mut Ev::Draw((&mut control, &mut target)), world)?;
 
             target.finish()?;
-        } else if let Event::WindowEvent {
+        }
+
+        if let Event::WindowEvent {
             event: WindowEvent::CloseRequested,
             ..
         } = &control.event
         {
-            *control.flow = ControlFlow::Exit;
+            *flow = ControlFlow::Exit;
+        } else if let Some(control_flow) = control.flow {
+            *flow = control_flow;
         } else {
-            *control.flow = ControlFlow::Poll;
+            *flow = ControlFlow::Poll;
         }
 
         Ok(())
@@ -60,7 +65,8 @@ pub fn init(
 
     event_loop.run(move |event, _, control_flow| {
         update(
-            Control::new(event, control_flow),
+            Control::new(event),
+            control_flow,
             &mut world,
             &mut system_manager,
         )
