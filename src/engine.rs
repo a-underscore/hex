@@ -1,4 +1,3 @@
-use crate::ecs::{ev::control::Control, Ev, SystemManager, World};
 use glium::{
     glutin::{
         event::{Event, WindowEvent},
@@ -8,6 +7,7 @@ use glium::{
     },
     Display, Surface,
 };
+use hecs::{ev::control::Control, Ev, SystemManager, World};
 
 pub fn setup_display(
     wb: WindowBuilder,

@@ -1,6 +1,5 @@
 pub mod assets;
 pub mod components;
-pub mod ecs;
 pub mod engine;
 pub mod id;
 pub mod renderer;
@@ -8,6 +7,7 @@ pub mod renderer;
 pub use anyhow;
 pub use cgmath;
 pub use glium;
+pub use hecs;
 pub use id::id;
 pub use once_cell;
 

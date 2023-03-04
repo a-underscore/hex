@@ -1,5 +1,6 @@
-use crate::{cid, ecs::component_manager::Component};
+use crate::cid;
 use cgmath::{Matrix4, Vector3};
+use hecs::component_manager::Component;
 
 #[derive(Clone)]
 pub struct Camera {
