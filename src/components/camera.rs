@@ -1,4 +1,4 @@
-use crate::ecs::component_manager::Component;
+use crate::{cid, ecs::component_manager::Component};
 use cgmath::{Matrix4, Vector3};
 
 #[derive(Clone)]
@@ -49,4 +49,8 @@ impl Camera {
     }
 }
 
-impl Component for Camera {}
+impl Component for Camera {
+    fn id() -> usize {
+        cid!()
+    }
+}

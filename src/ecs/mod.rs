@@ -10,26 +10,7 @@ pub use ev::Ev;
 pub use system_manager::SystemManager;
 pub use world::World;
 
-use std::{
-    mem,
-    sync::atomic::{AtomicUsize, Ordering},
-};
-
-pub fn id(count: &AtomicUsize) -> usize {
-    count.fetch_add(1, Ordering::SeqCst)
-}
-
-pub fn eid() -> usize {
-    static COUNT: AtomicUsize = AtomicUsize::new(0);
-
-    id(&COUNT)
-}
-
-pub fn cid() -> usize {
-    static COUNT: AtomicUsize = AtomicUsize::new(0);
-
-    id(&COUNT)
-}
+use std::mem;
 
 pub fn cast<F, T>(f: &F) -> &T
 where

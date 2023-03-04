@@ -1,4 +1,4 @@
-use crate::ecs::component_manager::Component;
+use crate::{cid, ecs::component_manager::Component};
 use cgmath::{Matrix2, Matrix3, Rad, Vector2};
 
 #[derive(Clone)]
@@ -75,4 +75,8 @@ impl Transform {
     }
 }
 
-impl Component for Transform {}
+impl Component for Transform {
+    fn id() -> usize {
+        cid!()
+    }
+}

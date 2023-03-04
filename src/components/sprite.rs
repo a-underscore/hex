@@ -1,5 +1,6 @@
 use crate::{
     assets::{Shape, Texture},
+    cid,
     ecs::component_manager::Component,
 };
 use cgmath::Vector4;
@@ -39,4 +40,8 @@ impl<'a> Sprite<'a> {
     }
 }
 
-impl<'a> Component for Sprite<'a> {}
+impl<'a> Component for Sprite<'a> {
+    fn id() -> usize {
+        cid!()
+    }
+}
