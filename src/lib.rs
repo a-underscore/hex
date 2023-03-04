@@ -8,6 +8,7 @@ pub mod renderer;
 pub use anyhow;
 pub use cgmath;
 pub use glium;
+pub use id::id;
 pub use once_cell;
 
 #[macro_export]
