@@ -2,6 +2,7 @@ pub mod assets;
 pub mod components;
 pub mod ecs;
 pub mod engine;
+pub mod renderer;
 
 pub use anyhow;
 pub use cgmath;

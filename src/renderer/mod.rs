@@ -2,11 +2,12 @@ use crate::{
     assets::Shader,
     components::{Camera, Sprite, Transform},
     ecs::{
-        system_manager::{Ev, System},
+        ev::{Control, Ev},
+        system_manager::System,
         world::World,
     },
 };
-use glium::{index::NoIndices, glutin::event::Event, uniform, uniforms::Sampler, Display, Surface};
+use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 
 pub static VERTEX_SRC: &str = include_str!("vertex.glsl");
 pub static FRAGMENT_SRC: &str = include_str!("fragment.glsl");
@@ -18,14 +19,21 @@ pub struct Renderer {
 impl Renderer {
     pub fn new(display: &Display) -> anyhow::Result<Self> {
         Ok(Self {
-            shader: Shader::new(VERTEX_SRC, FRAGMENT_SRC, None)?,
+            shader: Shader::new(display, VERTEX_SRC, FRAGMENT_SRC, None)?,
         })
     }
 }
 
 impl<'a> System<'a> for Renderer {
     fn update(&mut self, event: &mut Ev, world: &mut World<'a>) -> anyhow::Result<()> {
-        if let Ev::Draw((Event::MainEventsCleared, target)) = event {
+        if let Ev::Draw((
+            Control {
+                event: Event::MainEventsCleared,
+                flow: _,
+            },
+            target,
+        )) = event
+        {
             if let Some((c, ct)) = world.em.entities.keys().cloned().find_map(|e| {
                 Some((
                     world
