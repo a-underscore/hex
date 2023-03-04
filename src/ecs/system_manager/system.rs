@@ -1,5 +1,4 @@
-use super::Ev;
-use crate::ecs::world::World;
+use super::{Ev, World};
 
 pub trait System<'a>: 'a {
     fn init(&mut self, _: &mut World<'a>) -> anyhow::Result<()> {

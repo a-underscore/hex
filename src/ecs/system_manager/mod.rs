@@ -2,8 +2,7 @@ pub mod system;
 
 pub use system::System;
 
-use super::ev::Ev;
-use super::world::World;
+use super::{Ev, World};
 
 #[derive(Default)]
 pub struct SystemManager<'a> {

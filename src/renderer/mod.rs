@@ -1,11 +1,7 @@
 use crate::{
     assets::Shader,
     components::{Camera, Sprite, Transform},
-    ecs::{
-        ev::{Control, Ev},
-        system_manager::System,
-        world::World,
-    },
+    ecs::{ev::Control, system_manager::System, Ev, World},
 };
 use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 

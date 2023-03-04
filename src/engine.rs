@@ -1,8 +1,4 @@
-use crate::ecs::{
-    ev::{control::Control, Ev},
-    system_manager::SystemManager,
-    world::World,
-};
+use crate::ecs::{ev::control::Control, Ev, SystemManager, World};
 use glium::{
     glutin::{
         event::{Event, WindowEvent},
