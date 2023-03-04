@@ -3,6 +3,8 @@ use crate::cid;
 
 pub trait Component {
     fn id() -> usize {
+        println!("here");
+
         cid!()
     }
 }
