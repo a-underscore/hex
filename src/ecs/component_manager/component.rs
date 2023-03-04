@@ -3,9 +3,11 @@ use crate::cid;
 
 pub trait Component {
     fn id() -> usize {
-        println!("here");
+        let val = cid!();
 
-        cid!()
+        println!("{val}");
+
+        val
     }
 }
 
