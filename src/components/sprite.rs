@@ -24,7 +24,8 @@ impl<'a> Sprite<'a> {
         Self {
             draw_parameters: DrawParameters {
                 depth: Depth {
-                    test: DepthTest::IfLess,
+                    test: DepthTest::IfLessOrEqual,
+                    range: (-1.0, 1.0),
                     write: true,
                     ..Default::default()
                 },
