@@ -17,7 +17,7 @@ impl Transform {
             position,
             rotation,
             scale,
-            matrix: Self::calculate_matrix(position, rotation, scale),
+            matrix: Self::calculate_matrix(&position, rotation, &scale),
             active,
         }
     }
@@ -57,11 +57,11 @@ impl Transform {
     }
 
     fn update_matrix(&mut self) {
-        self.matrix = Self::calculate_matrix(self.position, self.rotation, self.scale);
+        self.matrix = Self::calculate_matrix(&self.position, self.rotation, &self.scale);
     }
 
-    fn calculate_matrix(position: Vec2, rotation: f32, scale: Vec2) -> Mat3 {
-        Mat3::scale(&scale) * Mat3::translation(&position) * Mat3::rotation(rotation)
+    fn calculate_matrix(position: &Vec2, rotation: f32, scale: &Vec2) -> Mat3 {
+        Mat3::translation(&position) * Mat3::rotation(rotation) * Mat3::scale(&scale)
     }
 }
 

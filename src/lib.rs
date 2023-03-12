@@ -10,6 +10,7 @@ pub use hecs;
 pub use hex_math as math;
 pub use id::id;
 pub use once_cell;
+pub use renderer::Renderer;
 
 #[macro_export]
 macro_rules! cid {
