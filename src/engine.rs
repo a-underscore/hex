@@ -37,7 +37,7 @@ pub fn init(
 
             target.clear_color_and_depth(world.bg.into(), 1.0);
 
-            system_manager.update(&mut Ev::Draw((&mut control, &mut target)), world).unwrap();
+            system_manager.update(&mut Ev::Draw((&mut control, &mut target)), world)?;
 
             target.finish()?;
         }
@@ -60,12 +60,13 @@ pub fn init(
     system_manager.init(&mut world)?;
 
     event_loop.run(move |event, _, control_flow| {
-        update(
+        if let Err(e) = update(
             Control::new(event),
             control_flow,
             &mut world,
             &mut system_manager,
-        )
-        .unwrap();
+        ) {
+            eprintln!("{}", e);
+        }
     });
 }
