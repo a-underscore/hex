@@ -61,7 +61,7 @@ impl Transform {
     }
 
     fn calculate_matrix(position: &Vec2, rotation: f32, scale: &Vec2) -> Mat3 {
-        Mat3::translation(&position) * Mat3::rotation(rotation) * Mat3::scale(&scale)
+        Mat3::translation(position) * Mat3::rotation(rotation) * Mat3::scale(scale)
     }
 }
 

@@ -35,7 +35,7 @@ pub fn init(
         if let Event::MainEventsCleared = &control.event {
             let mut target = world.display.draw();
 
-            target.clear_color_and_depth(world.bg.into(), 1.0);
+            target.clear_color_and_depth(world.bg, 1.0);
 
             system_manager.update(&mut Ev::Draw((&mut control, &mut target)), world)?;
 
