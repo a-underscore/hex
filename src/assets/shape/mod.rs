@@ -2,8 +2,8 @@ pub mod vertex;
 
 pub use vertex::Vertex;
 
-use cgmath::{Vector2, Zero};
 use glium::{index::PrimitiveType, Display, VertexBuffer};
+use hex_math::Vec2;
 use std::rc::Rc;
 
 #[derive(Clone)]
@@ -24,15 +24,15 @@ impl Shape {
         })
     }
 
-    pub fn rect(display: &Display, dims: Vector2<f32>) -> anyhow::Result<Self> {
+    pub fn rect(display: &Display, dims: Vec2) -> anyhow::Result<Self> {
         let vertices = {
             let dims = dims / 2.0;
 
             [
-                Vertex::new(Vector2::new(-dims.x, -dims.y), Vector2::zero()),
-                Vertex::new(Vector2::new(dims.x, -dims.y), Vector2::new(1.0, 0.0)),
-                Vertex::new(Vector2::new(dims.x, dims.y), Vector2::new(1.0, 1.0)),
-                Vertex::new(Vector2::new(-dims.x, dims.y), Vector2::new(0.0, 1.0)),
+                Vertex::new(Vec2::new(-dims.x(), -dims.y()), Vec2::default()),
+                Vertex::new(Vec2::new(dims.x(), -dims.y()), Vec2::new(1.0, 0.0)),
+                Vertex::new(Vec2::new(dims.x(), dims.y()), Vec2::new(1.0, 1.0)),
+                Vertex::new(Vec2::new(-dims.x(), dims.y()), Vec2::new(0.0, 1.0)),
             ]
         };
 

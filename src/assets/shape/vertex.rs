@@ -1,5 +1,5 @@
-use cgmath::Vector2;
 use glium::implement_vertex;
+use hex_math::Vec2;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
@@ -8,10 +8,10 @@ pub struct Vertex {
 }
 
 impl Vertex {
-    pub fn new(position: Vector2<f32>, uv: Vector2<f32>) -> Self {
+    pub fn new(position: Vec2, uv: Vec2) -> Self {
         Self {
-            position: position.into(),
-            uv: uv.into(),
+            position: position.0,
+            uv: uv.0,
         }
     }
 }

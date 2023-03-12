@@ -1,6 +1,6 @@
 use crate::cid;
+use hex_math::{Ortho, Vec2};
 use hecs::component_manager::Component;
-use hex_math::Ortho;
 
 #[derive(Clone)]
 pub struct Camera {
@@ -13,7 +13,7 @@ impl Camera {
     pub fn new(dimensions: [f32; 3], active: bool) -> Self {
         Self {
             dimensions,
-            view: Self::calculate_view(&dimensions),
+            view: Self::calculate_view(dimensions),
             active,
         }
     }
@@ -40,12 +40,12 @@ impl Camera {
         let dimensions = dimensions.map(|d| d / 2.0);
 
         Ortho::new(
-            -dimensions[0],
-            dimensions[0],
-            -dimensions[1],
-            dimensions[1],
-            -dimensions[2],
-            dimensions[2],
+            -dimensions.x,
+            dimensions.x,
+            -dimensions.y,
+            dimensions.y,
+            -dimensions.z,
+            dimensions.z,
         )
     }
 }

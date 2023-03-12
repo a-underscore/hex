@@ -5,7 +5,6 @@ pub mod id;
 pub mod renderer;
 
 pub use anyhow;
-pub use cgmath;
 pub use glium;
 pub use hecs;
 pub use id::id;
