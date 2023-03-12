@@ -67,18 +67,13 @@ impl<'a> System<'a> for Renderer {
                     sprites
                 };
 
-                let camera_view: [[f32; 4]; 4] = c.view().0;
-                let camera_transform: [[f32; 3]; 3] = ct.matrix().0;
-
                 for (s, t) in sprites {
-                    let color: [f32; 4] = s.color.into();
-                    let transform: [[f32; 3]; 3] = t.matrix().0;
                     let uniform = uniform! {
                         z: s.z,
-                        transform: transform,
-                        camera_transform: camera_transform,
-                        camera_view: camera_view,
-                        color: color,
+                        transform: t.matrix().0,
+                        camera_transform: ct.matrix().0,
+                        camera_view: c.view().0,
+                        color: s.color,
                         tex: Sampler(&*s.texture.buffer, s.texture.sampler_behaviour),
                     };
 
