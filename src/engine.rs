@@ -37,7 +37,7 @@ pub fn init(
 
             target.clear_color_and_depth(world.bg.into(), 1.0);
 
-            system_manager.update(&mut Ev::Draw((&mut control, &mut target)), world)?;
+            system_manager.update(&mut Ev::Draw((&mut control, &mut target)), world).unwrap();
 
             target.finish()?;
         }
