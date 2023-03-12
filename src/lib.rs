@@ -7,6 +7,7 @@ pub mod renderer;
 pub use anyhow;
 pub use glium;
 pub use hecs;
+pub use hex_math as math;
 pub use id::id;
 pub use once_cell;
 
