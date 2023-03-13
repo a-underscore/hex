@@ -1,29 +1,29 @@
 use crate::cid;
 use hecs::component_manager::Component;
-use hex_math::Ortho;
+use hex_math::{Ortho, Vec2};
 
 #[derive(Clone)]
 pub struct Camera {
-    dimensions: [f32; 3],
+    radius: (Vec2, f32),
     view: Ortho,
     pub active: bool,
 }
 
 impl Camera {
-    pub fn new(dimensions: [f32; 3], active: bool) -> Self {
+    pub fn new(radius: (Vec2, f32), active: bool) -> Self {
         Self {
-            dimensions,
-            view: Self::calculate_view(&dimensions),
+            radius,
+            view: Self::calculate_view(&radius),
             active,
         }
     }
 
-    pub fn dimensions(&self) -> [f32; 3] {
-        self.dimensions
+    pub fn radius(&self) -> (Vec2, f32) {
+        self.radius
     }
 
-    pub fn set_dimensions(&mut self, dimensions: [f32; 3]) {
-        self.dimensions = dimensions;
+    pub fn set_radius(&mut self, radius: (Vec2, f32)) {
+        self.radius = radius;
 
         self.update_view();
     }
@@ -33,20 +33,11 @@ impl Camera {
     }
 
     fn update_view(&mut self) {
-        self.view = Self::calculate_view(&self.dimensions);
+        self.view = Self::calculate_view(&self.radius);
     }
 
-    fn calculate_view(dimensions: &[f32; 3]) -> Ortho {
-        let dimensions = dimensions.map(|d| d / 2.0);
-
-        Ortho::new(
-            -dimensions[0],
-            dimensions[0],
-            -dimensions[1],
-            dimensions[1],
-            -dimensions[2],
-            dimensions[2],
-        )
+    fn calculate_view((v, z): &(Vec2, f32)) -> Ortho {
+        Ortho::new(-v.x(), v.x(), -v.y(), v.y(), -z, *z)
     }
 }
 
