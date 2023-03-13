@@ -4,26 +4,26 @@ use hex_math::{Ortho, Vec2};
 
 #[derive(Clone)]
 pub struct Camera {
-    radius: (Vec2, f32),
+    dimensions: (Vec2, f32),
     view: Ortho,
     pub active: bool,
 }
 
 impl Camera {
-    pub fn new(radius: (Vec2, f32), active: bool) -> Self {
+    pub fn new(dimensions: (Vec2, f32), active: bool) -> Self {
         Self {
-            radius,
-            view: Self::calculate_view(&radius),
+            dimensions,
+            view: Self::calculate_view(&dimensions),
             active,
         }
     }
 
-    pub fn radius(&self) -> (Vec2, f32) {
-        self.radius
+    pub fn dimensions(&self) -> (Vec2, f32) {
+        self.dimensions
     }
 
-    pub fn set_radius(&mut self, radius: (Vec2, f32)) {
-        self.radius = radius;
+    pub fn set_dimensions(&mut self, dimensions: (Vec2, f32)) {
+        self.dimensions = dimensions;
 
         self.update_view();
     }
@@ -33,11 +33,14 @@ impl Camera {
     }
 
     fn update_view(&mut self) {
-        self.view = Self::calculate_view(&self.radius);
+        self.view = Self::calculate_view(&self.dimensions);
     }
 
     fn calculate_view((v, z): &(Vec2, f32)) -> Ortho {
-        Ortho::new(-v.x(), v.x(), -v.y(), v.y(), -z, *z)
+        let v = *v / 2.0;
+        let z = z / 2.0;
+
+        Ortho::new(-v.x(), v.x(), -v.y(), v.y(), -z, z)
     }
 }
 
