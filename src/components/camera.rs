@@ -13,7 +13,7 @@ impl Camera {
     pub fn new(dimensions: (Vec2, f32), active: bool) -> Self {
         Self {
             dimensions,
-            view: Self::calculate_view(&dimensions),
+            view: Self::calculate_view(dimensions),
             active,
         }
     }
@@ -33,13 +33,10 @@ impl Camera {
     }
 
     fn update_view(&mut self) {
-        self.view = Self::calculate_view(&self.dimensions);
+        self.view = Self::calculate_view(self.dimensions);
     }
 
-    fn calculate_view((v, z): &(Vec2, f32)) -> Ortho {
-        let v = *v / 2.0;
-        let z = z / 2.0;
-
+    fn calculate_view((v, z): (Vec2, f32)) -> Ortho {
         Ortho::new(-v.x(), v.x(), -v.y(), v.y(), -z, z)
     }
 }
