@@ -37,6 +37,9 @@ impl Camera {
     }
 
     fn calculate_view((v, z): (Vec2, f32)) -> Ortho {
+        let v = v / 2.0;
+        let z = z / 2.0;
+
         Ortho::new(-v.x(), v.x(), -v.y(), v.y(), -z, z)
     }
 }
