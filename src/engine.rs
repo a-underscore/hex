@@ -2,22 +2,10 @@ use glium::{
     glutin::{
         event::{Event, WindowEvent},
         event_loop::{ControlFlow, EventLoop},
-        window::WindowBuilder,
-        ContextBuilder, NotCurrent,
     },
-    Display, Surface,
+    Surface,
 };
 use hecs::{ev::control::Control, Ev, SystemManager, World};
-
-pub fn setup_display(
-    wb: WindowBuilder,
-    cb: ContextBuilder<'_, NotCurrent>,
-) -> anyhow::Result<(EventLoop<()>, Display)> {
-    let event_loop = EventLoop::new();
-    let display = Display::new(wb, cb, &event_loop)?;
-
-    Ok((event_loop, display))
-}
 
 pub fn init(
     event_loop: EventLoop<()>,
