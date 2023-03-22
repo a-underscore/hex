@@ -1,12 +1,12 @@
 use crate::{
     assets::{Shape, Texture},
     cid,
+    ecs::component_manager::Component,
 };
 use glium::{
     draw_parameters::{Blend, DepthTest},
     Depth, DrawParameters,
 };
-use hecs::component_manager::Component;
 
 #[derive(Clone)]
 pub struct Sprite<'a> {

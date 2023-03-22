@@ -1,6 +1,8 @@
 use crate::cid;
-use hecs::component_manager::Component;
-use hex_math::{Ortho, Vec2};
+use crate::{
+    ecs::component_manager::Component,
+    math::{Ortho, Vec2},
+};
 
 #[derive(Clone)]
 pub struct Camera {

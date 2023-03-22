@@ -1,6 +1,8 @@
-use crate::cid;
-use hecs::component_manager::Component;
-use hex_math::{Mat3, Vec2};
+use crate::{
+    cid,
+    ecs::component_manager::Component,
+    math::{Mat3, Vec2},
+};
 
 #[derive(Clone)]
 pub struct Transform {

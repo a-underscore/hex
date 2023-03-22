@@ -1,5 +1,5 @@
+use crate::math::Vec2;
 use glium::implement_vertex;
-use hex_math::Vec2;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {

@@ -2,8 +2,8 @@ pub mod vertex;
 
 pub use vertex::Vertex;
 
+use crate::math::Vec2;
 use glium::{index::PrimitiveType, Display, VertexBuffer};
-use hex_math::Vec2;
 use std::rc::Rc;
 
 #[derive(Clone)]
