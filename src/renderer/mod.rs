@@ -21,7 +21,7 @@ impl Renderer {
 }
 
 impl<'a> System<'a> for Renderer {
-    fn update(&mut self, event: &mut Ev, world: &mut World<'a>) -> anyhow::Result<()> {
+    fn update(&mut self, event: &mut Ev, world: &mut World) -> anyhow::Result<()> {
         if let Ev::Draw((
             Control {
                 event: Event::MainEventsCleared,
