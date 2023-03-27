@@ -1,7 +1,7 @@
 use crate::{
     assets::Shader,
     components::{Camera, Sprite, Transform},
-    ecs::{ev::Control, system_manager::System, Ev, World},
+    ecs::{ev::Control, system_manager::System, Ev, Scene, World},
 };
 use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 
@@ -21,7 +21,7 @@ impl Renderer {
 }
 
 impl<'a> System<'a> for Renderer {
-    fn update(&mut self, event: &mut Ev, world: &mut World) -> anyhow::Result<()> {
+    fn update(&mut self, event: &mut Ev, _: &mut Scene, world: &mut World) -> anyhow::Result<()> {
         if let Ev::Draw((
             Control {
                 event: Event::MainEventsCleared,
