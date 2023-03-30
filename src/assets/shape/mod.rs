@@ -29,7 +29,7 @@ impl Shape {
             let dims = dims / 2.0;
 
             [
-                Vertex::new(Vec2::new(-dims.x(), -dims.y()), Vec2::default()),
+                Vertex::new(Vec2::new(-dims.x(), -dims.y()), Default::default()),
                 Vertex::new(Vec2::new(dims.x(), -dims.y()), Vec2::new(1.0, 0.0)),
                 Vertex::new(Vec2::new(dims.x(), dims.y()), Vec2::new(1.0, 1.0)),
                 Vertex::new(Vec2::new(-dims.x(), dims.y()), Vec2::new(0.0, 1.0)),
