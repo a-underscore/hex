@@ -1,12 +1,12 @@
 pub mod assets;
 pub mod components;
+pub mod ecs;
 pub mod id;
+pub mod math;
 pub mod renderer;
 
 pub use anyhow;
-pub use ecs::glium;
-pub use hecs as ecs;
-pub use hex_math as math;
+pub use glium;
 pub use id::id;
 pub use once_cell;
 pub use renderer::Renderer;

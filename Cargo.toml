@@ -5,6 +5,5 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.58"
-hecs = { git = "https://github.com/a-underscore/hecs", version = "0.1.0" }
-hex_math = { git = "https://github.com/a-underscore/hex_math", version = "0.1.0" }
+glium = "0.32.1"
 once_cell = "1.16.0"
