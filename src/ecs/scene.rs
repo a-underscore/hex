@@ -35,7 +35,7 @@ impl Scene {
             ) {
                 eprintln!("{}", e);
             }
-        });
+        })
     }
 
     pub fn update(
