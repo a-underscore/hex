@@ -2,7 +2,7 @@ pub mod control;
 
 pub use control::Control;
 
-use glium::Frame;
+use crate::glium::Frame;
 
 pub enum Ev<'a, 'b, 'c> {
     Event(&'a mut Control<'b>),

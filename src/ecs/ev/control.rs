@@ -1,4 +1,4 @@
-use glium::glutin::{event::Event, event_loop::ControlFlow};
+use crate::glium::glutin::{event::Event, event_loop::ControlFlow};
 
 pub struct Control<'a> {
     pub event: Event<'a, ()>,
