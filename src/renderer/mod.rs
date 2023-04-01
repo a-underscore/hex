@@ -1,9 +1,11 @@
 use crate::{
-    assets::Shader,
-    components::{Camera, Sprite, Transform},
-    ecs::{ev::Control, system_manager::System, Ev, Scene, World},
+    glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface},
+    {
+        assets::Shader,
+        components::{Camera, Sprite, Transform},
+        ecs::{ev::Control, system_manager::System, Ev, Scene, World},
+    },
 };
-use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 
 pub static VERTEX_SRC: &str = include_str!("vertex.glsl");
 pub static FRAGMENT_SRC: &str = include_str!("fragment.glsl");

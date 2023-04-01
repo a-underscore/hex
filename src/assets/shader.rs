@@ -1,4 +1,4 @@
-use glium::{program::Program, Display};
+use crate::glium::{program::Program, Display};
 use std::rc::Rc;
 
 #[derive(Clone)]
