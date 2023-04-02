@@ -5,9 +5,6 @@ use crate::{
 };
 use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 
-pub static VERTEX_SRC: &str = include_str!("vertex.glsl");
-pub static FRAGMENT_SRC: &str = include_str!("fragment.glsl");
-
 pub struct Renderer {
     pub shader: Shader,
 }
@@ -15,7 +12,12 @@ pub struct Renderer {
 impl Renderer {
     pub fn new(display: &Display) -> anyhow::Result<Self> {
         Ok(Self {
-            shader: Shader::new(display, VERTEX_SRC, FRAGMENT_SRC, None)?,
+            shader: Shader::new(
+                display,
+                include_str!("vertex.glsl"),
+                include_str!("fragment.glsl"),
+                None,
+            )?,
         })
     }
 }
