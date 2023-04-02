@@ -1,4 +1,4 @@
-use crate::glium::{
+use glium::{
     texture::{MipmapsOption, Texture2d, Texture2dDataSource},
     uniforms::SamplerBehavior,
     Display,
