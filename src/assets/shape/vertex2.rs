@@ -1,4 +1,5 @@
-use crate::{glium::implement_vertex, math::Vec2};
+use crate::math::Vec2;
+use glium::implement_vertex;
 
 #[derive(Copy, Clone)]
 pub struct Vertex2 {

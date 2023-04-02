@@ -1,13 +1,11 @@
 use crate::{
-    glium::{
-        draw_parameters::{Blend, DepthTest},
-        Depth, DrawParameters,
-    },
-    {
-        assets::{Shape, Texture},
-        cid,
-        ecs::component_manager::Component,
-    },
+    assets::{Shape, Texture},
+    cid,
+    ecs::component_manager::Component,
+};
+use glium::{
+    draw_parameters::{Blend, DepthTest},
+    Depth, DrawParameters,
 };
 
 #[derive(Clone)]

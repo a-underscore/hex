@@ -1,11 +1,8 @@
 pub mod vertex2;
-
 pub use vertex2::Vertex2;
 
-use crate::{
-    glium::{index::PrimitiveType, Display, VertexBuffer},
-    math::Vec2,
-};
+use crate::math::Vec2;
+use glium::{index::PrimitiveType, Display, VertexBuffer};
 use std::rc::Rc;
 
 #[derive(Clone)]
