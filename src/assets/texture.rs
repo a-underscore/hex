@@ -14,7 +14,7 @@ pub struct Texture {
 impl Texture {
     pub fn new<'a, T>(
         display: &Display,
-        image: T,
+        source: T,
         mipmaps_option: MipmapsOption,
         sampler_behaviour: SamplerBehavior,
     ) -> anyhow::Result<Self>
@@ -22,7 +22,7 @@ impl Texture {
         T: Texture2dDataSource<'a>,
     {
         Ok(Self {
-            buffer: Rc::new(Texture2d::with_mipmaps(display, image, mipmaps_option)?),
+            buffer: Rc::new(Texture2d::with_mipmaps(display, source, mipmaps_option)?),
             sampler_behaviour,
         })
     }
