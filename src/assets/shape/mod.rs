@@ -1,6 +1,6 @@
-pub mod vertex;
+pub mod vertex2;
 
-pub use vertex::Vertex;
+pub use vertex2::Vertex2;
 
 use crate::{
     glium::{index::PrimitiveType, Display, VertexBuffer},
@@ -10,14 +10,14 @@ use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct Shape {
-    pub vertices: Rc<VertexBuffer<Vertex>>,
+    pub vertices: Rc<VertexBuffer<Vertex2>>,
     pub format: PrimitiveType,
 }
 
 impl Shape {
     pub fn new(
         display: &Display,
-        vertices: &[Vertex],
+        vertices: &[Vertex2],
         format: PrimitiveType,
     ) -> anyhow::Result<Self> {
         Ok(Self {
@@ -31,10 +31,10 @@ impl Shape {
             let dims = dims / 2.0;
 
             [
-                Vertex::new(Vec2::new(-dims.x(), -dims.y()), Default::default()),
-                Vertex::new(Vec2::new(dims.x(), -dims.y()), Vec2::new(1.0, 0.0)),
-                Vertex::new(Vec2::new(dims.x(), dims.y()), Vec2::new(1.0, 1.0)),
-                Vertex::new(Vec2::new(-dims.x(), dims.y()), Vec2::new(0.0, 1.0)),
+                Vertex2::new(Vec2::new(-dims.x(), -dims.y()), Default::default()),
+                Vertex2::new(Vec2::new(dims.x(), -dims.y()), Vec2::new(1.0, 0.0)),
+                Vertex2::new(Vec2::new(dims.x(), dims.y()), Vec2::new(1.0, 1.0)),
+                Vertex2::new(Vec2::new(-dims.x(), dims.y()), Vec2::new(0.0, 1.0)),
             ]
         };
 
