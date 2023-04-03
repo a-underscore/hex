@@ -11,6 +11,10 @@ impl Default for Mat3 {
 }
 
 impl Mat3 {
+    pub fn new(x: [f32; 3], y: [f32; 3], z: [f32; 3]) -> Self {
+        Self([x, y, z])
+    }
+
     pub fn rotation(rotation: f32) -> Self {
         let (sin, cos) = rotation.sin_cos();
 
@@ -31,6 +35,34 @@ impl Mat3 {
             [0.0, 1.0, translation.y()],
             [0.0, 0.0, 1.0],
         ])
+    }
+
+    pub fn det(&self) -> f32 {
+        self.0[0][0] * (self.0[1][1] * self.0[2][2] - self.0[2][1] * self.0[1][2])
+            - self.0[1][0] * (self.0[0][1] * self.0[2][2] - self.0[2][1] * self.0[0][2])
+            + self.0[2][0] * (self.0[0][1] * self.0[1][2] - self.0[1][1] * self.0[0][2])
+    }
+
+    pub fn inverse(&self) -> Self {
+        let det = self.det();
+
+        Self::new(
+            [
+                (self.0[1][1] * self.0[2][2] - self.0[1][2] * self.0[2][1]) / det,
+                (self.0[1][2] * self.0[2][0] - self.0[1][0] * self.0[2][2]) / det,
+                (self.0[1][0] * self.0[2][1] - self.0[1][1] * self.0[2][0]) / det,
+            ],
+            [
+                (self.0[2][1] * self.0[0][2] - self.0[2][2] * self.0[0][1]) / det,
+                (self.0[2][2] * self.0[0][0] - self.0[2][0] * self.0[0][2]) / det,
+                (self.0[2][0] * self.0[0][1] - self.0[2][1] * self.0[0][0]) / det,
+            ],
+            [
+                (self.0[0][1] * self.0[1][2] - self.0[0][2] * self.0[1][1]) / det,
+                (self.0[0][2] * self.0[1][0] - self.0[0][0] * self.0[1][2]) / det,
+                (self.0[0][0] * self.0[1][1] - self.0[0][1] * self.0[1][0]) / det,
+            ],
+        )
     }
 }
 
