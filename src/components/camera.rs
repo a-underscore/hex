@@ -1,5 +1,5 @@
-use crate::cid;
 use crate::{
+    cid,
     ecs::component_manager::Component,
     math::{Ortho, Vec2},
 };
