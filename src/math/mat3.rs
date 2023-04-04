@@ -43,26 +43,28 @@ impl Mat3 {
             + self.0[2][0] * (self.0[0][1] * self.0[1][2] - self.0[1][1] * self.0[0][2])
     }
 
-    pub fn inverse(&self) -> Self {
-        let det = self.det();
-
+    pub fn adj(&self) -> Self {
         Self::new(
             [
-                (self.0[1][1] * self.0[2][2] - self.0[1][2] * self.0[2][1]) / det,
-                (self.0[1][2] * self.0[2][0] - self.0[1][0] * self.0[2][2]) / det,
-                (self.0[1][0] * self.0[2][1] - self.0[1][1] * self.0[2][0]) / det,
+                (self.0[1][1] * self.0[2][2] - self.0[1][2] * self.0[2][1]),
+                (self.0[1][2] * self.0[2][0] - self.0[1][0] * self.0[2][2]),
+                (self.0[1][0] * self.0[2][1] - self.0[1][1] * self.0[2][0]),
             ],
             [
-                (self.0[2][1] * self.0[0][2] - self.0[2][2] * self.0[0][1]) / det,
-                (self.0[2][2] * self.0[0][0] - self.0[2][0] * self.0[0][2]) / det,
-                (self.0[2][0] * self.0[0][1] - self.0[2][1] * self.0[0][0]) / det,
+                (self.0[2][1] * self.0[0][2] - self.0[2][2] * self.0[0][1]),
+                (self.0[2][2] * self.0[0][0] - self.0[2][0] * self.0[0][2]),
+                (self.0[2][0] * self.0[0][1] - self.0[2][1] * self.0[0][0]),
             ],
             [
-                (self.0[0][1] * self.0[1][2] - self.0[0][2] * self.0[1][1]) / det,
-                (self.0[0][2] * self.0[1][0] - self.0[0][0] * self.0[1][2]) / det,
-                (self.0[0][0] * self.0[1][1] - self.0[0][1] * self.0[1][0]) / det,
+                (self.0[0][1] * self.0[1][2] - self.0[0][2] * self.0[1][1]),
+                (self.0[0][2] * self.0[1][0] - self.0[0][0] * self.0[1][2]),
+                (self.0[0][0] * self.0[1][1] - self.0[0][1] * self.0[1][0]),
             ],
         )
+    }
+
+    pub fn inv(&self) -> Self {
+        self.adj() / self.det()
     }
 }
 
