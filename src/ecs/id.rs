@@ -1,6 +1,6 @@
 use std::cell::Cell;
 
-pub type Id = u32;
+pub type Id = u64;
 
 pub fn id() -> Id {
     thread_local!(static COUNT: Cell<Id> = Default::default());
