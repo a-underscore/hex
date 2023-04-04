@@ -1,6 +1,6 @@
 use crate::{
-    cid,
     ecs::{component_manager::Component, Id},
+    id,
     math::{Mat3, Vec2},
 };
 
@@ -69,6 +69,6 @@ impl Transform {
 
 impl Component for Transform {
     fn id() -> Id {
-        cid!()
+        id!()
     }
 }

@@ -1,6 +1,6 @@
 use crate::{
-    cid,
     ecs::{component_manager::Component, Id},
+    id,
     math::{Ortho, Vec2},
 };
 
@@ -48,6 +48,6 @@ impl Camera {
 
 impl Component for Camera {
     fn id() -> Id {
-        cid!()
+        id!()
     }
 }

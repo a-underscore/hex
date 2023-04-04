@@ -1,7 +1,7 @@
 use crate::{
     assets::{Shape, Texture},
-    cid,
     ecs::{component_manager::Component, Id},
+    id,
 };
 use glium::{
     draw_parameters::{Blend, DepthTest},
@@ -41,6 +41,6 @@ impl<'a> Sprite<'a> {
 
 impl<'a> Component for Sprite<'a> {
     fn id() -> Id {
-        cid!()
+        id!()
     }
 }
