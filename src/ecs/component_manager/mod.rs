@@ -29,7 +29,7 @@ impl<'a> ComponentManager<'a> {
             .map(|(_, id)| id - 1)
             .unwrap_or(self.cache.len() as Id);
 
-        em.get_mut(eid as Id)?.insert(cid, id);
+        em.get_mut(eid)?.insert(cid, id);
 
         self.cache.insert(id, (cid, component));
 
