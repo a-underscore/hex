@@ -34,11 +34,11 @@ impl Camera {
         self.view
     }
 
-    fn update_view(&mut self) {
+    pub fn update_view(&mut self) {
         self.view = Self::calculate_view(self.dimensions);
     }
 
-    fn calculate_view((v, z): (Vec2, f32)) -> Ortho {
+    pub fn calculate_view((v, z): (Vec2, f32)) -> Ortho {
         let v = v / 2.0;
         let z = z / 2.0;
 

@@ -58,11 +58,11 @@ impl Transform {
         self.matrix
     }
 
-    fn update_matrix(&mut self) {
+    pub fn update_matrix(&mut self) {
         self.matrix = Self::calculate_matrix(self.position, self.rotation, self.scale);
     }
 
-    fn calculate_matrix(position: Vec2, rotation: f32, scale: Vec2) -> Mat3 {
+    pub fn calculate_matrix(position: Vec2, rotation: f32, scale: Vec2) -> Mat3 {
         Mat3::translation(position) * Mat3::rotation(rotation) * Mat3::scale(scale)
     }
 }
