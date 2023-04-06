@@ -45,36 +45,47 @@ impl Scene {
         world: &mut World,
         system_manager: &mut SystemManager,
     ) -> anyhow::Result<()> {
-        system_manager.update(&mut Ev::Event(&mut control), self, world)?;
+        match &control.event {
+            Event::RedrawRequested(window_id)
+                if *window_id == self.display.gl_window().window().id() =>
+            {
+                let mut target = self.display.draw();
 
-        if let Event::MainEventsCleared = &control.event {
-            let mut target = self.display.draw();
+                target.clear_color_and_depth(
+                    {
+                        let [r, g, b, a] = self.bg;
 
-            target.clear_color_and_depth(
-                {
-                    let [r, g, b, a] = self.bg;
+                        (r, g, b, a)
+                    },
+                    1.0,
+                );
 
-                    (r, g, b, a)
-                },
-                1.0,
-            );
+                system_manager.update(&mut Ev::Draw((&mut control, &mut target)), self, world)?;
 
-            system_manager.update(&mut Ev::Draw((&mut control, &mut target)), self, world)?;
-
-            target.finish()?;
+                target.finish()?;
+            }
+            _ => system_manager.update(&mut Ev::Event(&mut control), self, world)?,
         }
 
-        if let Event::WindowEvent {
-            event: WindowEvent::CloseRequested,
-            ..
-        } = &control.event
-        {
-            *flow = ControlFlow::Exit;
-        } else if let Some(control_flow) = control.flow {
-            *flow = control_flow;
-        } else {
-            *flow = ControlFlow::Poll;
-        }
+        *flow = match &control {
+            Control {
+                flow: Some(control_flow),
+                event: _,
+            } => *control_flow,
+            Control { flow: None, event } => match event {
+                Event::WindowEvent {
+                    event: WindowEvent::CloseRequested,
+                    ..
+                } => ControlFlow::Exit,
+                _ => {
+                    if let Event::MainEventsCleared = event {
+                        self.display.gl_window().window().request_redraw();
+                    }
+
+                    ControlFlow::Poll
+                }
+            },
+        };
 
         Ok(())
     }
