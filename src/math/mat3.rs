@@ -37,13 +37,13 @@ impl Mat3 {
         ])
     }
 
-    pub fn det(&self) -> f32 {
+    pub fn determinant(&self) -> f32 {
         self.0[0][0] * (self.0[1][1] * self.0[2][2] - self.0[2][1] * self.0[1][2])
             - self.0[1][0] * (self.0[0][1] * self.0[2][2] - self.0[2][1] * self.0[0][2])
             + self.0[2][0] * (self.0[0][1] * self.0[1][2] - self.0[1][1] * self.0[0][2])
     }
 
-    pub fn adj(&self) -> Self {
+    pub fn adjacent(&self) -> Self {
         Self::new(
             [
                 (self.0[1][1] * self.0[2][2] - self.0[1][2] * self.0[2][1]),
@@ -63,8 +63,8 @@ impl Mat3 {
         )
     }
 
-    pub fn inv(&self) -> Self {
-        self.adj() / self.det()
+    pub fn inverse(&self) -> Self {
+        self.adjacent() / self.determinant()
     }
 }
 

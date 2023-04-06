@@ -36,7 +36,7 @@ impl Vec2 {
         self.x() * rhs.x() + self.y() * rhs.y()
     }
 
-    pub fn det(self, rhs: Self) -> f32 {
+    pub fn determinant(self, rhs: Self) -> f32 {
         self.x() * rhs.y() - self.y() * rhs.x()
     }
 
@@ -45,7 +45,7 @@ impl Vec2 {
     }
 
     pub fn angle(self, other: Self) -> f32 {
-        self.det(other).atan2(self.dot(other))
+        self.determinant(other).atan2(self.dot(other))
     }
 
     pub fn normal(self) -> Self {
