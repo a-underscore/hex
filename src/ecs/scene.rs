@@ -75,8 +75,8 @@ impl Scene {
             Control { flow: None, event } => match event {
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
-                    ..
-                } => ControlFlow::Exit,
+                    window_id,
+                } if *window_id == self.display.gl_window().window().id() => ControlFlow::Exit,
                 _ => {
                     if let Event::MainEventsCleared = event {
                         self.display.gl_window().window().request_redraw();
