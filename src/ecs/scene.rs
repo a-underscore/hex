@@ -26,13 +26,9 @@ impl Scene {
     ) -> anyhow::Result<()> {
         system_manager.init(&mut self, &mut world)?;
 
-        event_loop.run(move |event, _, control_flow| {
-            if let Err(e) = self.update(
-                Control::new(event),
-                control_flow,
-                &mut world,
-                &mut system_manager,
-            ) {
+        event_loop.run(move |event, _, flow| {
+            if let Err(e) = self.update(Control::new(event), flow, &mut world, &mut system_manager)
+            {
                 eprintln!("{}", e);
             }
         })
@@ -69,9 +65,9 @@ impl Scene {
 
         *flow = match &control {
             Control {
-                flow: Some(control_flow),
+                flow: Some(flow),
                 event: _,
-            } => *control_flow,
+            } => *flow,
             Control { flow: None, event } => match event {
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
