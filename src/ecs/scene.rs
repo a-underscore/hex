@@ -76,7 +76,13 @@ impl Scene {
                 flow: Some(flow),
                 event: _,
             } => *flow,
-            _ => ControlFlow::Poll,
+            Control { flow: _, event } => {
+                if let Event::MainEventsCleared = event {
+                    self.display.gl_window().window().request_redraw();
+                }
+
+                ControlFlow::Poll
+            }
         };
 
         Ok(())
