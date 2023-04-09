@@ -1,7 +1,7 @@
 use super::Vec2;
 use std::ops::Mul;
 
-#[derive(Default, Copy, Clone)]
+#[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
 pub struct Ortho(pub [[f32; 4]; 4]);
 
 impl Ortho {

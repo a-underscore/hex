@@ -1,14 +1,8 @@
 use super::Vec2;
 use std::ops::{Div, DivAssign, Mul, MulAssign};
 
-#[derive(Copy, Clone)]
+#[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
 pub struct Mat3(pub [[f32; 3]; 3]);
-
-impl Default for Mat3 {
-    fn default() -> Self {
-        Self([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-    }
-}
 
 impl Mat3 {
     pub fn new(x: [f32; 3], y: [f32; 3], z: [f32; 3]) -> Self {
@@ -65,6 +59,10 @@ impl Mat3 {
 
     pub fn inverse(&self) -> Self {
         self.adjacent() / self.determinant()
+    }
+
+    pub fn identity() -> Self {
+        Self([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
     }
 }
 
