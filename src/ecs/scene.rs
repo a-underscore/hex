@@ -65,22 +65,18 @@ impl Scene {
 
         *flow = match &control {
             Control {
+                flow: _,
+                event:
+                    Event::WindowEvent {
+                        window_id,
+                        event: WindowEvent::CloseRequested,
+                    },
+            } if *window_id == self.display.gl_window().window().id() => ControlFlow::Exit,
+            Control {
                 flow: Some(flow),
                 event: _,
             } => *flow,
-            Control { flow: None, event } => match event {
-                Event::WindowEvent {
-                    event: WindowEvent::CloseRequested,
-                    window_id,
-                } if *window_id == self.display.gl_window().window().id() => ControlFlow::Exit,
-                _ => {
-                    if let Event::MainEventsCleared = event {
-                        self.display.gl_window().window().request_redraw();
-                    }
-
-                    ControlFlow::Poll
-                }
-            },
+            _ => ControlFlow::Poll,
         };
 
         Ok(())
