@@ -1,7 +1,7 @@
 use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
 use glium::{
     glutin::{
-        event::{Event, WindowEvent},
+        event::Event,
         event_loop::{ControlFlow, EventLoop},
     },
     Display, Surface,
@@ -72,14 +72,6 @@ impl Scene {
         }
 
         *flow = match &control {
-            Control {
-                flow: _,
-                event:
-                    Event::WindowEvent {
-                        window_id,
-                        event: WindowEvent::CloseRequested,
-                    },
-            } if *window_id == self.display.gl_window().window().id() => ControlFlow::Exit,
             Control {
                 flow: Some(flow),
                 event: _,
