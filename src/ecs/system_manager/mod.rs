@@ -2,7 +2,7 @@ pub mod system;
 
 pub use system::System;
 
-use super::{Ev, Scene, World};
+use super::{ComponentManager, EntityManager, Ev, Scene};
 
 #[derive(Default)]
 pub struct SystemManager<'a> {
@@ -21,9 +21,13 @@ impl<'a> SystemManager<'a> {
         self.systems.pop();
     }
 
-    pub fn init(&mut self, scene: &mut Scene, world: &mut World) -> anyhow::Result<()> {
+    pub fn init(
+        &mut self,
+        scene: &mut Scene,
+        (em, cm): (&mut EntityManager, &mut ComponentManager),
+    ) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.init(scene, world)?;
+            s.init(scene, (em, cm))?;
         }
 
         Ok(())
@@ -33,10 +37,10 @@ impl<'a> SystemManager<'a> {
         &mut self,
         event: &mut Ev,
         scene: &mut Scene,
-        world: &mut World,
+        (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.update(event, scene, world)?;
+            s.update(event, scene, (em, cm))?;
         }
 
         Ok(())

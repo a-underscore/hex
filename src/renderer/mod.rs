@@ -1,7 +1,7 @@
 use crate::{
     assets::Shader,
     components::{Camera, Sprite, Transform},
-    ecs::{ev::Control, system_manager::System, Ev, Scene, World},
+    ecs::{ev::Control, system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
 use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 
@@ -23,7 +23,12 @@ impl Renderer {
 }
 
 impl<'a> System<'a> for Renderer {
-    fn update(&mut self, event: &mut Ev, _: &mut Scene, world: &mut World) -> anyhow::Result<()> {
+    fn update(
+        &mut self,
+        event: &mut Ev,
+        _: &mut Scene,
+        (em, cm): (&mut EntityManager, &mut ComponentManager),
+    ) -> anyhow::Result<()> {
         if let Ev::Draw((
             Control {
                 event: Event::MainEventsCleared,
@@ -32,33 +37,24 @@ impl<'a> System<'a> for Renderer {
             target,
         )) = event
         {
-            if let Some((c, ct)) = world.em.entities.keys().cloned().find_map(|e| {
+            if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
                 Some((
-                    world
-                        .cm
-                        .get::<Camera>(e, &world.em)
+                    cm.get::<Camera>(e, &em)
                         .and_then(|c| c.active.then_some(c))?,
-                    world
-                        .cm
-                        .get::<Transform>(e, &world.em)
+                    cm.get::<Transform>(e, em)
                         .and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
                 let sprites = {
-                    let mut sprites: Vec<_> = world
-                        .em
+                    let mut sprites: Vec<_> = em
                         .entities
                         .keys()
                         .cloned()
                         .filter_map(|e| {
                             Some((
-                                world
-                                    .cm
-                                    .get::<Sprite>(e, &world.em)
+                                cm.get::<Sprite>(e, em)
                                     .and_then(|s| s.active.then_some(s))?,
-                                world
-                                    .cm
-                                    .get::<Transform>(e, &world.em)
+                                cm.get::<Transform>(e, em)
                                     .and_then(|t| t.active.then_some(t))?,
                             ))
                         })

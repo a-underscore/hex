@@ -1,4 +1,4 @@
-use super::{ev::Control, Ev, SystemManager, World};
+use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
 use glium::{
     glutin::{
         event::{Event, WindowEvent},
@@ -21,14 +21,18 @@ impl Scene {
     pub fn init(
         mut self,
         event_loop: EventLoop<()>,
-        mut world: World<'static>,
+        (mut em, mut cm): (EntityManager, ComponentManager<'static>),
         mut system_manager: SystemManager<'static>,
     ) -> anyhow::Result<()> {
-        system_manager.init(&mut self, &mut world)?;
+        system_manager.init(&mut self, (&mut em, &mut cm))?;
 
         event_loop.run(move |event, _, flow| {
-            if let Err(e) = self.update(Control::new(event), flow, &mut world, &mut system_manager)
-            {
+            if let Err(e) = self.update(
+                Control::new(event),
+                flow,
+                (&mut em, &mut cm),
+                &mut system_manager,
+            ) {
                 eprintln!("{}", e);
             }
         })
@@ -38,7 +42,7 @@ impl Scene {
         &mut self,
         mut control: Control,
         flow: &mut ControlFlow,
-        world: &mut World,
+        (em, cm): (&mut EntityManager, &mut ComponentManager),
         system_manager: &mut SystemManager,
     ) -> anyhow::Result<()> {
         match &control.event {
@@ -56,11 +60,15 @@ impl Scene {
                     1.0,
                 );
 
-                system_manager.update(&mut Ev::Draw((&mut control, &mut target)), self, world)?;
+                system_manager.update(
+                    &mut Ev::Draw((&mut control, &mut target)),
+                    self,
+                    (em, cm),
+                )?;
 
                 target.finish()?;
             }
-            _ => system_manager.update(&mut Ev::Event(&mut control), self, world)?,
+            _ => system_manager.update(&mut Ev::Event(&mut control), self, (em, cm))?,
         }
 
         *flow = match &control {
