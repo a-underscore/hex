@@ -71,18 +71,20 @@ impl Scene {
             _ => system_manager.update(&mut Ev::Event(&mut control), self, (em, cm))?,
         }
 
+        if let Control {
+            flow: _,
+            event: Event::MainEventsCleared,
+        } = &control
+        {
+            self.display.gl_window().window().request_redraw();
+        }
+
         *flow = match &control {
             Control {
                 flow: Some(flow),
                 event: _,
             } => *flow,
-            Control { flow: _, event } => {
-                if let Event::MainEventsCleared = event {
-                    self.display.gl_window().window().request_redraw();
-                }
-
-                ControlFlow::Poll
-            }
+            _ => ControlFlow::Poll,
         };
 
         Ok(())
