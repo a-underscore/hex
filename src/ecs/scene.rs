@@ -41,7 +41,7 @@ impl Scene {
     pub fn update(
         &mut self,
         mut control: Control,
-        flow: &mut ControlFlow,
+        cf: &mut ControlFlow,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
         system_manager: &mut SystemManager,
     ) -> anyhow::Result<()> {
@@ -79,7 +79,7 @@ impl Scene {
             self.display.gl_window().window().request_redraw();
         }
 
-        *flow = match &control {
+        *cf = match &control {
             Control {
                 flow: Some(flow),
                 event: _,
