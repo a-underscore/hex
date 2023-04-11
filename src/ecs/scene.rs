@@ -45,9 +45,9 @@ impl Scene {
         (em, cm): (&mut EntityManager, &mut ComponentManager),
         system_manager: &mut SystemManager,
     ) -> anyhow::Result<()> {
-        match &control.event {
+        match control.event {
             Event::RedrawRequested(window_id)
-                if *window_id == self.display.gl_window().window().id() =>
+                if window_id == self.display.gl_window().window().id() =>
             {
                 let mut target = self.display.draw();
 
@@ -71,7 +71,7 @@ impl Scene {
             _ => {
                 system_manager.update(&mut Ev::Event(&mut control), self, (em, cm))?;
 
-                if let Event::MainEventsCleared = &control.event {
+                if let Event::MainEventsCleared = control.event {
                     self.display.gl_window().window().request_redraw();
                 }
             }
