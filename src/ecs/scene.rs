@@ -68,22 +68,20 @@ impl Scene {
 
                 target.finish()?;
             }
-            _ => system_manager.update(&mut Ev::Event(&mut control), self, (em, cm))?,
+            _ => {
+                system_manager.update(&mut Ev::Event(&mut control), self, (em, cm))?;
+
+                if let Event::MainEventsCleared = &control.event {
+                    self.display.gl_window().window().request_redraw();
+                }
+            }
         }
 
-        if let Control {
-            flow: _,
-            event: Event::MainEventsCleared,
-        } = &control
-        {
-            self.display.gl_window().window().request_redraw();
-        }
-
-        *cf = match &control {
+        *cf = match control {
             Control {
                 flow: Some(flow),
                 event: _,
-            } => *flow,
+            } => flow,
             _ => ControlFlow::Poll,
         };
 
