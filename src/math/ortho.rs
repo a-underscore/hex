@@ -1,4 +1,4 @@
-use super::Vec2;
+use super::Vec2d;
 use std::ops::Mul;
 
 #[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
@@ -20,13 +20,13 @@ impl Ortho {
     }
 }
 
-impl Mul<((Vec2, f32), f32)> for Ortho {
-    type Output = ((Vec2, f32), f32);
+impl Mul<((Vec2d, f32), f32)> for Ortho {
+    type Output = ((Vec2d, f32), f32);
 
-    fn mul(self, ((rhs, z), w): ((Vec2, f32), f32)) -> ((Vec2, f32), f32) {
+    fn mul(self, ((rhs, z), w): ((Vec2d, f32), f32)) -> ((Vec2d, f32), f32) {
         (
             (
-                Vec2::new(
+                Vec2d::new(
                     self.0[0][0] * rhs.x()
                         + self.0[0][1] * rhs.y()
                         + self.0[0][2] * z

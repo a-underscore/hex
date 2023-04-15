@@ -1,20 +1,20 @@
 use crate::{
     ecs::{component_manager::Component, Id},
     id,
-    math::{Mat3, Vec2},
+    math::{Mat3d, Vec2d},
 };
 
 #[derive(Clone)]
 pub struct Transform {
-    position: Vec2,
+    position: Vec2d,
     rotation: f32,
-    scale: Vec2,
-    matrix: Mat3,
+    scale: Vec2d,
+    matrix: Mat3d,
     pub active: bool,
 }
 
 impl Transform {
-    pub fn new(position: Vec2, rotation: f32, scale: Vec2, active: bool) -> Self {
+    pub fn new(position: Vec2d, rotation: f32, scale: Vec2d, active: bool) -> Self {
         Self {
             position,
             rotation,
@@ -24,11 +24,11 @@ impl Transform {
         }
     }
 
-    pub fn position(&self) -> Vec2 {
+    pub fn position(&self) -> Vec2d {
         self.position
     }
 
-    pub fn set_position(&mut self, position: Vec2) {
+    pub fn set_position(&mut self, position: Vec2d) {
         self.position = position;
 
         self.update_matrix();
@@ -44,17 +44,17 @@ impl Transform {
         self.update_matrix();
     }
 
-    pub fn scale(&self) -> Vec2 {
+    pub fn scale(&self) -> Vec2d {
         self.scale
     }
 
-    pub fn set_scale(&mut self, scale: Vec2) {
+    pub fn set_scale(&mut self, scale: Vec2d) {
         self.scale = scale;
 
         self.update_matrix();
     }
 
-    pub fn matrix(&self) -> Mat3 {
+    pub fn matrix(&self) -> Mat3d {
         self.matrix
     }
 
@@ -62,8 +62,8 @@ impl Transform {
         self.matrix = Self::calculate_matrix(self.position, self.rotation, self.scale);
     }
 
-    pub fn calculate_matrix(position: Vec2, rotation: f32, scale: Vec2) -> Mat3 {
-        Mat3::translation(position) * Mat3::rotation(rotation) * Mat3::scale(scale)
+    pub fn calculate_matrix(position: Vec2d, rotation: f32, scale: Vec2d) -> Mat3d {
+        Mat3d::translation(position) * Mat3d::rotation(rotation) * Mat3d::scale(scale)
     }
 }
 

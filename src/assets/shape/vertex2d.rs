@@ -1,14 +1,14 @@
-use crate::math::Vec2;
+use crate::math::Vec2d;
 use glium::implement_vertex;
 
 #[derive(Copy, Clone)]
-pub struct Vertex2 {
+pub struct Vertex2d {
     pub position: [f32; 2],
     pub uv: [f32; 2],
 }
 
-impl Vertex2 {
-    pub fn new(position: Vec2, uv: Vec2) -> Self {
+impl Vertex2d {
+    pub fn new(position: Vec2d, uv: Vec2d) -> Self {
         Self {
             position: position.0,
             uv: uv.0,
@@ -16,4 +16,4 @@ impl Vertex2 {
     }
 }
 
-implement_vertex!(Vertex2, position, uv);
+implement_vertex!(Vertex2d, position, uv);

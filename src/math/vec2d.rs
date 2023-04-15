@@ -1,9 +1,9 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
-pub struct Vec2(pub [f32; 2]);
+pub struct Vec2d(pub [f32; 2]);
 
-impl Vec2 {
+impl Vec2d {
     pub fn new(x: f32, y: f32) -> Self {
         Self([x, y])
     }
@@ -53,7 +53,7 @@ impl Vec2 {
     }
 }
 
-impl Add for Vec2 {
+impl Add for Vec2d {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -61,13 +61,13 @@ impl Add for Vec2 {
     }
 }
 
-impl AddAssign for Vec2 {
+impl AddAssign for Vec2d {
     fn add_assign(&mut self, rhs: Self) {
         *self = Self::add(*self, rhs);
     }
 }
 
-impl Mul<f32> for Vec2 {
+impl Mul<f32> for Vec2d {
     type Output = Self;
 
     fn mul(self, rhs: f32) -> Self {
@@ -75,13 +75,13 @@ impl Mul<f32> for Vec2 {
     }
 }
 
-impl MulAssign<f32> for Vec2 {
+impl MulAssign<f32> for Vec2d {
     fn mul_assign(&mut self, rhs: f32) {
         *self = Self::mul(*self, rhs);
     }
 }
 
-impl Neg for Vec2 {
+impl Neg for Vec2d {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
@@ -89,7 +89,7 @@ impl Neg for Vec2 {
     }
 }
 
-impl Sub for Vec2 {
+impl Sub for Vec2d {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self {
@@ -97,13 +97,13 @@ impl Sub for Vec2 {
     }
 }
 
-impl SubAssign for Vec2 {
+impl SubAssign for Vec2d {
     fn sub_assign(&mut self, rhs: Self) {
         *self = Self::sub(*self, rhs);
     }
 }
 
-impl Div<f32> for Vec2 {
+impl Div<f32> for Vec2d {
     type Output = Self;
 
     fn div(self, rhs: f32) -> Self {
@@ -111,7 +111,7 @@ impl Div<f32> for Vec2 {
     }
 }
 
-impl DivAssign<f32> for Vec2 {
+impl DivAssign<f32> for Vec2d {
     fn div_assign(&mut self, rhs: f32) {
         *self = Self::div(*self, rhs);
     }
