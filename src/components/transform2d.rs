@@ -5,7 +5,7 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct Transform {
+pub struct Transform2d {
     position: Vec2d,
     rotation: f32,
     scale: Vec2d,
@@ -13,7 +13,7 @@ pub struct Transform {
     pub active: bool,
 }
 
-impl Transform {
+impl Transform2d {
     pub fn new(position: Vec2d, rotation: f32, scale: Vec2d, active: bool) -> Self {
         Self {
             position,
@@ -67,7 +67,7 @@ impl Transform {
     }
 }
 
-impl Component for Transform {
+impl Component for Transform2d {
     fn id() -> Id {
         id!()
     }

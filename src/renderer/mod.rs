@@ -1,6 +1,6 @@
 use crate::{
     assets::Shader,
-    components::{Camera, Sprite, Transform},
+    components::{Camera, Sprite, Transform2d},
     ecs::{ev::Control, system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
 use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
@@ -41,7 +41,7 @@ impl<'a> System<'a> for Renderer {
                 Some((
                     cm.get::<Camera>(e, em)
                         .and_then(|c| c.active.then_some(c))?,
-                    cm.get::<Transform>(e, em)
+                    cm.get::<Transform2d>(e, em)
                         .and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
@@ -54,7 +54,7 @@ impl<'a> System<'a> for Renderer {
                             Some((
                                 cm.get::<Sprite>(e, em)
                                     .and_then(|s| s.active.then_some(s))?,
-                                cm.get::<Transform>(e, em)
+                                cm.get::<Transform2d>(e, em)
                                     .and_then(|t| t.active.then_some(t))?,
                             ))
                         })
