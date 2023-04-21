@@ -3,12 +3,12 @@ pub mod components;
 pub mod ecs;
 pub mod id;
 pub mod math;
-pub mod renderer;
+pub mod renderer2d;
 
 pub use anyhow;
 pub use glium;
 pub use once_cell;
-pub use renderer::Renderer;
+pub use renderer2d::Renderer2d;
 
 #[macro_export]
 macro_rules! id {

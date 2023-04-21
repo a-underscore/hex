@@ -5,11 +5,11 @@ use crate::{
 };
 use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 
-pub struct Renderer {
+pub struct Renderer2d {
     pub shader: Shader,
 }
 
-impl Renderer {
+impl Renderer2d {
     pub fn new(display: &Display) -> anyhow::Result<Self> {
         Ok(Self {
             shader: Shader::new(
@@ -22,7 +22,7 @@ impl Renderer {
     }
 }
 
-impl<'a> System<'a> for Renderer {
+impl<'a> System<'a> for Renderer2d {
     fn update(
         &mut self,
         event: &mut Ev,
