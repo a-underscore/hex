@@ -1,5 +1,5 @@
 use super::Vec3d;
-use std::ops::Mul;
+use std::ops::{Mul, MulAssign};
 
 #[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
 pub struct Mat4d(pub [[f32; 4]; 4]);
@@ -206,5 +206,11 @@ impl Mul for Mat4d {
                     + self.0[3][2] * rhs.0[2][3],
             ],
         )
+    }
+}
+
+impl MulAssign for Mat4d {
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = self.mul(rhs);
     }
 }
