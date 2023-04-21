@@ -2,10 +2,10 @@ use super::Vec2d;
 use std::ops::Mul;
 
 #[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
-pub struct Ortho(pub [[f32; 4]; 4]);
+pub struct Mat4d(pub [[f32; 4]; 4]);
 
-impl Ortho {
-    pub fn new(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Self {
+impl Mat4d {
+    pub fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Self {
         Self([
             [2.0 / (right - left), 0.0, 0.0, 0.0],
             [0.0, 2.0 / (top - bottom), 0.0, 0.0],
@@ -20,7 +20,7 @@ impl Ortho {
     }
 }
 
-impl Mul<((Vec2d, f32), f32)> for Ortho {
+impl Mul<((Vec2d, f32), f32)> for Mat4d {
     type Output = ((Vec2d, f32), f32);
 
     fn mul(self, ((rhs, z), w): ((Vec2d, f32), f32)) -> ((Vec2d, f32), f32) {

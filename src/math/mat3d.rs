@@ -12,23 +12,23 @@ impl Mat3d {
     pub fn rotation(rotation: f32) -> Self {
         let (sin, cos) = rotation.sin_cos();
 
-        Self([[cos, -sin, 0.0], [sin, cos, 0.0], [0.0, 0.0, 1.0]])
+        Self::new([cos, -sin, 0.0], [sin, cos, 0.0], [0.0, 0.0, 1.0])
     }
 
     pub fn scale(scale: Vec2d) -> Self {
-        Self([
+        Self::new(
             [scale.x(), 0.0, 0.0],
             [0.0, scale.y(), 0.0],
             [0.0, 0.0, 1.0],
-        ])
+        )
     }
 
     pub fn translation(translation: Vec2d) -> Self {
-        Self([
+        Self::new(
             [1.0, 0.0, translation.x()],
             [0.0, 1.0, translation.y()],
             [0.0, 0.0, 1.0],
-        ])
+        )
     }
 
     pub fn determinant(&self) -> f32 {
@@ -62,7 +62,7 @@ impl Mat3d {
     }
 
     pub fn identity() -> Self {
-        Self([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+        Self::new([1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0])
     }
 }
 
@@ -70,11 +70,11 @@ impl Mul<f32> for Mat3d {
     type Output = Self;
 
     fn mul(self, rhs: f32) -> Self {
-        Self([
+        Self::new(
             [self.0[0][0] * rhs, self.0[0][1] * rhs, self.0[0][2] * rhs],
             [self.0[1][0] * rhs, self.0[1][1] * rhs, self.0[1][2] * rhs],
             [self.0[2][0] * rhs, self.0[2][1] * rhs, self.0[2][2] * rhs],
-        ])
+        )
     }
 }
 
@@ -102,7 +102,7 @@ impl Mul for Mat3d {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self {
-        Self([
+        Self::new(
             [
                 self.0[0][0] * rhs.0[0][0]
                     + self.0[0][1] * rhs.0[1][0]
@@ -136,7 +136,7 @@ impl Mul for Mat3d {
                     + self.0[2][1] * rhs.0[1][2]
                     + self.0[2][2] * rhs.0[2][2],
             ],
-        ])
+        )
     }
 }
 

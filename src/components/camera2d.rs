@@ -1,13 +1,13 @@
 use crate::{
     ecs::{component_manager::Component, Id},
     id,
-    math::{Ortho, Vec2d},
+    math::{Mat4d, Vec2d},
 };
 
 #[derive(Clone)]
 pub struct Camera2d {
     dimensions: (Vec2d, f32),
-    view: Ortho,
+    view: Mat4d,
     pub active: bool,
 }
 
@@ -30,7 +30,7 @@ impl Camera2d {
         self.update_view();
     }
 
-    pub fn view(&self) -> Ortho {
+    pub fn view(&self) -> Mat4d {
         self.view
     }
 
@@ -38,11 +38,11 @@ impl Camera2d {
         self.view = Self::calculate_view(self.dimensions);
     }
 
-    pub fn calculate_view((v, z): (Vec2d, f32)) -> Ortho {
+    pub fn calculate_view((v, z): (Vec2d, f32)) -> Mat4d {
         let v = v / 2.0;
         let z = z / 2.0;
 
-        Ortho::new(-v.x(), v.x(), -v.y(), v.y(), -z, z)
+        Mat4d::ortho(-v.x(), v.x(), -v.y(), v.y(), -z, z)
     }
 }
 
