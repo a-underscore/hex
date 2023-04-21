@@ -1,4 +1,4 @@
-use super::Vec2d;
+use super::{Vec2d, Vec3d};
 use std::ops::{Div, DivAssign, Mul, MulAssign};
 
 #[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
@@ -7,6 +7,10 @@ pub struct Mat3d(pub [[f32; 3]; 3]);
 impl Mat3d {
     pub fn new(x: [f32; 3], y: [f32; 3], z: [f32; 3]) -> Self {
         Self([x, y, z])
+    }
+
+    pub fn identity() -> Self {
+        Self::new([1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0])
     }
 
     pub fn rotation(rotation: f32) -> Self {
@@ -60,16 +64,12 @@ impl Mat3d {
     pub fn inverse(&self) -> Self {
         self.adjacent() / self.determinant()
     }
-
-    pub fn identity() -> Self {
-        Self::new([1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0])
-    }
 }
 
 impl Mul<f32> for Mat3d {
     type Output = Self;
 
-    fn mul(self, rhs: f32) -> Self {
+    fn mul(self, rhs: f32) -> Self::Output {
         Self::new(
             [self.0[0][0] * rhs, self.0[0][1] * rhs, self.0[0][2] * rhs],
             [self.0[1][0] * rhs, self.0[1][1] * rhs, self.0[1][2] * rhs],
@@ -87,7 +87,7 @@ impl MulAssign<f32> for Mat3d {
 impl Div<f32> for Mat3d {
     type Output = Self;
 
-    fn div(self, rhs: f32) -> Self {
+    fn div(self, rhs: f32) -> Self::Output {
         Self::mul(self, 1.0 / rhs)
     }
 }
@@ -101,7 +101,7 @@ impl DivAssign<f32> for Mat3d {
 impl Mul for Mat3d {
     type Output = Self;
 
-    fn mul(self, rhs: Self) -> Self {
+    fn mul(self, rhs: Self) -> Self::Output {
         Self::new(
             [
                 self.0[0][0] * rhs.0[0][0]
@@ -146,16 +146,14 @@ impl MulAssign for Mat3d {
     }
 }
 
-impl Mul<(Vec2d, f32)> for Mat3d {
-    type Output = (Vec2d, f32);
+impl Mul<Vec3d> for Mat3d {
+    type Output = Vec3d;
 
-    fn mul(self, (rhs, z): (Vec2d, f32)) -> (Vec2d, f32) {
-        (
-            Vec2d::new(
-                self.0[0][0] * rhs.x() + self.0[0][1] * rhs.y() + self.0[0][2] * z,
-                self.0[1][0] * rhs.x() + self.0[1][1] * rhs.y() + self.0[1][2] * z,
-            ),
-            self.0[2][0] * rhs.x() + self.0[2][1] * rhs.y() + self.0[2][2] * z,
+    fn mul(self, rhs: Vec3d) -> Self::Output {
+        Vec3d::new(
+            self.0[0][0] * rhs.x() + self.0[0][1] * rhs.y() + self.0[0][2] * rhs.z(),
+            self.0[1][0] * rhs.x() + self.0[1][1] * rhs.y() + self.0[1][2] * rhs.z(),
+            self.0[2][0] * rhs.x() + self.0[2][1] * rhs.y() + self.0[2][2] * rhs.z(),
         )
     }
 }
