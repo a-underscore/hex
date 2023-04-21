@@ -9,6 +9,10 @@ impl Mat3d {
         Self([x, y, z])
     }
 
+    pub fn identity() -> Self {
+        Self::new([1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0])
+    }
+
     pub fn rotation(rotation: f32) -> Self {
         let (sin, cos) = rotation.sin_cos();
 
@@ -59,10 +63,6 @@ impl Mat3d {
 
     pub fn inverse(&self) -> Self {
         self.adjacent() / self.determinant()
-    }
-
-    pub fn identity() -> Self {
-        Self::new([1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0])
     }
 }
 
