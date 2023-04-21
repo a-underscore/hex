@@ -107,7 +107,7 @@ impl Div<f32> for Vec2d {
     type Output = Self;
 
     fn div(self, rhs: f32) -> Self {
-        Self::mul(1.0 / rhs)
+        self.mul(1.0 / rhs)
     }
 }
 
