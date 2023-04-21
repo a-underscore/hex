@@ -1,5 +1,3 @@
-pub mod assets;
-pub mod components;
 pub mod ecs;
 pub mod math;
 pub mod renderer2d;
