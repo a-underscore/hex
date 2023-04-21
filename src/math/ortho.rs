@@ -23,7 +23,7 @@ impl Ortho {
 impl Mul<((Vec2d, f32), f32)> for Ortho {
     type Output = ((Vec2d, f32), f32);
 
-    fn mul(self, ((rhs, z), w): ((Vec2d, f32), f32)) -> ((Vec2d, f32), f32) {
+    fn mul(self, ((rhs, z), w): ((Vec2d, f32), f32)) -> Self::Output {
         (
             (
                 Vec2d::new(

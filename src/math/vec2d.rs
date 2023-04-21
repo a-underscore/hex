@@ -70,7 +70,7 @@ impl AddAssign for Vec2d {
 impl Mul<f32> for Vec2d {
     type Output = Self;
 
-    fn mul(self, rhs: f32) -> Self {
+    fn mul(self, rhs: f32) -> Self::Output {
         Self::new(self.x() * rhs, self.y() * rhs)
     }
 }
@@ -92,7 +92,7 @@ impl Neg for Vec2d {
 impl Sub for Vec2d {
     type Output = Self;
 
-    fn sub(self, rhs: Self) -> Self {
+    fn sub(self, rhs: Self) -> Self::Output {
         Self::add(self, -rhs)
     }
 }
@@ -106,7 +106,7 @@ impl SubAssign for Vec2d {
 impl Div<f32> for Vec2d {
     type Output = Self;
 
-    fn div(self, rhs: f32) -> Self {
+    fn div(self, rhs: f32) -> Self::Output {
         self.mul(1.0 / rhs)
     }
 }

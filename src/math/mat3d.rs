@@ -69,7 +69,7 @@ impl Mat3d {
 impl Mul<f32> for Mat3d {
     type Output = Self;
 
-    fn mul(self, rhs: f32) -> Self {
+    fn mul(self, rhs: f32) -> Self::Output {
         Self::new(
             [self.0[0][0] * rhs, self.0[0][1] * rhs, self.0[0][2] * rhs],
             [self.0[1][0] * rhs, self.0[1][1] * rhs, self.0[1][2] * rhs],
@@ -87,7 +87,7 @@ impl MulAssign<f32> for Mat3d {
 impl Div<f32> for Mat3d {
     type Output = Self;
 
-    fn div(self, rhs: f32) -> Self {
+    fn div(self, rhs: f32) -> Self::Output {
         Self::mul(self, 1.0 / rhs)
     }
 }
@@ -101,7 +101,7 @@ impl DivAssign<f32> for Mat3d {
 impl Mul for Mat3d {
     type Output = Self;
 
-    fn mul(self, rhs: Self) -> Self {
+    fn mul(self, rhs: Self) -> Self::Output {
         Self::new(
             [
                 self.0[0][0] * rhs.0[0][0]
@@ -149,7 +149,7 @@ impl MulAssign for Mat3d {
 impl Mul<(Vec2d, f32)> for Mat3d {
     type Output = (Vec2d, f32);
 
-    fn mul(self, (rhs, z): (Vec2d, f32)) -> (Vec2d, f32) {
+    fn mul(self, (rhs, z): (Vec2d, f32)) -> Self::Output {
         (
             Vec2d::new(
                 self.0[0][0] * rhs.x() + self.0[0][1] * rhs.y() + self.0[0][2] * z,
