@@ -5,13 +5,13 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct Camera {
+pub struct Camera2d {
     dimensions: (Vec2d, f32),
     view: Ortho,
     pub active: bool,
 }
 
-impl Camera {
+impl Camera2d {
     pub fn new(dimensions: (Vec2d, f32), active: bool) -> Self {
         Self {
             dimensions,
@@ -46,7 +46,7 @@ impl Camera {
     }
 }
 
-impl Component for Camera {
+impl Component for Camera2d {
     fn id() -> Id {
         id!()
     }

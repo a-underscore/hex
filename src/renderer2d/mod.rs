@@ -1,6 +1,6 @@
 use crate::{
     assets::Shader,
-    components::{Camera, Sprite, Transform2d},
+    components::{Camera2d, Sprite, Transform2d},
     ecs::{ev::Control, system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
 use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
@@ -39,7 +39,7 @@ impl<'a> System<'a> for Renderer2d {
         {
             if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
                 Some((
-                    cm.get::<Camera>(e, em)
+                    cm.get::<Camera2d>(e, em)
                         .and_then(|c| c.active.then_some(c))?,
                     cm.get::<Transform2d>(e, em)
                         .and_then(|t| t.active.then_some(t))?,
