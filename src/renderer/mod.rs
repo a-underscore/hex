@@ -1,9 +1,9 @@
 use crate::{
     assets::Shader,
     components::{Camera, Model, Transform},
-    ecs::{ev::Control, system_manager::System, ComponentManager, EntityManager, Ev, Scene},
+    ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
-use glium::{glutin::event::Event, uniform, uniforms::Sampler, Display, Surface};
+use glium::{uniform, uniforms::Sampler, Display, Surface};
 
 pub struct Renderer {
     pub shader: Shader,
@@ -29,14 +29,7 @@ impl<'a> System<'a> for Renderer {
         _: &mut Scene,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
-        if let Ev::Draw((
-            Control {
-                event: Event::MainEventsCleared,
-                flow: _,
-            },
-            target,
-        )) = event
-        {
+        if let Ev::Draw((_, target)) = event {
             if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e, em)
@@ -45,8 +38,8 @@ impl<'a> System<'a> for Renderer {
                         .and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
-                let sprites = {
-                    let mut sprites: Vec<_> = em
+                let models = {
+                    let mut models: Vec<_> = em
                         .entities
                         .keys()
                         .cloned()
@@ -59,18 +52,19 @@ impl<'a> System<'a> for Renderer {
                         })
                         .collect();
 
-                    sprites.sort_by(|(s1, _), (s2, _)| s1.z.total_cmp(&s2.z));
+                    models.sort_by(|(_, t1), (_, t2)| {
+                        t1.position().z().total_cmp(&t2.position().z())
+                    });
 
-                    sprites
+                    models
                 };
 
-                for (s, t) in sprites {
+                for (s, t) in models {
                     let uniform = uniform! {
-                        z: s.z,
                         transform: t.matrix().0,
                         camera_transform: ct.matrix().0,
                         camera_view: c.view().0,
-                        color: s.color,
+                        color: s.color.0,
                         tex: Sampler(&*s.texture.buffer, s.texture.sampler_behaviour),
                     };
 

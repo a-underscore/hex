@@ -2,6 +2,7 @@ use crate::{
     assets::{Mesh, Texture},
     ecs::{component_manager::Component, Id},
     id,
+    math::Vec4d,
 };
 use glium::{
     draw_parameters::{Blend, DepthTest},
@@ -13,13 +14,12 @@ pub struct Model<'a> {
     pub draw_parameters: DrawParameters<'a>,
     pub mesh: Mesh,
     pub texture: Texture,
-    pub color: [f32; 4],
-    pub z: f32,
+    pub color: Vec4d,
     pub active: bool,
 }
 
 impl<'a> Model<'a> {
-    pub fn new(mesh: Mesh, texture: Texture, color: [f32; 4], z: f32, active: bool) -> Self {
+    pub fn new(mesh: Mesh, texture: Texture, color: Vec4d, active: bool) -> Self {
         Self {
             draw_parameters: DrawParameters {
                 depth: Depth {
@@ -33,7 +33,6 @@ impl<'a> Model<'a> {
             mesh,
             texture,
             color,
-            z,
             active,
         }
     }

@@ -25,17 +25,33 @@ impl Mesh {
         })
     }
 
-    pub fn rect(display: &Display, dims: Vec2d, z: f32) -> anyhow::Result<Self> {
+    pub fn rect(display: &Display, dims: Vec2d) -> anyhow::Result<Self> {
         static INDICES: &[u32] = &[0, 1, 2, 0, 2, 3];
 
         let vertices = {
             let dims = dims / 2.0;
 
             [
-                Vertex::new(Vec3d::new(-dims.x(), -dims.y(), z), Default::default()),
-                Vertex::new(Vec3d::new(dims.x(), -dims.y(), z), Vec2d::new(1.0, 0.0)),
-                Vertex::new(Vec3d::new(dims.x(), dims.y(), z), Vec2d::new(1.0, 1.0)),
-                Vertex::new(Vec3d::new(-dims.x(), dims.y(), z), Vec2d::new(0.0, 1.0)),
+                Vertex::new(
+                    Vec3d::new(-dims.x(), -dims.y(), 0.0),
+                    Vec3d::new(0.0, 0.0, -1.0),
+                    Default::default(),
+                ),
+                Vertex::new(
+                    Vec3d::new(dims.x(), -dims.y(), 0.0),
+                    Vec3d::new(0.0, 0.0, -1.0),
+                    Vec2d::new(1.0, 0.0),
+                ),
+                Vertex::new(
+                    Vec3d::new(dims.x(), dims.y(), 0.0),
+                    Vec3d::new(0.0, 0.0, -1.0),
+                    Vec2d::new(1.0, 1.0),
+                ),
+                Vertex::new(
+                    Vec3d::new(-dims.x(), dims.y(), 0.0),
+                    Vec3d::new(0.0, 0.0, -1.0),
+                    Vec2d::new(0.0, 1.0),
+                ),
             ]
         };
 

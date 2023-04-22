@@ -1,11 +1,12 @@
 #version 330
 
+in vec3 v_pos;
+in vec3 v_normal;
 in vec2 tex_pos;
 
 out vec4 frag_color;
 
 uniform sampler2D tex;
-
 uniform vec4 color;
 
 void main(void) {
