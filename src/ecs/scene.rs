@@ -22,17 +22,12 @@ impl Scene {
         mut self,
         event_loop: EventLoop<()>,
         (mut em, mut cm): (EntityManager, ComponentManager<'static>),
-        mut system_manager: SystemManager<'static>,
+        mut sm: SystemManager<'static>,
     ) -> anyhow::Result<()> {
-        system_manager.init(&mut self, (&mut em, &mut cm))?;
+        sm.init(&mut self, (&mut em, &mut cm))?;
 
         event_loop.run(move |event, _, flow| {
-            if let Err(e) = self.update(
-                Control::new(event),
-                flow,
-                (&mut em, &mut cm),
-                &mut system_manager,
-            ) {
+            if let Err(e) = self.update(Control::new(event), flow, (&mut em, &mut cm), &mut sm) {
                 eprintln!("{}", e);
             }
         })
@@ -43,7 +38,7 @@ impl Scene {
         mut control: Control,
         cf: &mut ControlFlow,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
-        system_manager: &mut SystemManager,
+        sm: &mut SystemManager,
     ) -> anyhow::Result<()> {
         match control.event {
             Event::RedrawRequested(window_id)
@@ -60,16 +55,12 @@ impl Scene {
                     1.0,
                 );
 
-                system_manager.update(
-                    &mut Ev::Draw((&mut control, &mut target)),
-                    self,
-                    (em, cm),
-                )?;
+                sm.update(&mut Ev::Draw((&mut control, &mut target)), self, (em, cm))?;
 
                 target.finish()?;
             }
             _ => {
-                system_manager.update(&mut Ev::Event(&mut control), self, (em, cm))?;
+                sm.update(&mut Ev::Event(&mut control), self, (em, cm))?;
 
                 if let Event::MainEventsCleared = control.event {
                     self.display.gl_window().window().request_redraw();
