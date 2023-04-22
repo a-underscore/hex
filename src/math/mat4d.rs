@@ -1,4 +1,4 @@
-use super::Vec3d;
+use super::{Vec3d, Vec4d};
 use std::ops::{Mul, MulAssign};
 
 #[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
@@ -29,6 +29,22 @@ impl Mat4d {
                 -(far + near) / (far - near),
                 1.0,
             ],
+        )
+    }
+
+    pub fn perspective(fov: f32, aspect: f32, near: f32, far: f32) -> Self {
+        let f = 1.0 / (fov / 2.0).tan();
+
+        Self::new(
+            [f / aspect, 0.0, 0.0, 0.0],
+            [0.0, f, 0.0, 0.0],
+            [
+                0.0,
+                0.0,
+                (far + near) / (near + far),
+                (2.0 * far * near) / (near - far),
+            ],
+            [0.0, 0.0, -1.0, 0.0],
         )
     }
 
@@ -117,29 +133,27 @@ impl Mul<f32> for Mat4d {
     }
 }
 
-impl Mul<(Vec3d, f32)> for Mat4d {
-    type Output = (Vec3d, f32);
+impl Mul<Vec4d> for Mat4d {
+    type Output = Vec4d;
 
-    fn mul(self, (rhs, w): (Vec3d, f32)) -> (Vec3d, f32) {
-        (
-            Vec3d::new(
-                self.0[0][0] * rhs.x()
-                    + self.0[0][1] * rhs.y()
-                    + self.0[0][2] * rhs.z()
-                    + self.0[0][3] * w,
-                self.0[1][0] * rhs.x()
-                    + self.0[1][1] * rhs.y()
-                    + self.0[1][2] * rhs.z()
-                    + self.0[1][3] * w,
-                self.0[2][0] * rhs.x()
-                    + self.0[2][1] * rhs.y()
-                    + self.0[2][2] * rhs.z()
-                    + self.0[2][3] * w,
-            ),
+    fn mul(self, rhs: Vec4d) -> Vec4d {
+        Vec4d::new(
+            self.0[0][0] * rhs.x()
+                + self.0[0][1] * rhs.y()
+                + self.0[0][2] * rhs.z()
+                + self.0[0][3] * rhs.w(),
+            self.0[1][0] * rhs.x()
+                + self.0[1][1] * rhs.y()
+                + self.0[1][2] * rhs.z()
+                + self.0[1][3] * rhs.w(),
+            self.0[2][0] * rhs.x()
+                + self.0[2][1] * rhs.y()
+                + self.0[2][2] * rhs.z()
+                + self.0[2][3] * rhs.w(),
             self.0[3][0] * rhs.x()
                 + self.0[3][1] * rhs.y()
                 + self.0[3][2] * rhs.z()
-                + self.0[3][3] * w,
+                + self.0[3][3] * rhs.w(),
         )
     }
 }
