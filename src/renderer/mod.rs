@@ -1,9 +1,9 @@
 use crate::{
     assets::Shader,
     components::{Camera, Sprite, Transform},
-    ecs::{ev::Control, system_manager::System, ComponentManager, EntityManager, Ev, Scene},
+    ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
-use glium::{glutin::event::Event, index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
+use glium::{index::NoIndices, uniform, uniforms::Sampler, Display, Surface};
 
 pub struct Renderer {
     pub shader: Shader,
@@ -29,14 +29,7 @@ impl<'a> System<'a> for Renderer {
         _: &mut Scene,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
-        if let Ev::Draw((
-            Control {
-                event: Event::MainEventsCleared,
-                flow: _,
-            },
-            target,
-        )) = event
-        {
+        if let Ev::Draw((_, target)) = event {
             if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e, em)
