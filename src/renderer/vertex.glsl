@@ -15,12 +15,12 @@ uniform mat4 camera_view;
 
 void main(void) {
 	mat4 view = transform * camera_transform;
-        vec3 pos = vec3(vec4(position, 1.0) * view);
-	vec3 normal = vec3(vec4(normal, 1.0) * view);
+        vec4 pos = vec4(position, 1.0) * view;
+	vec4 normal = vec4(normal, 1.0) * view;
 
-        gl_Position = vec4(pos, 1.0) * camera_view;
+        gl_Position = pos * camera_view;
 
-	v_pos = pos;
-	v_normal = normal;
+	v_pos = vec3(pos);
+	v_normal = vec3(normal);
 	tex_pos = uv;
 }
