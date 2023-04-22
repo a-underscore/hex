@@ -1,5 +1,5 @@
 use crate::{
-    assets::{Shape, Texture},
+    assets::{Mesh, Texture},
     ecs::{component_manager::Component, Id},
     id,
 };
@@ -9,17 +9,17 @@ use glium::{
 };
 
 #[derive(Clone)]
-pub struct Sprite<'a> {
+pub struct Model<'a> {
     pub draw_parameters: DrawParameters<'a>,
-    pub shape: Shape,
+    pub mesh: Mesh,
     pub texture: Texture,
     pub color: [f32; 4],
     pub z: f32,
     pub active: bool,
 }
 
-impl<'a> Sprite<'a> {
-    pub fn new(shape: Shape, texture: Texture, color: [f32; 4], z: f32, active: bool) -> Self {
+impl<'a> Model<'a> {
+    pub fn new(mesh: Mesh, texture: Texture, color: [f32; 4], z: f32, active: bool) -> Self {
         Self {
             draw_parameters: DrawParameters {
                 depth: Depth {
@@ -30,7 +30,7 @@ impl<'a> Sprite<'a> {
                 blend: Blend::alpha_blending(),
                 ..Default::default()
             },
-            shape,
+            mesh,
             texture,
             color,
             z,
@@ -39,7 +39,7 @@ impl<'a> Sprite<'a> {
     }
 }
 
-impl<'a> Component for Sprite<'a> {
+impl<'a> Component for Model<'a> {
     fn id() -> Id {
         id!()
     }

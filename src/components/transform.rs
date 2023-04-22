@@ -1,11 +1,11 @@
 use crate::{
     ecs::{component_manager::Component, Id},
     id,
-    math::{Vec3d, Mat4d},
+    math::{Mat4d, Vec3d},
 };
 
 #[derive(Clone)]
-pub struct Transform3d {
+pub struct Transform {
     position: Vec3d,
     rotation: Vec3d,
     scale: Vec3d,
@@ -13,7 +13,7 @@ pub struct Transform3d {
     pub active: bool,
 }
 
-impl Transform3d {
+impl Transform {
     pub fn new(position: Vec3d, rotation: Vec3d, scale: Vec3d, active: bool) -> Self {
         Self {
             position,
@@ -63,11 +63,15 @@ impl Transform3d {
     }
 
     pub fn calculate_matrix(position: Vec3d, rotation: Vec3d, scale: Vec3d) -> Mat4d {
-        Mat4d::translation(position) * Mat3d::rotation(rotation) * Mat3d::scale(scale)
+        Mat4d::translation(position)
+            * Mat4d::rotation_x(rotation.x())
+            * Mat4d::rotation_y(rotation.y())
+            * Mat4d::rotation_z(rotation.z())
+            * Mat4d::scale(scale)
     }
 }
 
-impl Component for Transform3d {
+impl Component for Transform {
     fn id() -> Id {
         id!()
     }

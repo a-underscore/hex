@@ -5,7 +5,7 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct Camera3d {
+pub struct Camera {
     fov: f32,
     aspect: f32,
     near: f32,
@@ -14,8 +14,21 @@ pub struct Camera3d {
     pub active: bool,
 }
 
-impl Camera3d {
-    pub fn new(fov: f32, aspect: f32, near: f32, far: f32, active: bool) -> Self {
+impl Camera {
+    pub fn perspective(fov: f32, aspect: f32, near: f32, far: f32, active: bool) -> Self {
+        Self {
+            fov,
+            aspect,
+            near,
+            far,
+            view: Mat4d::perspective(fov, aspect, near, far),
+            active,
+        }
+    }
+
+    pub fn ortho(aspect: f32, near: f32, far: f32, active: bool) -> Self {
+        let fov = 0.0;
+
         Self {
             fov,
             aspect,
@@ -66,12 +79,16 @@ impl Camera3d {
         self.update_view();
     }
 
+    pub fn view(&self) -> Mat4d {
+        self.view
+    }
+
     pub fn update_view(&mut self) {
         self.view = Mat4d::perspective(self.fov, self.aspect, self.near, self.far);
     }
 }
 
-impl Component for Camera3d {
+impl Component for Camera {
     fn id() -> Id {
         id!()
     }

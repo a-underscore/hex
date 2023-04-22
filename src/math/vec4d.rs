@@ -1,3 +1,4 @@
+use super::Vec3d;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Default, PartialEq, PartialOrd, Copy, Clone)]
@@ -6,6 +7,10 @@ pub struct Vec4d(pub [f32; 4]);
 impl Vec4d {
     pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
         Self([x, y, z, w])
+    }
+
+    pub fn truncate(&self) -> Vec3d {
+        Vec3d::new(self.x(), self.y(), self.z())
     }
 
     pub fn x(self) -> f32 {
