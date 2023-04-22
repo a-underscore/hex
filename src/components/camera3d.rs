@@ -37,7 +37,7 @@ impl Camera3d {
     }
 
     pub fn aspect(&self) -> f32 {
-        self.fov
+        self.aspect
     }
 
     pub fn set_aspect(&mut self, aspect: f32) {

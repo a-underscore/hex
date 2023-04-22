@@ -41,7 +41,7 @@ impl Mat4d {
             [
                 0.0,
                 0.0,
-                (far + near) / (near + far),
+                (far + near) / (near - far),
                 (2.0 * far * near) / (near - far),
             ],
             [0.0, 0.0, -1.0, 0.0],
