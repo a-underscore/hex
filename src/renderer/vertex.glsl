@@ -14,7 +14,7 @@ uniform mat4 camera_transform;
 uniform mat4 camera_view;
 
 void main(void) {
-	mat4 view = transform * camera_transform;
+	mat4 view = transform * inverse(camera_transform);
         vec4 pos = vec4(position, 1.0) * view;
 	vec4 normal = vec4(normal, 1.0) * view;
 
