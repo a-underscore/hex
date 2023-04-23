@@ -4,7 +4,7 @@ use glium::{
 };
 
 pub enum Indices {
-    Indexed(IndexBuffer<u32>),
+    Indexed(Box<IndexBuffer<u32>>),
     Ordered(NoIndices),
 }
 
@@ -15,14 +15,14 @@ impl Indices {
         format: PrimitiveType,
     ) -> anyhow::Result<Self> {
         Ok(match indices {
-            Some(i) => Self::Indexed(IndexBuffer::new(display, format, i)?),
+            Some(i) => Self::Indexed(Box::new(IndexBuffer::new(display, format, i)?)),
             None => Self::Ordered(NoIndices(format)),
         })
     }
 
-    pub fn source<'a>(&'a self) -> IndicesSource<'a> {
+    pub fn source(&self) -> IndicesSource<'_> {
         match self {
-            Self::Indexed(indices) => indices.into(),
+            Self::Indexed(indices) => indices.as_ref().into(),
             Self::Ordered(indices) => indices.into(),
         }
     }

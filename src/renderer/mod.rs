@@ -77,11 +77,11 @@ impl<'a> System<'a> for Renderer {
                                 camera_transform: ct.matrix().0,
                                 camera_view: c.view().0,
                                 color: s.color.0,
-                                tex: Sampler(&*buffer, texture.sampler_behaviour),
+                                tex: Sampler(buffer, texture.sampler_behaviour),
                             };
 
                             target.draw(
-                                (&*v, &*uv),
+                                (v, uv),
                                 i.source(),
                                 &self.texture_shader.program,
                                 &u,
@@ -97,7 +97,7 @@ impl<'a> System<'a> for Renderer {
                             };
 
                             target.draw(
-                                &*v,
+                                v,
                                 i.source(),
                                 &self.color_shader.program,
                                 &u,
