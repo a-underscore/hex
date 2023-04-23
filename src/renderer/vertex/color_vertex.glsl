@@ -20,5 +20,4 @@ void main(void) {
 
 	v_pos = vec3(pos);
 	v_normal = vec3(normal);
-	tex_pos = uv;
 }
