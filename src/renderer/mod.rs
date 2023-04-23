@@ -6,16 +6,23 @@ use crate::{
 use glium::{uniform, uniforms::Sampler, Display, Surface};
 
 pub struct Renderer {
-    pub shader: Shader,
+    pub texture_shader: Shader,
+    pub color_shader: Shader,
 }
 
 impl Renderer {
     pub fn new(display: &Display) -> anyhow::Result<Self> {
         Ok(Self {
-            shader: Shader::new(
+            texture_shader: Shader::new(
                 display,
-                include_str!("vertex.glsl"),
-                include_str!("fragment.glsl"),
+                include_str!("vertex/texture_vertex.glsl"),
+                include_str!("fragment/texture_fragment.glsl"),
+                None,
+            )?,
+            color_shader: Shader::new(
+                display,
+                include_str!("vertex/color_vertex.glsl"),
+                include_str!("fragment/color_fragment.glsl"),
                 None,
             )?,
         })
@@ -60,21 +67,44 @@ impl<'a> System<'a> for Renderer {
                 };
 
                 for (s, t) in models {
-                    let uniform = uniform! {
-                        transform: t.matrix().0,
-                        camera_transform: ct.matrix().0,
-                        camera_view: c.view().0,
-                        color: s.color.0,
-                        tex: Sampler(&*s.texture.buffer, s.texture.sampler_behaviour),
-                    };
+                    let (v, i) = &*s.mesh.buffer;
 
-                    target.draw(
-                        &*s.mesh.vertices,
-                        &*s.mesh.indices,
-                        &self.shader.program,
-                        &uniform,
-                        &s.draw_parameters,
-                    )?;
+                    match &s.texture {
+                        Some(texture) => {
+                            let (uv, buffer) = &*texture.buffer;
+                            let u = uniform! {
+                                transform: t.matrix().0,
+                                camera_transform: ct.matrix().0,
+                                camera_view: c.view().0,
+                                color: s.color.0,
+                                tex: Sampler(&*buffer, texture.sampler_behaviour),
+                            };
+
+                            target.draw(
+                                (&*v, &*uv),
+                                i.source(),
+                                &self.texture_shader.program,
+                                &u,
+                                &s.draw_parameters,
+                            )?;
+                        }
+                        None => {
+                            let u = uniform! {
+                                transform: t.matrix().0,
+                                camera_transform: ct.matrix().0,
+                                camera_view: c.view().0,
+                                color: s.color.0,
+                            };
+
+                            target.draw(
+                                &*v,
+                                i.source(),
+                                &self.color_shader.program,
+                                &u,
+                                &s.draw_parameters,
+                            )?;
+                        }
+                    }
                 }
             }
         }

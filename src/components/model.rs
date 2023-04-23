@@ -5,7 +5,7 @@ use crate::{
     math::Vec4d,
 };
 use glium::{
-    draw_parameters::{Blend, DepthTest},
+    draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     Depth, DrawParameters,
 };
 
@@ -13,13 +13,13 @@ use glium::{
 pub struct Model<'a> {
     pub draw_parameters: DrawParameters<'a>,
     pub mesh: Mesh,
-    pub texture: Texture,
+    pub texture: Option<Texture>,
     pub color: Vec4d,
     pub active: bool,
 }
 
 impl<'a> Model<'a> {
-    pub fn new(mesh: Mesh, texture: Texture, color: Vec4d, active: bool) -> Self {
+    pub fn new(mesh: Mesh, texture: Option<Texture>, color: Vec4d, active: bool) -> Self {
         Self {
             draw_parameters: DrawParameters {
                 depth: Depth {
@@ -28,6 +28,7 @@ impl<'a> Model<'a> {
                     ..Default::default()
                 },
                 blend: Blend::alpha_blending(),
+                backface_culling: BackfaceCullingMode::CullClockwise,
                 ..Default::default()
             },
             mesh,
