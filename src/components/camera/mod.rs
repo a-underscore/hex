@@ -1,6 +1,6 @@
-pub mod projection;
+pub mod proj;
 
-pub use projection::Projection;
+pub use proj::Proj;
 
 use crate::{
     ecs::{component_manager::Component, Id},
@@ -10,37 +10,31 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Camera {
+    proj: Proj,
     view: Mat4d,
-    proj: Projection,
     pub active: bool,
 }
 
 impl Camera {
-    pub fn perspective(fov: f32, aspect: f32, clip: Vec2d, active: bool) -> Self {
-        let proj = Projection::Perspective(fov, aspect, clip);
+    pub fn new(proj: Proj, active: bool) -> Self {
+        let view = proj.view();
 
-        Self {
-            view: proj.view(),
-            proj,
-            active,
-        }
+        Self { proj, view, active }
+    }
+
+    pub fn perspective(fov: f32, aspect: f32, clip: Vec2d, active: bool) -> Self {
+        Self::new(Proj::Perspective((fov, aspect, clip)), active)
     }
 
     pub fn ortho(dims: Vec3d, active: bool) -> Self {
-        let proj = Projection::Ortho(dims);
-
-        Self {
-            view: proj.view(),
-            proj,
-            active,
-        }
+        Self::new(Proj::Ortho(dims), active)
     }
 
-    pub fn proj(&self) -> &Projection {
+    pub fn proj(&self) -> &Proj {
         &self.proj
     }
 
-    pub fn set_proj(&mut self, proj: Projection) {
+    pub fn set_proj(&mut self, proj: Proj) {
         self.proj = proj;
 
         self.update_view()
