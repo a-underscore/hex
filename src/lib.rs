@@ -2,12 +2,11 @@ pub mod assets;
 pub mod components;
 pub mod ecs;
 pub mod math;
-pub mod renderer;
+pub mod systems;
 
 pub use anyhow;
 pub use glium;
 pub use once_cell;
-pub use renderer::Renderer;
 
 #[macro_export]
 macro_rules! id {
