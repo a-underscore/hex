@@ -4,33 +4,18 @@ use crate::{
     id,
     math::Vec4d,
 };
-use glium::{
-    draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
-    Depth, DrawParameters,
-};
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub struct Instance<'a> {
-    pub draw_parameters: DrawParameters<'a>,
+pub struct Instance {
     pub data: Rc<(Option<Texture>, Mesh)>,
     pub color: Vec4d,
     pub active: bool,
 }
 
-impl<'a> Instance<'a> {
+impl Instance {
     pub fn new(mesh: Mesh, texture: Option<Texture>, color: Vec4d, active: bool) -> Self {
         Self {
-            draw_parameters: DrawParameters {
-                depth: Depth {
-                    test: DepthTest::IfLessOrEqual,
-                    write: true,
-                    ..Default::default()
-                },
-                blend: Blend::alpha_blending(),
-                backface_culling: BackfaceCullingMode::CullClockwise,
-                ..Default::default()
-            },
             data: Rc::new((texture, mesh)),
             color,
             active,
@@ -38,7 +23,7 @@ impl<'a> Instance<'a> {
     }
 }
 
-impl<'a> Component for Instance<'a> {
+impl Component for Instance {
     fn id() -> Id {
         id!()
     }

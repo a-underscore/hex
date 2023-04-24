@@ -3,16 +3,32 @@ use crate::{
     components::{Camera, Model, Transform},
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
-use glium::{uniform, uniforms::Sampler, Display, Surface};
+use glium::{
+    draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
+    uniform,
+    uniforms::Sampler,
+    Depth, Display, DrawParameters, Surface,
+};
 
-pub struct Renderer {
+pub struct Renderer<'a> {
+    pub draw_parameters: DrawParameters<'a>,
     pub texture_shader: Shader,
     pub color_shader: Shader,
 }
 
-impl Renderer {
+impl<'a> Renderer<'a> {
     pub fn new(display: &Display) -> anyhow::Result<Self> {
         Ok(Self {
+            draw_parameters: DrawParameters {
+                depth: Depth {
+                    test: DepthTest::IfLessOrEqual,
+                    write: true,
+                    ..Default::default()
+                },
+                blend: Blend::alpha_blending(),
+                backface_culling: BackfaceCullingMode::CullClockwise,
+                ..Default::default()
+            },
             texture_shader: Shader::new(
                 display,
                 include_str!("vertex/texture_vertex.glsl"),
@@ -29,7 +45,7 @@ impl Renderer {
     }
 }
 
-impl<'a> System<'a> for Renderer {
+impl<'a> System<'a> for Renderer<'a> {
     fn update(
         &mut self,
         event: &mut Ev,
@@ -85,7 +101,7 @@ impl<'a> System<'a> for Renderer {
                                 i.source(),
                                 &self.texture_shader.program,
                                 &u,
-                                &s.draw_parameters,
+                                &self.draw_parameters,
                             )?;
                         }
                         None => {
@@ -101,7 +117,7 @@ impl<'a> System<'a> for Renderer {
                                 i.source(),
                                 &self.color_shader.program,
                                 &u,
-                                &s.draw_parameters,
+                                &self.draw_parameters,
                             )?;
                         }
                     }
