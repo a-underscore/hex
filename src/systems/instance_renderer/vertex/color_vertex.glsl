@@ -2,10 +2,11 @@
 
 in vec3 position;
 in vec3 normal;
+in vec4 color;
 
 out vec3 v_pos;
 out vec3 v_normal;
-out vec3 tex_pos;
+out vec4 v_color;
 
 uniform mat4 transform;
 uniform mat4 camera_transform;
@@ -20,4 +21,5 @@ void main(void) {
 
 	v_pos = vec3(pos);
 	v_normal = vec3(normal);
+	v_color = color;
 }

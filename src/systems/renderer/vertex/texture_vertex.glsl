@@ -6,9 +6,8 @@ in vec2 uv;
 
 out vec3 v_pos;
 out vec3 v_normal;
-out vec2 tex_pos;
+out vec2 v_uv;
 
-uniform float z;
 uniform mat4 transform;
 uniform mat4 camera_transform;
 uniform mat4 camera_view;
@@ -22,5 +21,5 @@ void main(void) {
 
 	v_pos = vec3(pos);
 	v_normal = vec3(normal);
-	tex_pos = uv;
+	v_uv = uv;
 }

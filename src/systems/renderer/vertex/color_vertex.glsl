@@ -6,7 +6,6 @@ in vec3 normal;
 out vec3 v_pos;
 out vec3 v_normal;
 
-uniform float z;
 uniform mat4 transform;
 uniform mat4 camera_transform;
 uniform mat4 camera_view;
