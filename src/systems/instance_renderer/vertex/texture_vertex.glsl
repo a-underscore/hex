@@ -1,9 +1,9 @@
 #version 330
 
 in mat4 transform;
+in vec4 color;
 in vec3 position;
 in vec3 normal;
-in vec4 color;
 in vec2 uv;
 
 out vec3 v_pos;

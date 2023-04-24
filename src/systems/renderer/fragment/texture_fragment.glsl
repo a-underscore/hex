@@ -4,11 +4,9 @@ in vec3 v_pos;
 in vec3 v_normal;
 in vec2 v_uv;
 
-out vec4 frag_color;
-
 uniform sampler2D tex;
 uniform vec4 color;
 
 void main(void) {
-	frag_color = texture(tex, v_uv) * color;
+	gl_FragColor = texture(tex, v_uv) * color;
 }

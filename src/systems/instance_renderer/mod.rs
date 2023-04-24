@@ -130,7 +130,7 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                             };
 
                             target.draw(
-                                (v, uv, ib),
+                                (v, ib, uv),
                                 i.source(),
                                 &self.texture_shader.program,
                                 &u,

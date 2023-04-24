@@ -5,19 +5,25 @@ use crate::{
 };
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
+    texture::Texture2d,
     uniform,
-    uniforms::MagnifySamplerFilter,
+    uniforms::{MagnifySamplerFilter, Sampler, SamplerBehavior},
     Depth, Display, DrawParameters, Surface,
 };
 
 pub struct LightRenderer<'a> {
     pub draw_parameters: DrawParameters<'a>,
     pub filter: MagnifySamplerFilter,
+    pub sampler_behavior: SamplerBehavior,
     pub shader: Shader,
 }
 
 impl<'a> LightRenderer<'a> {
-    pub fn new(display: &Display, filter: MagnifySamplerFilter) -> anyhow::Result<Self> {
+    pub fn new(
+        display: &Display,
+        sampler_behavior: SamplerBehavior,
+        filter: MagnifySamplerFilter,
+    ) -> anyhow::Result<Self> {
         Ok(Self {
             draw_parameters: DrawParameters {
                 depth: Depth {
@@ -29,6 +35,7 @@ impl<'a> LightRenderer<'a> {
                 backface_culling: BackfaceCullingMode::CullClockwise,
                 ..Default::default()
             },
+            sampler_behavior,
             filter,
             shader: Shader::new(
                 display,
@@ -44,7 +51,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
     fn update(
         &mut self,
         event: &mut Ev,
-        _: &mut Scene,
+        scene: &mut Scene,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = event {
@@ -79,17 +86,26 @@ impl<'a> System<'a> for LightRenderer<'a> {
                     models
                 };
 
+                let buffer = {
+                    let (x, y) = target.get_dimensions();
+
+                    Texture2d::empty(&scene.display, x, y)?
+                };
+
                 for (l, lt) in em.entities.keys().cloned().filter_map(|e| {
                     Some((
                         cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l))?,
                         cm.get::<Transform>(e, em)
-                            .and_then(|l| l.active.then_some(l))?,
+                            .and_then(|t| t.active.then_some(t))?,
                     ))
                 }) {
+                    target.fill(&buffer.as_surface(), self.filter);
+
                     for (m, t) in &models {
                         let (mesh, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let u = uniform! {
+                            buffer: Sampler(&buffer, self.sampler_behavior),
                             transform: t.matrix().0,
                             camera_transform: ct.matrix().0,
                             camera_view: c.view().0,
