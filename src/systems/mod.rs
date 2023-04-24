@@ -1,5 +1,5 @@
-pub mod renderer;
 pub mod instance_renderer;
+pub mod renderer;
 
-pub use renderer::Renderer;
 pub use instance_renderer::InstanceRenderer;
+pub use renderer::Renderer;

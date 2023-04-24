@@ -1,25 +1,38 @@
 pub mod instance_data;
-pub mod instance_id;
 
 pub use instance_data::InstanceData;
-pub use instance_id::InstanceId;
 
 use crate::{
     assets::Shader,
-    components::{Camera, Model, Transform},
+    components::{Camera, Instance, Transform},
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
-use glium::{uniform, uniforms::Sampler, Display, Surface, VertexBuffer};
-use std::collections::BTreeMap;
+use glium::{
+    draw_parameters::{Blend, DepthTest},
+    uniform,
+    uniforms::Sampler,
+    Depth, Display, DrawParameters, Surface, VertexBuffer,
+};
+use std::{collections::BTreeMap, rc::Rc};
 
-pub struct InstanceRenderer {
+pub struct InstanceRenderer<'a> {
+    pub draw_parameters: DrawParameters<'a>,
     pub texture_shader: Shader,
     pub color_shader: Shader,
 }
 
-impl InstanceRenderer {
+impl<'a> InstanceRenderer<'a> {
     pub fn new(display: &Display) -> anyhow::Result<Self> {
         Ok(Self {
+            draw_parameters: DrawParameters {
+                depth: Depth {
+                    test: DepthTest::IfLessOrEqual,
+                    write: true,
+                    ..Default::default()
+                },
+                blend: Blend::alpha_blending(),
+                ..Default::default()
+            },
             texture_shader: Shader::new(
                 display,
                 include_str!("vertex/texture_vertex.glsl"),
@@ -36,7 +49,7 @@ impl InstanceRenderer {
     }
 }
 
-impl<'a> System<'a> for InstanceRenderer {
+impl<'a> System<'a> for InstanceRenderer<'a> {
     fn update(
         &mut self,
         event: &mut Ev,
@@ -59,36 +72,35 @@ impl<'a> System<'a> for InstanceRenderer {
                         .cloned()
                         .filter_map(|e| {
                             Some((
-                                *cm.get::<InstanceId>(e, em)
+                                cm.get::<Instance>(e, em)
                                     .and_then(|s| s.active.then_some(s))?,
-                                (
-                                    cm.get::<Model>(e, em).and_then(|s| s.active.then_some(s))?,
-                                    cm.get::<Transform>(e, em)
-                                        .and_then(|t| t.active.then_some(t))?,
-                                ),
+                                cm.get::<Transform>(e, em)
+                                    .and_then(|t| t.active.then_some(t))?,
                             ))
                         })
-                        .fold(BTreeMap::new(), |mut acc, (id, d @ (ref m, ref t))| {
-                            let entry = acc.entry(id).or_insert(Vec::new());
+                        .fold(BTreeMap::new(), |mut acc, d @ (i, t)| {
+                            let entry = acc.entry(Rc::as_ptr(&i.data)).or_insert(Vec::new());
 
-                            entry.push((InstanceData::new(t.matrix(), m.color), d));
+                            entry.push((i.data.clone(), InstanceData::new(t.matrix(), i.color), d));
 
                             acc
                         })
                         .into_values()
                         .filter_map(|d| {
                             Some((
-                                d.clone().into_iter().min_by(|(_, (_, t1)), (_, (_, t2))| {
-                                    (ct.position() - t1.position())
-                                        .magnitude()
-                                        .total_cmp(&(ct.position() - t2.position()).magnitude())
-                                })?,
+                                d.clone().into_iter().min_by(
+                                    |(_, _, (_, t1)), (_, _, (_, t2))| {
+                                        (ct.position() - t1.position())
+                                            .magnitude()
+                                            .total_cmp(&(ct.position() - t2.position()).magnitude())
+                                    },
+                                )?,
                                 d,
                             ))
                         })
                         .collect();
 
-                    models.sort_by(|((_, (_, t1)), _), ((_, (_, t2)), _)| {
+                    models.sort_by(|((_, _, (_, t1)), _), ((_, _, (_, t2)), _)| {
                         (ct.position() - t1.position())
                             .magnitude()
                             .total_cmp(&(ct.position() - t2.position()).magnitude())
@@ -97,13 +109,13 @@ impl<'a> System<'a> for InstanceRenderer {
                     models
                 };
 
-                for ((_, (m, _)), i) in models {
-                    let i: Vec<_> = i.into_iter().map(|(i, _)| i).collect();
+                for ((instance, _, _), instances) in models {
+                    let i: Vec<_> = instances.into_iter().map(|(_, i, _)| i).collect();
                     let instance_buffer = VertexBuffer::dynamic(&scene.display, &i)?;
-                    let (v, i) = &*m.mesh.buffer;
 
-                    match &m.texture {
-                        Some(texture) => {
+                    match &*instance {
+                        (Some(texture), v) => {
+                            let (v, i) = &*v.buffer;
                             let (uv, buffer) = &*texture.buffer;
                             let u = uniform! {
                                 camera_transform: ct.matrix().0,
@@ -122,10 +134,11 @@ impl<'a> System<'a> for InstanceRenderer {
                                 i.source(),
                                 &self.texture_shader.program,
                                 &u,
-                                &m.draw_parameters,
+                                &self.draw_parameters,
                             )?;
                         }
-                        None => {
+                        (None, v) => {
+                            let (v, i) = &*v.buffer;
                             let u = uniform! {
                                 camera_transform: ct.matrix().0,
                                camera_view: c.view().0,
@@ -141,7 +154,7 @@ impl<'a> System<'a> for InstanceRenderer {
                                 i.source(),
                                 &self.texture_shader.program,
                                 &u,
-                                &m.draw_parameters,
+                                &self.draw_parameters,
                             )?;
                         }
                     }
