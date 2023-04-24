@@ -6,11 +6,9 @@ use crate::{
 use glium::{
     draw_parameters::{Blend, DepthTest},
     texture::Texture2d,
-    uniform,
-    uniforms::{MagnifySamplerFilter, Sampler},
-    Depth, Display, DrawParameters, Surface, VertexBuffer,
+    uniforms::MagnifySamplerFilter,
+    Depth, Display, DrawParameters, Surface,
 };
-use std::{collections::BTreeMap, rc::Rc};
 
 pub struct LightRenderer<'a> {
     pub draw_parameters: DrawParameters<'a>,
@@ -49,7 +47,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = event {
-            if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
+            if let Some((_, _)) = em.entities.keys().cloned().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e, em)
                         .and_then(|c| c.active.then_some(c))?,
@@ -65,6 +63,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
 
                 // For every model
                 // target.draw();
+                unimplemented!()
             }
         }
 

@@ -20,6 +20,6 @@ void main(void) {
         gl_Position = pos * camera_view;
 
 	v_pos = vec3(pos);
-	v_normal = vec3(normal);
+	v_normal = normalize(vec3(normal));
 	v_color = color;
 }
