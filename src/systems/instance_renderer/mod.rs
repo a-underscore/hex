@@ -141,7 +141,7 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                             let (v, i) = &*v.buffer;
                             let u = uniform! {
                                 camera_transform: ct.matrix().0,
-                               camera_view: c.view().0,
+                                camera_view: c.view().0,
                             };
 
                             target.draw(
@@ -152,7 +152,7 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                                         .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?,
                                 ),
                                 i.source(),
-                                &self.texture_shader.program,
+                                &self.color_shader.program,
                                 &u,
                                 &self.draw_parameters,
                             )?;
