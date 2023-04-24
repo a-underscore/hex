@@ -94,6 +94,10 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             camera_transform: ct.matrix().0,
                             camera_view: c.view().0,
                             color: m.color.0,
+                            light_color: l.color.0,
+                            specular: l.specular,
+                            diffuse: l.diffuse,
+                            ambient: l.ambient,
                         };
 
                         target.draw(
