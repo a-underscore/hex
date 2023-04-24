@@ -13,13 +13,13 @@ uniform mat4 camera_transform;
 uniform mat4 camera_view;
 
 void main(void) {
-	mat4 view = transform * inverse(camera_transform);
+	mat4 view = camera_transform * transform;
+
         vec4 pos = vec4(position, 1.0) * view;
-	vec4 normal = vec4(normal, 1.0) * view;
 
         gl_Position = pos * camera_view;
 
 	v_pos = vec3(pos);
-	v_normal = vec3(normal);
+	v_normal = normalize(normal * mat3(view));
 	v_color = color;
 }

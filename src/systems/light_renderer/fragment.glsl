@@ -2,17 +2,19 @@
 
 in vec3 v_pos;
 in vec3 v_normal;
-in vec2 v_uv;
-in vec4 v_color;
 
 out vec4 frag_color;
 
 uniform sampler2D buffer;
-uniform vec4 light_color;
-uniform float specular;
-uniform float diffuse;
-uniform float ambient;
+
+uniform vec3 light_color;
+uniform vec3 light_pos;
+uniform float light_strength;
 
 void main(void) {
-	frag_color = texture(buffer, v_uv) * v_color;
+	vec3 ambient = light_strength * light_color;
+	vec3 light_dir = normalize(light_pos - v_pos);
+	vec3 diffuse = max(dot(v_normal, light_dir), 0.0) * light_color;
+
+	frag_color = vec4((ambient + diffuse), 1.0);
 }

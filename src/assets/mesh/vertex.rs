@@ -16,4 +16,4 @@ impl Vertex {
     }
 }
 
-implement_vertex!(Vertex, position);
+implement_vertex!(Vertex, position, normal);

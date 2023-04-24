@@ -5,9 +5,8 @@ use crate::{
 };
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
-    texture::Texture2d,
     uniform,
-    uniforms::{MagnifySamplerFilter, Sampler},
+    uniforms::MagnifySamplerFilter,
     Depth, Display, DrawParameters, Surface,
 };
 
@@ -45,7 +44,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
     fn update(
         &mut self,
         event: &mut Ev,
-        scene: &mut Scene,
+        _: &mut Scene,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = event {
@@ -80,12 +79,13 @@ impl<'a> System<'a> for LightRenderer<'a> {
                     models
                 };
 
-                for l in em
-                    .entities
-                    .keys()
-                    .cloned()
-                    .filter_map(|e| cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l)))
-                {
+                for (l, lt) in em.entities.keys().cloned().filter_map(|e| {
+                    Some((
+                        cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l))?,
+                        cm.get::<Transform>(e, em)
+                            .and_then(|l| l.active.then_some(l))?,
+                    ))
+                }) {
                     for (m, t) in &models {
                         let (mesh, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
@@ -95,9 +95,8 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             camera_view: c.view().0,
                             color: m.color.0,
                             light_color: l.color.0,
-                            specular: l.specular,
-                            diffuse: l.diffuse,
-                            ambient: l.ambient,
+                            light_strength: l.strength,
+                            light_position: lt.position().0,
                         };
 
                         target.draw(
