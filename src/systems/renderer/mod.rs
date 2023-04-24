@@ -82,17 +82,18 @@ impl<'a> System<'a> for Renderer<'a> {
                     models
                 };
 
-                for (s, t) in models {
-                    let (v, i) = &*s.mesh.buffer;
+                for (m, t) in models {
+                    let (mesh, texture) = &*m.data;
+                    let (v, i) = &*mesh.buffer;
 
-                    match &s.texture {
+                    match texture {
                         Some(texture) => {
                             let (uv, buffer) = &*texture.buffer;
                             let u = uniform! {
                                 transform: t.matrix().0,
                                 camera_transform: ct.matrix().0,
                                 camera_view: c.view().0,
-                                color: s.color.0,
+                                color: m.color.0,
                                 tex: Sampler(buffer, texture.sampler_behaviour),
                             };
 
@@ -109,7 +110,7 @@ impl<'a> System<'a> for Renderer<'a> {
                                 transform: t.matrix().0,
                                 camera_transform: ct.matrix().0,
                                 camera_view: c.view().0,
-                                color: s.color.0,
+                                color: m.color.0,
                             };
 
                             target.draw(

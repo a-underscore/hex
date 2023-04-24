@@ -4,7 +4,7 @@ pub use instance_data::InstanceData;
 
 use crate::{
     assets::Shader,
-    components::{Camera, Instance, Transform},
+    components::{Camera, Model, Transform},
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
 use glium::{
@@ -72,8 +72,7 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                         .cloned()
                         .filter_map(|e| {
                             Some((
-                                cm.get::<Instance>(e, em)
-                                    .and_then(|s| s.active.then_some(s))?,
+                                cm.get::<Model>(e, em).and_then(|s| s.active.then_some(s))?,
                                 cm.get::<Transform>(e, em)
                                     .and_then(|t| t.active.then_some(t))?,
                             ))
@@ -110,12 +109,19 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                 };
 
                 for ((instance, _, _), instances) in models {
-                    let i: Vec<_> = instances.into_iter().map(|(_, i, _)| i).collect();
-                    let instance_buffer = VertexBuffer::dynamic(&scene.display, &i)?;
+                    let (m, t) = &*instance;
+                    let (v, i) = &*m.buffer;
+                    let instance_buffer = {
+                        let i: Vec<_> = instances.into_iter().map(|(_, i, _)| i).collect();
 
-                    match &*instance {
-                        (Some(texture), v) => {
-                            let (v, i) = &*v.buffer;
+                        VertexBuffer::dynamic(&scene.display, &i)?
+                    };
+                    let ib = instance_buffer
+                        .per_instance()
+                        .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?;
+
+                    match t {
+                        Some(texture) => {
                             let (uv, buffer) = &*texture.buffer;
                             let u = uniform! {
                                 camera_transform: ct.matrix().0,
@@ -124,33 +130,21 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                             };
 
                             target.draw(
-                                (
-                                    v,
-                                    uv,
-                                    instance_buffer
-                                        .per_instance()
-                                        .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?,
-                                ),
+                                (v, uv, ib),
                                 i.source(),
                                 &self.texture_shader.program,
                                 &u,
                                 &self.draw_parameters,
                             )?;
                         }
-                        (None, v) => {
-                            let (v, i) = &*v.buffer;
+                        None => {
                             let u = uniform! {
                                 camera_transform: ct.matrix().0,
                                 camera_view: c.view().0,
                             };
 
                             target.draw(
-                                (
-                                    v,
-                                    instance_buffer
-                                        .per_instance()
-                                        .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?,
-                                ),
+                                (v, ib),
                                 i.source(),
                                 &self.color_shader.program,
                                 &u,
