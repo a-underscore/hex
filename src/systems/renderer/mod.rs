@@ -76,7 +76,9 @@ impl<'a> System<'a> for Renderer<'a> {
                         .collect();
 
                     models.sort_by(|(_, t1), (_, t2)| {
-                        t1.position().z().total_cmp(&t2.position().z())
+                        (ct.position() - t1.position())
+                            .magnitude()
+                            .total_cmp(&(ct.position() - t2.position()).magnitude())
                     });
 
                     models

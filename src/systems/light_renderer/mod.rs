@@ -1,12 +1,13 @@
 use crate::{
     assets::Shader,
-    components::{Camera, Transform},
+    components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
 use glium::{
-    draw_parameters::{Blend, DepthTest},
+    draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     texture::Texture2d,
-    uniforms::MagnifySamplerFilter,
+    uniform,
+    uniforms::{MagnifySamplerFilter, Sampler},
     Depth, Display, DrawParameters, Surface,
 };
 
@@ -26,6 +27,7 @@ impl<'a> LightRenderer<'a> {
                     ..Default::default()
                 },
                 blend: Blend::alpha_blending(),
+                backface_culling: BackfaceCullingMode::CullClockwise,
                 ..Default::default()
             },
             filter,
@@ -47,7 +49,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = event {
-            if let Some((_, _)) = em.entities.keys().cloned().find_map(|e| {
+            if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e, em)
                         .and_then(|c| c.active.then_some(c))?,
@@ -55,15 +57,54 @@ impl<'a> System<'a> for LightRenderer<'a> {
                         .and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
-                let (x, y) = target.get_dimensions();
-                let texture = Texture2d::empty(&scene.display, x, y)?;
+                let models = {
+                    let mut models: Vec<_> = em
+                        .entities
+                        .keys()
+                        .cloned()
+                        .filter_map(|e| {
+                            Some((
+                                cm.get::<Model>(e, em).and_then(|s| s.active.then_some(s))?,
+                                cm.get::<Transform>(e, em)
+                                    .and_then(|t| t.active.then_some(t))?,
+                            ))
+                        })
+                        .collect();
 
-                // For every light
-                texture.as_surface().fill(*target, self.filter);
+                    models.sort_by(|(_, t1), (_, t2)| {
+                        (ct.position() - t1.position())
+                            .magnitude()
+                            .total_cmp(&(ct.position() - t2.position()).magnitude())
+                    });
 
-                // For every model
-                // target.draw();
-                unimplemented!()
+                    models
+                };
+
+                for l in em
+                    .entities
+                    .keys()
+                    .cloned()
+                    .filter_map(|e| cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l)))
+                {
+                    for (m, t) in &models {
+                        let (mesh, _) = &*m.data;
+                        let (v, i) = &*mesh.buffer;
+                        let u = uniform! {
+                            transform: t.matrix().0,
+                            camera_transform: ct.matrix().0,
+                            camera_view: c.view().0,
+                            color: m.color.0,
+                        };
+
+                        target.draw(
+                            v,
+                            i.source(),
+                            &self.shader.program,
+                            &u,
+                            &self.draw_parameters,
+                        )?;
+                    }
+                }
             }
         }
 
