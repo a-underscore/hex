@@ -31,14 +31,14 @@ impl<'a> Renderer<'a> {
             },
             texture_shader: Shader::new(
                 display,
-                include_str!("vertex/texture_vertex.glsl"),
-                include_str!("fragment/texture_fragment.glsl"),
+                include_str!("texture/vertex.glsl"),
+                include_str!("texture/fragment.glsl"),
                 None,
             )?,
             color_shader: Shader::new(
                 display,
-                include_str!("vertex/color_vertex.glsl"),
-                include_str!("fragment/color_fragment.glsl"),
+                include_str!("color/vertex.glsl"),
+                include_str!("color/fragment.glsl"),
                 None,
             )?,
         })

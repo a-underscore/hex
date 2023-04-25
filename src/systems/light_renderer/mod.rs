@@ -97,9 +97,9 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             .and_then(|t| t.active.then_some(t))?,
                     ))
                 }) {
-                    target.fill(&buffer.as_surface(), self.filter);
-
                     for (m, t) in &models {
+                        target.fill(&buffer.as_surface(), self.filter);
+
                         let (mesh, ma, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let u = uniform! {
