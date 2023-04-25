@@ -2,6 +2,7 @@ use crate::{
     assets::Shader,
     components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
+    math::Vec2d,
 };
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
@@ -86,11 +87,8 @@ impl<'a> System<'a> for LightRenderer<'a> {
                     models
                 };
 
-                let buffer = {
-                    let (x, y) = target.get_dimensions();
-
-                    Texture2d::empty(&scene.display, x, y)?
-                };
+                let (surface_width, surface_height) = target.get_dimensions();
+                let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
 
                 for (l, lt) in em.entities.keys().cloned().filter_map(|e| {
                     Some((
@@ -106,6 +104,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
                         let (v, i) = &*mesh.buffer;
                         let u = uniform! {
                             buffer: Sampler(&buffer, self.sampler_behavior),
+                            screen_dims: Vec2d::new(surface_width as f32, surface_height as f32).0,
                             transform: t.matrix().0,
                             camera_transform: ct.matrix().0,
                             camera_view: c.view().0,

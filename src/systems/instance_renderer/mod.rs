@@ -124,9 +124,9 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                         Some(texture) => {
                             let (uv, buffer) = &*texture.buffer;
                             let u = uniform! {
+                                buffer: Sampler(buffer, texture.sampler_behaviour),
                                 camera_transform: ct.matrix().0,
                                 camera_view: c.view().0,
-                                tex: Sampler(buffer, texture.sampler_behaviour),
                             };
 
                             target.draw(
