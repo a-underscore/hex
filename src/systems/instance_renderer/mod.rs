@@ -8,7 +8,7 @@ use crate::{
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
 };
 use glium::{
-    draw_parameters::{Blend, DepthTest},
+    draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     uniform,
     uniforms::Sampler,
     Depth, Display, DrawParameters, Surface, VertexBuffer,
@@ -31,6 +31,7 @@ impl<'a> InstanceRenderer<'a> {
                     ..Default::default()
                 },
                 blend: Blend::alpha_blending(),
+                backface_culling: BackfaceCullingMode::CullClockwise,
                 ..Default::default()
             },
             texture_shader: Shader::new(
