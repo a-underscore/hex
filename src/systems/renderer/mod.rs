@@ -95,8 +95,8 @@ impl<'a> System<'a> for Renderer<'a> {
                                 transform: t.matrix().0,
                                 camera_transform: ct.matrix().0,
                                 camera_view: c.view().0,
+                                buffer: Sampler(buffer, texture.sampler_behaviour),
                                 color: m.color.0,
-                                tex: Sampler(buffer, texture.sampler_behaviour),
                             };
 
                             target.draw(

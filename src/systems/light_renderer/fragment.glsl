@@ -4,7 +4,6 @@ in vec3 v_pos;
 in vec3 v_normal;
 
 uniform sampler2D buffer;
-
 uniform vec2 screen_dims;
 uniform vec3 light_color;
 uniform vec3 light_pos;

@@ -103,12 +103,11 @@ impl<'a> System<'a> for LightRenderer<'a> {
                         let (mesh, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let u = uniform! {
-                            buffer: Sampler(&buffer, self.sampler_behavior),
-                            screen_dims: Vec2d::new(surface_width as f32, surface_height as f32).0,
                             transform: t.matrix().0,
                             camera_transform: ct.matrix().0,
                             camera_view: c.view().0,
-                            color: m.color.0,
+                            buffer: Sampler(&buffer, self.sampler_behavior),
+                            screen_dims: Vec2d::new(surface_width as f32, surface_height as f32).0,
                             light_color: l.color.0,
                             light_strength: l.strength,
                             light_position: lt.position().0,
