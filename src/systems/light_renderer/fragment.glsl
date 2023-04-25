@@ -20,9 +20,12 @@ vec3 specular(vec3);
 
 void main(void) {
 	vec4 texture = texture(buffer, gl_FragCoord.xy / screen_dims);
+	vec3 a = ambient();
 	vec3 light_dir = normalize(light_position - v_pos);
+	vec3 d = diffuse(light_dir);
+	vec3 s = specular(light_dir);
 
-	gl_FragColor = vec4(light_strength * texture.xyz * (ambient() + diffuse(light_dir) + specular(light_dir)), texture.w);
+	gl_FragColor = vec4(light_strength * texture.xyz * (a + d + s), texture.w);
 }
 
 vec3 ambient(void) {

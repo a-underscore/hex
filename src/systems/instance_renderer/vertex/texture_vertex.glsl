@@ -6,8 +6,6 @@ in vec3 position;
 in vec3 normal;
 in vec2 uv;
 
-out vec3 v_pos;
-out vec3 v_normal;
 out vec2 v_uv;
 out vec4 v_color;
 
@@ -21,8 +19,5 @@ void main(void) {
 
         gl_Position = pos * camera_view;
 
-	v_pos = vec3(pos);
-	v_normal = normalize(mat3(transpose(inverse(view))) * normal);
-	v_uv = uv;
 	v_color = color;
 }

@@ -5,8 +5,6 @@ in vec4 color;
 in vec3 position;
 in vec3 normal;
 
-out vec3 v_pos;
-out vec3 v_normal;
 out vec4 v_color;
 
 uniform mat4 camera_transform;
@@ -19,7 +17,5 @@ void main(void) {
 
         gl_Position = pos * camera_view;
 
-	v_pos = vec3(pos);
-	v_normal = normalize(mat3(transpose(inverse(view))) * normal);
 	v_color = color;
 }

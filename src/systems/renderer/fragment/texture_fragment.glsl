@@ -1,7 +1,5 @@
 #version 330
 
-in vec3 v_pos;
-in vec3 v_normal;
 in vec2 v_uv;
 
 uniform sampler2D buffer;

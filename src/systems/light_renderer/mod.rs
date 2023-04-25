@@ -115,7 +115,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             ambient_strength: 1.0_f32,
                             diffuse_strength: 1.0_f32,
                             specular_strength: 1.0_f32,
-                            reflectivity: 16.0_f32,
+                            reflectivity: 4.0_f32,
                         };
 
                         target
