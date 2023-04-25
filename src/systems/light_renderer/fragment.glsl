@@ -11,9 +11,9 @@ uniform float light_strength;
 
 void main(void) {
 	vec3 ambient = light_strength * light_color;
-	vec3 light_dir = normalize(v_pos - light_pos);
+	vec3 light_dir = normalize(light_pos - v_pos);
 	vec3 diffuse = max(dot(v_normal, light_dir), 0.0) * light_color;
 	vec4 texture = texture(buffer, gl_FragCoord.xy / screen_dims);
 
-	gl_FragColor = vec4(1.0 / min(ambient + diffuse, 1.0) * texture.rgb, texture.w);
+	gl_FragColor = vec4(ambient * texture.rgb + diffuse, texture.w);
 }
