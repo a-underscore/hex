@@ -100,7 +100,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
                     target.fill(&buffer.as_surface(), self.filter);
 
                     for (m, t) in &models {
-                        let (mesh, _) = &*m.data;
+                        let (mesh, ma, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let u = uniform! {
                             buffer: Sampler(&buffer, self.sampler_behavior),
@@ -112,10 +112,10 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             light_position: lt.position().0,
                             screen_dims: Vec2d::new(surface_width as f32, surface_height as f32).0,
                             light_strength: l.strength,
-                            ambient_strength: 1.0_f32,
-                            diffuse_strength: 1.0_f32,
-                            specular_strength: 1.0_f32,
-                            reflectivity: 4.0_f32,
+                            ambient_strength: ma.ambient,
+                            diffuse_strength: ma.diffuse,
+                            specular_strength: ma.specular,
+                            reflect_strength: ma.reflect,
                         };
 
                         target

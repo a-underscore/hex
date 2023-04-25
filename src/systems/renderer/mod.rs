@@ -85,7 +85,7 @@ impl<'a> System<'a> for Renderer<'a> {
                 };
 
                 for (m, t) in models {
-                    let (mesh, texture) = &*m.data;
+                    let (mesh, ma, texture) = &*m.data;
                     let (v, i) = &*mesh.buffer;
 
                     match texture {
@@ -96,7 +96,7 @@ impl<'a> System<'a> for Renderer<'a> {
                                 camera_transform: ct.matrix().0,
                                 camera_view: c.view().0,
                                 buffer: Sampler(buffer, texture.sampler_behaviour),
-                                color: m.color.0,
+                                color: ma.color.0,
                             };
 
                             target.draw(
@@ -112,7 +112,7 @@ impl<'a> System<'a> for Renderer<'a> {
                                 transform: t.matrix().0,
                                 camera_transform: ct.matrix().0,
                                 camera_view: c.view().0,
-                                color: m.color.0,
+                                color: ma.color.0,
                             };
 
                             target.draw(

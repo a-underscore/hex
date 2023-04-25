@@ -80,8 +80,9 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                         })
                         .fold(BTreeMap::new(), |mut acc, d @ (i, t)| {
                             let entry = acc.entry(Rc::as_ptr(&i.data)).or_insert(Vec::new());
+                            let (_, m, _) = &*i.data;
 
-                            entry.push((i.data.clone(), InstanceData::new(t.matrix(), i.color), d));
+                            entry.push((i.data.clone(), InstanceData::new(t.matrix(), m.color), d));
 
                             acc
                         })
@@ -110,7 +111,7 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                 };
 
                 for ((instance, _, _), instances) in models {
-                    let (m, t) = &*instance;
+                    let (m, _, t) = &*instance;
                     let (v, i) = &*m.buffer;
                     let instance_buffer = {
                         let i: Vec<_> = instances.into_iter().map(|(_, i, _)| i).collect();

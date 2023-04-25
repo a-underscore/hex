@@ -12,7 +12,7 @@ uniform float light_strength;
 uniform float ambient_strength;
 uniform float specular_strength;
 uniform float diffuse_strength;
-uniform float reflectivity;
+uniform float reflect_strength;
 
 vec3 ambient(void);
 vec3 diffuse(vec3);
@@ -40,7 +40,7 @@ vec3 specular(vec3 light_dir) {
 	vec3 camera_dir = normalize(camera_position - v_pos);
 	vec3 reflect_dir = reflect(-light_dir, v_normal);
 
-	float spec = pow(max(dot(camera_dir, reflect_dir), 0.0), reflectivity);
+	float spec = pow(max(dot(camera_dir, reflect_dir), 0.0), reflect_strength);
 
 	return specular_strength * spec * light_color;
 }
