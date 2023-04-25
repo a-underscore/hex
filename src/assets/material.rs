@@ -1,5 +1,6 @@
 use crate::math::Vec4d;
 
+#[derive(Clone)]
 pub struct Material {
     pub color: Vec4d,
     pub ambient: f32,
