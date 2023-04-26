@@ -4,6 +4,7 @@ in vec3 v_pos;
 in vec3 v_normal;
 
 uniform sampler2D buffer;
+uniform sampler2D shadow_buffer;
 uniform vec3 camera_position;
 uniform vec3 light_color;
 uniform vec3 light_position;

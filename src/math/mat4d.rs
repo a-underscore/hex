@@ -48,6 +48,19 @@ impl Mat4d {
         )
     }
 
+    pub fn look_at(eye: Vec3d, dir: Vec3d, up: Vec3d) -> Self {
+        let f = dir.normal();
+        let s = f.cross(up).normal();
+        let u = s.cross(f);
+
+        Mat4d::new(
+            [s.x(), s.y(), s.z(), 0.0],
+            [u.x(), u.y(), u.z(), 0.0],
+            [-f.x(), -f.y(), -f.z(), 0.0],
+            [-eye.dot(s), -eye.dot(u), eye.dot(f), 1.0],
+        )
+    }
+
     pub fn translation(translation: Vec3d) -> Self {
         Self::new(
             [1.0, 0.0, 0.0, translation.x()],

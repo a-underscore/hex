@@ -12,22 +12,28 @@ use crate::{
 pub struct Camera {
     proj: Proj,
     view: Mat4d,
+    pub main: bool,
     pub active: bool,
 }
 
 impl Camera {
-    pub fn new(proj: Proj, active: bool) -> Self {
+    pub fn new(proj: Proj, main: bool, active: bool) -> Self {
         let view = proj.view();
 
-        Self { proj, view, active }
+        Self {
+            proj,
+            view,
+            main,
+            active,
+        }
     }
 
-    pub fn perspective(fov: f32, aspect: f32, clip: Vec2d, active: bool) -> Self {
-        Self::new(Proj::Perspective((fov, aspect, clip)), active)
+    pub fn perspective(fov: f32, aspect: f32, clip: Vec2d, main: bool, active: bool) -> Self {
+        Self::new(Proj::Perspective((fov, aspect, clip)), main, active)
     }
 
-    pub fn ortho(dims: Vec3d, active: bool) -> Self {
-        Self::new(Proj::Ortho(dims), active)
+    pub fn ortho(dims: Vec3d, main: bool, active: bool) -> Self {
+        Self::new(Proj::Ortho(dims), main, active)
     }
 
     pub fn proj(&self) -> &Proj {

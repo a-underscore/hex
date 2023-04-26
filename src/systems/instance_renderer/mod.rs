@@ -61,7 +61,7 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
             if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e, em)
-                        .and_then(|c| c.active.then_some(c))?,
+                        .and_then(|c| (c.active && c.main).then_some(c))?,
                     cm.get::<Transform>(e, em)
                         .and_then(|t| t.active.then_some(t))?,
                 ))
