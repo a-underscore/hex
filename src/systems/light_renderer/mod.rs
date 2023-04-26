@@ -47,7 +47,7 @@ impl<'a> LightRenderer<'a> {
                     write: true,
                     ..Default::default()
                 },
-                backface_culling: BackfaceCullingMode::CullClockwise,
+                backface_culling: BackfaceCullingMode::CullCounterClockwise,
                 ..Default::default()
             },
             shadow_shader: Shader::new(
@@ -112,12 +112,13 @@ impl<'a> System<'a> for LightRenderer<'a> {
                 let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
                 let shadow_buffer =
                     DepthTexture2d::empty(&scene.display, surface_width, surface_height)?;
+                let mut target = SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
 
                 for (l, lc, lt) in em.entities.keys().cloned().filter_map(|e| {
                     Some((
                         cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l))?,
                         cm.get::<Camera>(e, em)
-                            .and_then(|c| (c.active && !c.main).then_some(c))?,
+                            .and_then(|c| c.active.then_some(c))?,
                         cm.get::<Transform>(e, em)
                             .and_then(|t| t.active.then_some(t))?,
                     ))
@@ -130,8 +131,6 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             light_proj: lc.proj().0,
                             light_transform: lt.matrix().0,
                         };
-                        let mut target =
-                            SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
 
                         target.clear_depth(1.0);
                         target.draw(
