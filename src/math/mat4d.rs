@@ -79,43 +79,37 @@ impl Mat4d {
         )
     }
 
-    pub fn rotation_x(rotation: f32) -> Self {
-        let (sin, cos) = rotation.sin_cos();
-
-        Self::new(
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, cos, -sin, 0.0],
-            [0.0, sin, cos, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        )
+    pub fn rotation_xyz(rotation: Vec3d) -> Self {
+        Self::rotation(rotation.x(), Vec3d::new(1.0, 0.0, 0.0))
+            * Self::rotation(rotation.y(), Vec3d::new(0.0, 1.0, 0.0))
+            * Self::rotation(rotation.z(), Vec3d::new(0.0, 0.0, 1.0))
     }
 
-    pub fn rotation_y(rotation: f32) -> Self {
-        let (sin, cos) = rotation.sin_cos();
+    pub fn rotation(angle: f32, axis: Vec3d) -> Self {
+        let (s, c) = angle.sin_cos();
+        let sub_c = 1.0 - c;
 
         Self::new(
-            [cos, 0.0, sin, 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [-sin, 0.0, cos, 0.0],
+            [
+                sub_c * axis.x() * axis.x() + c,
+                sub_c * axis.x() * axis.y() + s * axis.z(),
+                sub_c * axis.x() * axis.z() - s * axis.y(),
+                0.0,
+            ],
+            [
+                sub_c * axis.x() * axis.y() - s * axis.z(),
+                sub_c * axis.y() * axis.y() + c,
+                sub_c * axis.y() * axis.z() + s * axis.x(),
+                0.0,
+            ],
+            [
+                sub_c * axis.x() * axis.z() + s * axis.y(),
+                sub_c * axis.y() * axis.z() - s * axis.x(),
+                sub_c * axis.z() * axis.z() + c,
+                0.0,
+            ],
             [0.0, 0.0, 0.0, 1.0],
         )
-    }
-
-    pub fn rotation_z(rotation: f32) -> Self {
-        let (sin, cos) = rotation.sin_cos();
-
-        Self::new(
-            [cos, -sin, 0.0, 0.0],
-            [sin, cos, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        )
-    }
-
-    pub fn rotation(rotation: Vec3d) -> Self {
-        Self::rotation_x(rotation.x())
-            * Self::rotation_y(rotation.y())
-            * Self::rotation_z(rotation.z())
     }
 }
 

@@ -127,14 +127,13 @@ impl<'a> System<'a> for LightRenderer<'a> {
                         let (v, i) = &*mesh.buffer;
                         let u = uniform! {
                             transform: t.matrix().0,
-                            light_view: (lc.view() * Mat4d::look_at(lt.position(), t.position(), Vec3d::new(0.0, 1.0, 0.0))).0,
+                            light_proj: lc.proj().0,
                             light_transform: lt.matrix().0,
                         };
                         let mut target =
                             SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
 
                         target.clear_depth(1.0);
-
                         target.draw(
                             v,
                             i.source(),
@@ -152,7 +151,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
                         let u = uniform! {
                             transform: t.matrix().0,
                             camera_transform: ct.matrix().0,
-                            camera_view: c.view().0,
+                            camera_proj: c.proj().0,
                             buffer: Sampler(&buffer, self.sampler_behavior),
                             camera_position: ct.position().0,
                             light_color: l.color.0,

@@ -1,13 +1,13 @@
 use crate::math::{Mat4d, Vec2d, Vec3d};
 
 #[derive(Clone)]
-pub enum Proj {
+pub enum ProjType {
     Perspective((f32, f32, Vec2d)),
     Ortho(Vec3d),
 }
 
-impl Proj {
-    pub fn view(&self) -> Mat4d {
+impl ProjType {
+    pub fn proj(&self) -> Mat4d {
         match self {
             Self::Perspective((fov, aspect, clip)) => {
                 Mat4d::perspective(*fov, *aspect, clip.x(), clip.y())
