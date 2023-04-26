@@ -79,7 +79,7 @@ impl<'a> System<'a> for Renderer<'a> {
                         z: s.z,
                         transform: t.matrix().0,
                         camera_transform: ct.matrix().0,
-                        camera_view: c.view().0,
+                        camera_proj: c.proj().0,
                         color: s.color,
                         tex: Sampler(&*s.texture.buffer, s.texture.sampler_behaviour),
                     };

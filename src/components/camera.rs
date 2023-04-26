@@ -7,15 +7,14 @@ use crate::{
 #[derive(Clone)]
 pub struct Camera {
     dimensions: (Vec2d, f32),
-    view: Ortho,
+    proj: Ortho,
     pub active: bool,
 }
-
 impl Camera {
     pub fn new(dimensions: (Vec2d, f32), active: bool) -> Self {
         Self {
             dimensions,
-            view: Self::calculate_view(dimensions),
+            proj: Self::calculate_proj(dimensions),
             active,
         }
     }
@@ -27,18 +26,18 @@ impl Camera {
     pub fn set_dimensions(&mut self, dimensions: (Vec2d, f32)) {
         self.dimensions = dimensions;
 
-        self.update_view();
+        self.update_proj();
     }
 
-    pub fn view(&self) -> Ortho {
-        self.view
+    pub fn proj(&self) -> Ortho {
+        self.proj
     }
 
-    pub fn update_view(&mut self) {
-        self.view = Self::calculate_view(self.dimensions);
+    pub fn update_proj(&mut self) {
+        self.proj = Self::calculate_proj(self.dimensions);
     }
 
-    pub fn calculate_view((v, z): (Vec2d, f32)) -> Ortho {
+    pub fn calculate_proj((v, z): (Vec2d, f32)) -> Ortho {
         let v = v / 2.0;
         let z = z / 2.0;
 
