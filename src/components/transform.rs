@@ -63,11 +63,7 @@ impl Transform {
     }
 
     pub fn calculate_matrix(position: Vec3d, rotation: Vec3d, scale: Vec3d) -> Mat4d {
-        Mat4d::translation(position)
-            * Mat4d::rotation_x(rotation.x())
-            * Mat4d::rotation_y(rotation.y())
-            * Mat4d::rotation_z(rotation.z())
-            * Mat4d::scale(scale)
+        Mat4d::translation(position) * Mat4d::rotation(rotation) * Mat4d::scale(scale)
     }
 }
 

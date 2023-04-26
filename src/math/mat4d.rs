@@ -111,6 +111,12 @@ impl Mat4d {
             [0.0, 0.0, 0.0, 1.0],
         )
     }
+
+    pub fn rotation(rotation: Vec3d) -> Self {
+        Self::rotation_x(rotation.x())
+            * Self::rotation_y(rotation.y())
+            * Self::rotation_z(rotation.z())
+    }
 }
 
 impl Mul<f32> for Mat4d {
