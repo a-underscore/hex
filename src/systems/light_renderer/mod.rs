@@ -174,6 +174,8 @@ impl<'a> System<'a> for LightRenderer<'a> {
                         )?;
                     }
                 }
+
+                todo!();
             }
         }
 
