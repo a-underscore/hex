@@ -112,7 +112,10 @@ impl<'a> System<'a> for LightRenderer<'a> {
                 let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
                 let shadow_buffer =
                     DepthTexture2d::empty(&scene.display, surface_width, surface_height)?;
-                let mut target = SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
+                let mut shadow_target =
+                    SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
+
+                shadow_target.clear_depth(1.0);
 
                 for (l, lc, lt) in em.entities.keys().cloned().filter_map(|e| {
                     Some((
@@ -132,8 +135,7 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             light_transform: lt.matrix().0,
                         };
 
-                        target.clear_depth(1.0);
-                        target.draw(
+                        shadow_target.draw(
                             v,
                             i.source(),
                             &self.shadow_shader.program,
