@@ -28,9 +28,9 @@ void main(void) {
 	vec3 light_dir = normalize(light_position - v_pos);
 	vec3 d = diffuse(light_dir);
 	vec3 s = specular(light_dir);
-	float shadow = shadow();
+	vec3 lum = light_strength * texture.xyz * (shadow() * (s + d) + a);
 
-	gl_FragColor = vec4(shadow * light_strength * texture.xyz * (d + s) + a, texture.w);
+	gl_FragColor = vec4(lum, texture.w);
 }
 
 vec3 ambient(void) {

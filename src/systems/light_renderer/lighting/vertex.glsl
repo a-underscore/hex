@@ -14,15 +14,15 @@ uniform mat4 light_proj;
 uniform mat4 light_transform;
 
 void main(void) {
-	mat4 model =  transform * inverse(camera_transform);
+	mat4 view = transform * inverse(camera_transform);
 
-        vec4 pos = vec4(position, 1.0) * model;
+        vec4 pos = vec4(position, 1.0) * view;
 
         gl_Position = pos * camera_proj;
 
 	mat4 depth =  transform * inverse(light_transform);
 
-	v_pos = vec3(pos);
+	v_pos = vec3(vec4(position, 1.0) * transform);
 	v_normal = normalize(normal * mat3(transpose(inverse(transform))));
 	v_shadow = vec4(position, 1.0) * depth;
 }
