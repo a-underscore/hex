@@ -2,7 +2,7 @@ use crate::{
     assets::Shader,
     components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
-    math::{Mat4d, Vec2d, Vec3d},
+    math::Vec2d,
 };
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
@@ -114,16 +114,28 @@ impl<'a> System<'a> for LightRenderer<'a> {
                     DepthTexture2d::empty(&scene.display, surface_width, surface_height)?;
                 let mut shadow_target =
                     SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
+                let lights = em
+                    .entities
+                    .keys()
+                    .cloned()
+                    .filter_map(|e| {
+                        Some((
+                            e,
+                            cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l))?,
+                            cm.get::<Transform>(e, em)
+                                .and_then(|t| t.active.then_some(t))?,
+                        ))
+                    })
+                    .collect::<Vec<_>>();
 
                 shadow_target.clear_depth(1.0);
 
-                for (l, lc, lt) in em.entities.keys().cloned().filter_map(|e| {
+                for (lc, _, lt) in lights.iter().filter_map(|(e, l, lt)| {
                     Some((
-                        cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l))?,
-                        cm.get::<Camera>(e, em)
+                        cm.get::<Camera>(*e, em)
                             .and_then(|c| c.active.then_some(c))?,
-                        cm.get::<Transform>(e, em)
-                            .and_then(|t| t.active.then_some(t))?,
+                        l,
+                        lt,
                     ))
                 }) {
                     for (m, t) in &models {
@@ -143,10 +155,13 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             &self.shadow_draw_parameters,
                         )?;
                     }
+                }
 
+                for (_, l, lt) in &lights {
                     for (m, t) in &models {
                         target.fill(&buffer.as_surface(), self.filter);
 
+                        let (shadow_width, shadow_height) = self.shadow_dims;
                         let (mesh, ma, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let u = uniform! {
@@ -154,15 +169,18 @@ impl<'a> System<'a> for LightRenderer<'a> {
                             camera_transform: ct.matrix().0,
                             camera_proj: c.proj().0,
                             buffer: Sampler(&buffer, self.sampler_behavior),
+                            shadow_buffer: Sampler(&shadow_buffer, self.sampler_behavior),
                             camera_position: ct.position().0,
                             light_color: l.color.0,
                             light_position: lt.position().0,
                             screen_dims: Vec2d::new(surface_width as f32, surface_height as f32).0,
+                            shadow_dims: Vec2d::new(shadow_width as f32, shadow_height as f32).0,
                             light_strength: l.strength,
                             ambient_strength: ma.ambient,
                             diffuse_strength: ma.diffuse,
                             specular_strength: ma.specular,
                             reflect_strength: ma.reflect,
+                            bias: ma.bias,
                         };
 
                         target.draw(
