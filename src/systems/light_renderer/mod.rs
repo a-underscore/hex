@@ -107,13 +107,6 @@ impl<'a> System<'a> for LightRenderer<'a> {
 
                     models
                 };
-
-                let (surface_width, surface_height) = target.get_dimensions();
-                let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
-                let shadow_buffer =
-                    DepthTexture2d::empty(&scene.display, surface_width, surface_height)?;
-                let mut shadow_target =
-                    SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
                 let lights = em
                     .entities
                     .keys()
@@ -127,6 +120,12 @@ impl<'a> System<'a> for LightRenderer<'a> {
                         ))
                     })
                     .collect::<Vec<_>>();
+                let (surface_width, surface_height) = target.get_dimensions();
+                let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
+                let shadow_buffer =
+                    DepthTexture2d::empty(&scene.display, surface_width, surface_height)?;
+                let mut shadow_target =
+                    SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
 
                 shadow_target.clear_depth(1.0);
 
