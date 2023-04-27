@@ -30,7 +30,7 @@ void main(void) {
 	vec3 s = specular(light_dir);
 	float shadow = shadow();
 
-	gl_FragColor = vec4(max(shadow * light_strength * texture.xyz * (d + s), a), texture.w);
+	gl_FragColor = vec4(shadow * light_strength * texture.xyz * (d + s) + a, texture.w);
 }
 
 vec3 ambient(void) {
