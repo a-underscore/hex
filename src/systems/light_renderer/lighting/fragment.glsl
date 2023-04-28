@@ -5,7 +5,7 @@ in vec3 v_normal;
 in vec4 v_shadow;
 
 uniform sampler2D buffer;
-uniform sampler2DShadow shadow_buffer;
+uniform sampler2D shadow_buffer;
 uniform vec3 camera_position;
 uniform vec3 light_color;
 uniform vec3 light_position;
@@ -23,14 +23,14 @@ vec3 specular(vec3);
 float shadow(void);
 
 void main(void) {
-	vec4 texture = texture(buffer, gl_FragCoord.xy / screen_dims);
+	vec4 t = texture(buffer, gl_FragCoord.xy / screen_dims);
 	vec3 a = ambient();
 	vec3 light_dir = normalize(light_position - v_pos);
 	vec3 d = diffuse(light_dir);
 	vec3 s = specular(light_dir);
-	vec3 lum = light_strength * texture.xyz * (shadow() * (s + d) + a);
+	vec3 lum = shadow() * light_strength * t.xyz * (s + d + a);
 
-	gl_FragColor = vec4(lum, texture.w);
+	gl_FragColor = vec4(vec3(shadow()), t.w);
 }
 
 vec3 ambient(void) {
@@ -51,7 +51,11 @@ vec3 specular(vec3 light_dir) {
 }
 
 float shadow(void) {
-	float vis = texture(shadow_buffer, vec3(v_shadow.xy, (v_shadow.z - bias) / v_shadow.w));
+	vec3 proj_coords = v_shadow.xyz / v_shadow.w;
 
-	return vis;
+	proj_coords = proj_coords * 0.5 + 0.5;
+
+	float depth = texture(shadow_buffer, proj_coords.xy).r;
+
+	return proj_coords.z > depth ? 1.0 : 0.0;
 }
