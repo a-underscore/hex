@@ -2,7 +2,7 @@ use crate::{
     assets::Shader,
     components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
-    math::{Mat4d, Vec2d},
+    math::Vec2d,
 };
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
@@ -64,7 +64,10 @@ impl<'a> LightRenderer<'a> {
                 include_str!("shadow/fragment.glsl"),
                 None,
             )?,
-            shadow_sampler_behavior: lighting_sampler_behavior,
+            shadow_sampler_behavior: SamplerBehavior {
+                depth_texture_comparison: Some(DepthTextureComparison::LessOrEqual),
+                ..lighting_sampler_behavior
+            },
             filter,
             shadow_dims,
         })

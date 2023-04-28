@@ -30,7 +30,7 @@ void main(void) {
 	vec3 s = specular(light_dir);
 	vec3 lum = shadow() * light_strength * t.xyz * (s + d + a);
 
-	gl_FragColor = vec4(vec3(shadow()), t.w);
+	gl_FragColor = vec4(vec3(lum), t.w);
 }
 
 vec3 ambient(void) {
@@ -57,5 +57,5 @@ float shadow(void) {
 
 	float depth = texture(shadow_buffer, proj_coords.xy).r;
 
-	return proj_coords.z > depth ? 1.0 : 0.0;
+	return proj_coords.z > depth ? 0.0 : 1.0;
 }
