@@ -1,7 +1,6 @@
 pub mod assets;
 pub mod components;
 pub mod ecs;
-pub mod id;
 pub mod math;
 pub mod renderer;
 
