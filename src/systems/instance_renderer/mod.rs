@@ -127,7 +127,7 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                             let (uv, buffer) = &*texture.buffer;
                             let u = uniform! {
                                 camera_transform: ct.matrix().0,
-                                camera_proj: c.proj().0,
+                                camera_proj: c.matrix().0,
                                 buffer: Sampler(buffer, texture.sampler_behaviour),
                             };
 
@@ -142,7 +142,7 @@ impl<'a> System<'a> for InstanceRenderer<'a> {
                         None => {
                             let u = uniform! {
                                 camera_transform: ct.matrix().0,
-                                camera_proj: c.proj().0,
+                                camera_proj: c.matrix().0,
                             };
 
                             target.draw(

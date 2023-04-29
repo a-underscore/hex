@@ -94,7 +94,7 @@ impl<'a> System<'a> for Renderer<'a> {
                             let u = uniform! {
                                 transform: t.matrix().0,
                                 camera_transform: ct.matrix().0,
-                                camera_proj: c.proj().0,
+                                camera_proj: c.matrix().0,
                                 buffer: Sampler(buffer, texture.sampler_behaviour),
                                 color: ma.color.0,
                             };
@@ -111,7 +111,7 @@ impl<'a> System<'a> for Renderer<'a> {
                             let u = uniform! {
                                 transform: t.matrix().0,
                                 camera_transform: ct.matrix().0,
-                                camera_proj: c.proj().0,
+                                camera_proj: c.matrix().0,
                                 color: ma.color.0,
                             };
 

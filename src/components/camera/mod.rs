@@ -1,6 +1,6 @@
-pub mod proj_type;
+pub mod proj;
 
-pub use proj_type::ProjType;
+pub use proj::Proj;
 
 use crate::{
     ecs::{component_manager::Component, Id},
@@ -10,48 +10,48 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Camera {
-    proj_type: ProjType,
-    proj: Mat4d,
+    proj: Proj,
+    matrix: Mat4d,
     pub main: bool,
     pub active: bool,
 }
 
 impl Camera {
-    pub fn new(proj_type: ProjType, main: bool, active: bool) -> Self {
-        let proj = proj_type.proj();
+    pub fn new(proj: Proj, main: bool, active: bool) -> Self {
+        let matrix = proj.matrix();
 
         Self {
-            proj_type,
             proj,
+            matrix,
             main,
             active,
         }
     }
 
     pub fn perspective(fov: f32, aspect: f32, clip: Vec2d, main: bool, active: bool) -> Self {
-        Self::new(ProjType::Perspective((fov, aspect, clip)), main, active)
+        Self::new(Proj::Perspective((fov, aspect, clip)), main, active)
     }
 
     pub fn ortho(dims: Vec3d, main: bool, active: bool) -> Self {
-        Self::new(ProjType::Ortho(dims), main, active)
+        Self::new(Proj::Ortho(dims), main, active)
     }
 
-    pub fn proj_type(&self) -> &ProjType {
-        &self.proj_type
+    pub fn proj(&self) -> &Proj {
+        &self.proj
     }
 
-    pub fn set_proj_type(&mut self, proj_type: ProjType) {
-        self.proj_type = proj_type;
+    pub fn set_proj(&mut self, proj: Proj) {
+        self.proj = proj;
 
-        self.update_proj()
+        self.update_matrix()
     }
 
-    pub fn proj(&self) -> Mat4d {
-        self.proj
+    pub fn matrix(&self) -> Mat4d {
+        self.matrix
     }
 
-    pub fn update_proj(&mut self) {
-        self.proj = self.proj_type.proj();
+    pub fn update_matrix(&mut self) {
+        self.matrix = self.proj.matrix();
     }
 }
 

@@ -2,7 +2,7 @@ use crate::{
     assets::Shader,
     components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
-    math::Vec2d,
+    math::{Mat4d, Vec2d},
 };
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
@@ -28,8 +28,8 @@ impl<'a> LightRenderer<'a> {
     pub fn new(
         display: &Display,
         lighting_sampler_behavior: SamplerBehavior,
-        filter: MagnifySamplerFilter,
         shadow_dims: (u32, u32),
+        filter: MagnifySamplerFilter,
     ) -> anyhow::Result<Self> {
         Ok(Self {
             lighting_draw_parameters: DrawParameters {
@@ -112,40 +112,33 @@ impl<'a> System<'a> for LightRenderer<'a> {
 
                     models
                 };
-                let lights = em
-                    .entities
-                    .keys()
-                    .cloned()
-                    .filter_map(|e| {
-                        Some((
-                            cm.get::<Camera>(e, em)
-                                .and_then(|lc| lc.active.then_some(lc))?,
-                            cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l))?,
-                            cm.get::<Transform>(e, em)
-                                .and_then(|t| t.active.then_some(t))?,
-                        ))
-                    })
-                    .collect::<Vec<_>>();
                 let (surface_width, surface_height) = target.get_dimensions();
+                let (shadow_width, shadow_height) = self.shadow_dims;
+                let shadow_buffer =
+                    DepthTexture2d::empty(&scene.display, shadow_width, shadow_height)?;
+                let mut shadow_target =
+                    SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
 
-                for (lc, l, lt) in &lights {
+                shadow_target.clear_color(1.0, 1.0, 1.0, 1.0);
+                shadow_target.clear_depth(1.0);
+
+                for (l, lc) in em.entities.keys().cloned().filter_map(|e| {
+                    Some((
+                        cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l))?,
+                        cm.get::<Camera>(e, em)
+                            .and_then(|l| l.active.then_some(l))?,
+                    ))
+                }) {
                     let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
-                    let (shadow_width, shadow_height) = self.shadow_dims;
-                    let shadow_buffer =
-                        DepthTexture2d::empty(&scene.display, shadow_width, shadow_height)?;
-                    let mut shadow_target =
-                        SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
-
-                    shadow_target.clear_color(1.0, 1.0, 1.0, 1.0);
-                    shadow_target.clear_depth(1.0);
+                    let view = Mat4d::translation(l.position);
 
                     for (m, t) in &models {
                         let (mesh, _, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let u = uniform! {
                             transform: t.matrix().0,
-                            light_proj: lc.proj().0,
-                            light_transform: lt.matrix().0,
+                            light_proj: lc.matrix().0,
+                            light_transform: view.0,
                         };
 
                         shadow_target.draw(
@@ -165,14 +158,14 @@ impl<'a> System<'a> for LightRenderer<'a> {
                         let u = uniform! {
                             transform: t.matrix().0,
                             camera_transform: ct.matrix().0,
-                            camera_proj: c.proj().0,
-                            light_transform: lt.matrix().0,
-                            light_proj: lc.proj().0,
+                            camera_proj: c.matrix().0,
+                            light_transform: view.0,
+                            light_proj: lc.matrix().0,
                             buffer: Sampler(&buffer, self.lighting_sampler_behavior),
                             shadow_buffer: Sampler(&shadow_buffer, self.shadow_sampler_behavior),
                             camera_position: ct.position().0,
                             light_color: l.color.0,
-                            light_position: lt.position().0,
+                            light_position: l.position.0,
                             screen_dims: Vec2d::new(surface_width as f32, surface_height as f32).0,
                             light_strength: l.strength,
                             ambient_strength: ma.ambient,
