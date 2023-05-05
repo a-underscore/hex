@@ -35,12 +35,12 @@ impl<'a> SystemManager<'a> {
 
     pub fn update(
         &mut self,
-        event: &mut Ev,
+        ev: &mut Ev,
         scene: &mut Scene,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.update(event, scene, (em, cm))?;
+            s.update(ev, scene, (em, cm))?;
         }
 
         Ok(())
