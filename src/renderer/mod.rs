@@ -41,11 +41,11 @@ impl<'a> Renderer<'a> {
 impl<'a> System<'a> for Renderer<'a> {
     fn update(
         &mut self,
-        event: &mut Ev,
+        ev: &mut Ev,
         _: &mut Scene,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
-        if let Ev::Draw((_, target)) = event {
+        if let Ev::Draw((_, target)) = ev {
             if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e, em)
