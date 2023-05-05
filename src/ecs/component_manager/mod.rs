@@ -50,7 +50,7 @@ impl<'a> ComponentManager<'a> {
     }
 
     pub fn get_gen(&self, eid: Id, cid: Id, em: &EntityManager) -> Option<(Id, &dyn Generic<'a>)> {
-        self.get_gen_cache_id(eid, cid, em)
+        self.get_gen_id(eid, cid, em)
             .and_then(|cid| self.get_gen_cache(cid))
     }
 
@@ -67,7 +67,7 @@ impl<'a> ComponentManager<'a> {
         cid: Id,
         em: &EntityManager,
     ) -> Option<(Id, &mut dyn Generic<'a>)> {
-        self.get_gen_cache_id(eid, cid, em)
+        self.get_gen_id(eid, cid, em)
             .and_then(|cid| self.get_gen_cache_mut(cid))
     }
 
@@ -78,15 +78,15 @@ impl<'a> ComponentManager<'a> {
         self.get_gen_mut(eid, C::id(), em).and_then(Self::cast_mut)
     }
 
-    pub fn get_gen_cache_id(&self, eid: Id, cid: Id, em: &EntityManager) -> Option<Id> {
+    pub fn get_gen_id(&self, eid: Id, cid: Id, em: &EntityManager) -> Option<Id> {
         em.get(eid)?.get(&cid).copied()
     }
 
-    pub fn get_cache_id<C>(&self, eid: Id, em: &EntityManager) -> Option<Id>
+    pub fn get_id<C>(&self, eid: Id, em: &EntityManager) -> Option<Id>
     where
         C: Component,
     {
-        self.get_gen_cache_id(eid, C::id(), em)
+        self.get_gen_id(eid, C::id(), em)
     }
 
     pub fn get_gen_cache(&self, cid: Id) -> Option<(Id, &dyn Generic<'a>)> {
