@@ -4,7 +4,7 @@ pub mod generic;
 pub use component::Component;
 pub use generic::Generic;
 
-use super::{EntityManager, Id};
+use super::{id, EntityManager, Id};
 use std::{collections::BTreeMap, mem};
 
 #[derive(Default)]
@@ -20,14 +20,7 @@ impl<'a> ComponentManager<'a> {
         component: Box<dyn Generic<'a>>,
         em: &mut EntityManager,
     ) -> Option<Id> {
-        let id = self
-            .cache
-            .keys()
-            .cloned()
-            .enumerate()
-            .find(|(i, id)| *i as Id != *id)
-            .map(|(_, id)| id - 1)
-            .unwrap_or(self.cache.len() as Id);
+        let id = id::next(&self.cache);
 
         em.get_mut(eid)?.insert(cid, id);
 
