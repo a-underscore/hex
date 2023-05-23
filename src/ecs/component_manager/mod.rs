@@ -5,8 +5,7 @@ pub use component::Component;
 pub use generic::Generic;
 
 use super::{id, EntityManager, Id};
-use hashbrown::HashMap;
-use std::mem;
+use std::{collections::HashMap, mem};
 
 #[derive(Default)]
 pub struct ComponentManager<'a> {

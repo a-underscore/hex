@@ -1,5 +1,5 @@
 use super::{id, ComponentManager, Id};
-use hashbrown::HashMap;
+use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct EntityManager {

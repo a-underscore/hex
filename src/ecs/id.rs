@@ -1,5 +1,4 @@
-use hashbrown::HashMap;
-use std::cell::Cell;
+use std::{cell::Cell, collections::HashMap};
 
 pub type Id = u32;
 
