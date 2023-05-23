@@ -1,4 +1,5 @@
-use std::{cell::Cell, collections::BTreeMap};
+use hashbrown::HashMap;
+use std::cell::Cell;
 
 pub type Id = u32;
 
@@ -14,11 +15,6 @@ pub fn id() -> Id {
     })
 }
 
-pub fn next<T>(ids: &BTreeMap<Id, T>) -> Id {
-    ids.keys()
-        .cloned()
-        .enumerate()
-        .find(|(i, id)| *i as Id != *id)
-        .map(|(_, id)| id - 1)
-        .unwrap_or(ids.len() as Id)
+pub fn next<T>(ids: &HashMap<Id, T>, free: &mut Vec<Id>) -> Id {
+    free.pop().unwrap_or(ids.len() as Id)
 }

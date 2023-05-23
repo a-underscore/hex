@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.58"
 glium = "0.32.1"
+hashbrown = "0.13.2"
 once_cell = "1.16.0"

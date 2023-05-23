@@ -5,11 +5,13 @@ pub use component::Component;
 pub use generic::Generic;
 
 use super::{id, EntityManager, Id};
-use std::{collections::BTreeMap, mem};
+use hashbrown::HashMap;
+use std::mem;
 
 #[derive(Default)]
 pub struct ComponentManager<'a> {
-    pub cache: BTreeMap<Id, (Id, Box<dyn Generic<'a>>)>,
+    pub cache: HashMap<Id, (Id, Box<dyn Generic<'a>>)>,
+    pub free: Vec<Id>,
 }
 
 impl<'a> ComponentManager<'a> {
@@ -20,7 +22,7 @@ impl<'a> ComponentManager<'a> {
         component: Box<dyn Generic<'a>>,
         em: &mut EntityManager,
     ) -> Option<Id> {
-        let id = id::next(&self.cache);
+        let id = id::next(&self.cache, &mut self.free);
 
         em.get_mut(eid)?.insert(cid, id);
 
@@ -38,6 +40,7 @@ impl<'a> ComponentManager<'a> {
 
     pub fn rm_gen(&mut self, eid: Id, cid: Id, em: &mut EntityManager) {
         if let Some(c) = em.get_mut(eid).and_then(|c| c.remove(&cid)) {
+            self.free.push(c);
             self.cache.remove(&c);
         }
     }
