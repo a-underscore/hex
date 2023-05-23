@@ -6,6 +6,7 @@ pub mod renderer;
 
 pub use anyhow;
 pub use glium;
+pub use hashbrown;
 pub use once_cell;
 pub use renderer::Renderer;
 
