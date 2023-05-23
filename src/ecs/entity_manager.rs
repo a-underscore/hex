@@ -4,7 +4,7 @@ use std::collections::HashMap;
 #[derive(Default)]
 pub struct EntityManager {
     pub entities: HashMap<Id, HashMap<Id, Id>>,
-    pub free: Vec<Id>,
+    free: Vec<Id>,
 }
 
 impl EntityManager {
