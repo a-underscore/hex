@@ -6,11 +6,11 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Transform {
+    pub active: bool,
     position: Vec2d,
     rotation: f32,
     scale: Vec2d,
     matrix: Mat3d,
-    pub active: bool,
 }
 
 impl Transform {

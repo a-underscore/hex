@@ -6,9 +6,9 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Camera {
+    pub active: bool,
     dimensions: (Vec2d, f32),
     proj: Ortho,
-    pub active: bool,
 }
 impl Camera {
     pub fn new(dimensions: (Vec2d, f32), active: bool) -> Self {

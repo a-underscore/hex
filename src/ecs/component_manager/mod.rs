@@ -9,8 +9,8 @@ use std::{collections::HashMap, mem};
 
 #[derive(Default)]
 pub struct ComponentManager<'a> {
-    pub cache: HashMap<Id, (Id, Box<dyn Generic<'a>>)>,
     free: Vec<Id>,
+    pub cache: HashMap<Id, (Id, Box<dyn Generic<'a>>)>,
 }
 
 impl<'a> ComponentManager<'a> {
