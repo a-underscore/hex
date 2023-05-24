@@ -21,7 +21,7 @@ impl<'a> ComponentManager<'a> {
         component: Box<dyn Generic<'a>>,
         em: &mut EntityManager,
     ) -> Option<Id> {
-        let id = id::next(&self.cache, &mut self.free);
+        let id = id::next(&mut self.free, &self.cache);
 
         em.get_mut(eid)?.insert(cid, id);
 

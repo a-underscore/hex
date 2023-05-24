@@ -13,7 +13,7 @@ impl EntityManager {
     }
 
     pub fn add(&mut self) -> Id {
-        let id = id::next(&self.entities, &mut self.free);
+        let id = id::next(&mut self.free, &self.entities);
 
         self.add_gen(id);
 
