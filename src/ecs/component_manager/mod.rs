@@ -23,7 +23,7 @@ impl<'a> ComponentManager<'a> {
     ) -> Option<Id> {
         let id = id::next(&mut self.free, &self.cache);
 
-        em.get_mut(eid)?.insert(cid, id);
+        em.entities.get_mut(&eid)?.insert(cid, id);
 
         self.cache.insert(id, (cid, component));
 
@@ -38,7 +38,7 @@ impl<'a> ComponentManager<'a> {
     }
 
     pub fn rm_gen(&mut self, eid: Id, cid: Id, em: &mut EntityManager) {
-        if let Some(c) = em.get_mut(eid).and_then(|c| c.remove(&cid)) {
+        if let Some(c) = em.entities.get_mut(&eid).and_then(|c| c.remove(&cid)) {
             self.free.push(c);
             self.cache.remove(&c);
         }
@@ -81,7 +81,7 @@ impl<'a> ComponentManager<'a> {
     }
 
     pub fn get_gen_id(&self, eid: Id, cid: Id, em: &EntityManager) -> Option<Id> {
-        em.get(eid)?.get(&cid).copied()
+        em.entities.get(&eid)?.get(&cid).copied()
     }
 
     pub fn get_id<C>(&self, eid: Id, em: &EntityManager) -> Option<Id>

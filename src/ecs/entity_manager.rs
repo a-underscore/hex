@@ -20,14 +20,6 @@ impl EntityManager {
         id
     }
 
-    pub fn get(&self, eid: Id) -> Option<&HashMap<Id, Id>> {
-        self.entities.get(&eid)
-    }
-
-    pub fn get_mut(&mut self, eid: Id) -> Option<&mut HashMap<Id, Id>> {
-        self.entities.get_mut(&eid)
-    }
-
     pub fn rm(&mut self, eid: Id, cm: &mut ComponentManager) {
         if let Some(e) = self.entities.remove(&eid) {
             self.free.push(eid);
