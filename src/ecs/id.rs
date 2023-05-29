@@ -14,6 +14,6 @@ pub fn id() -> Id {
     })
 }
 
-pub fn next<T>(free: &mut Vec<Id>, ids: &HashMap<Id, T>) -> Id {
+pub fn next<K, V>(free: &mut Vec<Id>, ids: &HashMap<K, V>) -> Id {
     free.pop().unwrap_or(ids.len() as Id)
 }
