@@ -39,8 +39,9 @@ impl<'a> ComponentManager<'a> {
 
     pub fn rm_gen(&mut self, eid: Id, cid: Id, em: &mut EntityManager) {
         if let Some(id) = em.entities.get_mut(&eid).and_then(|c| c.remove(&cid)) {
-            self.free.push(id);
-            self.cache.remove(&id);
+            if self.cache.remove(&id).is_some() {
+                self.free.push(id);
+            }
         }
     }
 
