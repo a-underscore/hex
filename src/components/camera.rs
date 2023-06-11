@@ -10,6 +10,7 @@ pub struct Camera {
     dimensions: (Vec2d, f32),
     proj: Ortho,
 }
+
 impl Camera {
     pub fn new(dimensions: (Vec2d, f32), active: bool) -> Self {
         Self {
