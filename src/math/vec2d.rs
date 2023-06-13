@@ -16,20 +16,12 @@ impl Vec2d {
         self.0[1]
     }
 
-    pub fn x_ref(&self) -> &f32 {
-        &self.0[0]
+    pub fn set_x(&mut self, x: f32) {
+        self.0[0] = x;
     }
 
-    pub fn y_ref(&self) -> &f32 {
-        &self.0[1]
-    }
-
-    pub fn x_mut(&mut self) -> &mut f32 {
-        &mut self.0[0]
-    }
-
-    pub fn y_mut(&mut self) -> &mut f32 {
-        &mut self.0[1]
+    pub fn set_y(&mut self, y: f32) {
+        self.0[1] = y;
     }
 
     pub fn dot(self, rhs: Self) -> f32 {
