@@ -2,7 +2,7 @@ pub mod system;
 
 pub use system::System;
 
-use super::{ComponentManager, EntityManager, Ev, Scene};
+use super::{ComponentManager, Context, EntityManager, Ev};
 
 #[derive(Default)]
 pub struct SystemManager<'a> {
@@ -23,7 +23,7 @@ impl<'a> SystemManager<'a> {
 
     pub fn init(
         &mut self,
-        scene: &mut Scene,
+        scene: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
@@ -36,7 +36,7 @@ impl<'a> SystemManager<'a> {
     pub fn update(
         &mut self,
         ev: &mut Ev,
-        scene: &mut Scene,
+        scene: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {

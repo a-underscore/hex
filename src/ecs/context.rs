@@ -8,12 +8,12 @@ use glium::{
 };
 
 #[derive(Clone)]
-pub struct Scene {
+pub struct Context {
     pub display: Display,
     pub bg: [f32; 4],
 }
 
-impl Scene {
+impl Context {
     pub fn new(display: Display, bg: [f32; 4]) -> Self {
         Self { display, bg }
     }

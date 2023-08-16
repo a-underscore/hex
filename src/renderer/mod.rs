@@ -1,7 +1,7 @@
 use crate::{
     assets::Shader,
     components::{Camera, Sprite, Transform},
-    ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
+    ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
 use glium::{
     draw_parameters::{Blend, DepthTest},
@@ -42,7 +42,7 @@ impl<'a> System<'a> for Renderer<'a> {
     fn update(
         &mut self,
         ev: &mut Ev,
-        _: &mut Scene,
+        _: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = ev {
