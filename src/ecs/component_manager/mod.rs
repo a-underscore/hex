@@ -61,7 +61,7 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        self.get_gen(eid, C::id(), em).and_then(Self::cast)
+        self.get_gen(eid, C::id(), em).map(|(_, g)| Self::cast(g))
     }
 
     pub fn get_gen_mut(
@@ -78,7 +78,8 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        self.get_gen_mut(eid, C::id(), em).and_then(Self::cast_mut)
+        self.get_gen_mut(eid, C::id(), em)
+            .map(|(_, g)| Self::cast_mut::<C>(g))
     }
 
     pub fn get_gen_id(&self, eid: Id, cid: Id, em: &EntityManager) -> Option<Id> {
@@ -100,7 +101,7 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        self.get_cache_gen(id).and_then(Self::cast)
+        self.get_cache_gen(id).and_then(Self::cast_checked)
     }
 
     pub fn get_cache_gen_mut(&mut self, id: Id) -> Option<(Id, &mut dyn Generic<'a>)> {
@@ -111,23 +112,34 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        self.get_cache_gen_mut(id).and_then(Self::cast_mut)
+        self.get_cache_gen_mut(id).and_then(Self::cast_mut_checked)
     }
 
-    pub fn cast<'b, C>((cid, f): (Id, &'b dyn Generic<'a>)) -> Option<&'b C>
+    pub fn cast<'b, C>(g: &'b dyn Generic<'a>) -> &'b C
     where
         C: Component,
     {
-        Some(*(cid == C::id()).then(|| unsafe { mem::transmute::<&&_, &&_>(&f) })?)
+        unsafe { mem::transmute::<&&_, &&_>(&g) }
     }
 
-    pub fn cast_mut<'b, C>((cid, mut f): (Id, &'b mut dyn Generic<'a>)) -> Option<&'b mut C>
+    pub fn cast_checked<'b, C>((cid, g): (Id, &'b dyn Generic<'a>)) -> Option<&'b C>
     where
         C: Component,
     {
-        Some(
-            *(cid == C::id())
-                .then(|| unsafe { mem::transmute::<&mut &mut _, &mut &mut _>(&mut f) })?,
-        )
+        Some((cid == C::id()).then(|| Self::cast::<C>(g))?)
+    }
+
+    pub fn cast_mut<'b, C>(mut g: &'b mut dyn Generic<'a>) -> &'b mut C
+    where
+        C: Component,
+    {
+        unsafe { mem::transmute::<&mut &mut _, &mut &mut _>(&mut g) }
+    }
+
+    pub fn cast_mut_checked<'b, C>((cid, g): (Id, &'b mut dyn Generic<'a>)) -> Option<&'b mut C>
+    where
+        C: Component,
+    {
+        Some((cid == C::id()).then(|| Self::cast_mut::<C>(g))?)
     }
 }
