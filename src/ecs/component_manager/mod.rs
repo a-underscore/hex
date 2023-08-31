@@ -126,7 +126,7 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        Some((cid == C::id()).then(|| Self::cast::<C>(g))?)
+        (cid == C::id()).then(|| Self::cast::<C>(g))
     }
 
     pub fn cast_mut<'b, C>(mut g: &'b mut dyn Generic<'a>) -> &'b mut C
@@ -140,6 +140,6 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        Some((cid == C::id()).then(|| Self::cast_mut::<C>(g))?)
+        (cid == C::id()).then(|| Self::cast_mut::<C>(g))
     }
 }
