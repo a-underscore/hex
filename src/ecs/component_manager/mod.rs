@@ -62,7 +62,7 @@ impl ComponentManager {
         C: Component,
     {
         self.get_gen(eid, TypeId::of::<C>(), em)
-            .and_then(|a| Self::cast(a))
+            .and_then(Self::cast)
     }
 
     pub fn get_gen_mut(
@@ -80,7 +80,7 @@ impl ComponentManager {
         C: Component,
     {
         self.get_gen_mut(eid, TypeId::of::<C>(), em)
-            .and_then(|a| Self::cast_mut::<C>(a))
+            .and_then(Self::cast_mut)
     }
 
     pub fn get_gen_id(&self, eid: Id, cid: TypeId, em: &EntityManager) -> Option<Id> {
