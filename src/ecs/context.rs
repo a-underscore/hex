@@ -26,8 +26,8 @@ impl Context {
     ) -> anyhow::Result<()> {
         sm.init(&mut self, (&mut em, &mut cm))?;
 
-        event_loop.run(move |event, _, flow| {
-            if let Err(e) = self.update(Control::new(event), flow, (&mut em, &mut cm), &mut sm) {
+        event_loop.run(move |event, _, cf| {
+            if let Err(e) = self.update(Control::new(event), cf, (&mut em, &mut cm), &mut sm) {
                 eprintln!("{}", e);
             }
         })
