@@ -1,10 +1,10 @@
 use super::{id, ComponentManager, Id};
-use std::collections::HashMap;
+use std::{any::TypeId, collections::HashMap};
 
 #[derive(Default)]
 pub struct EntityManager {
     free: Vec<Id>,
-    pub entities: HashMap<Id, HashMap<Id, Id>>,
+    pub entities: HashMap<Id, HashMap<TypeId, Id>>,
 }
 
 impl EntityManager {
@@ -24,7 +24,7 @@ impl EntityManager {
         if let Some(e) = self.entities.remove(&eid) {
             self.free.push(eid);
 
-            for cid in e.values().cloned() {
+            for cid in e.keys().cloned() {
                 cm.rm_gen(eid, cid, self);
             }
         }

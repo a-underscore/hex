@@ -21,8 +21,8 @@ impl Context {
     pub fn init(
         mut self,
         event_loop: EventLoop<()>,
-        (mut em, mut cm): (EntityManager, ComponentManager<'static>),
-        mut sm: SystemManager<'static>,
+        (mut em, mut cm): (EntityManager, ComponentManager),
+        mut sm: SystemManager,
     ) -> anyhow::Result<()> {
         sm.init(&mut self, (&mut em, &mut cm))?;
 

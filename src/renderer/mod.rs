@@ -11,12 +11,12 @@ use glium::{
     Depth, Display, DrawParameters, Surface,
 };
 
-pub struct Renderer<'a> {
-    pub draw_parameters: DrawParameters<'a>,
+pub struct Renderer {
+    pub draw_parameters: DrawParameters<'static>,
     pub shader: Shader,
 }
 
-impl<'a> Renderer<'a> {
+impl Renderer {
     pub fn new(display: &Display) -> anyhow::Result<Self> {
         Ok(Self {
             draw_parameters: DrawParameters {
@@ -38,7 +38,7 @@ impl<'a> Renderer<'a> {
     }
 }
 
-impl<'a> System<'a> for Renderer<'a> {
+impl System for Renderer {
     fn update(
         &mut self,
         ev: &mut Ev,

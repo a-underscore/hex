@@ -1,43 +1,43 @@
+pub mod as_any;
 pub mod component;
-pub mod generic;
 
+pub use as_any::AsAny;
 pub use component::Component;
-pub use generic::Generic;
 
 use super::{id, EntityManager, Id};
-use std::{collections::HashMap, mem};
+use std::{any::TypeId, collections::HashMap};
 
 #[derive(Default)]
-pub struct ComponentManager<'a> {
+pub struct ComponentManager {
     free: Vec<Id>,
-    pub cache: HashMap<Id, (Id, Box<dyn Generic<'a>>)>,
+    pub cache: HashMap<Id, Box<dyn AsAny>>,
 }
 
-impl<'a> ComponentManager<'a> {
+impl ComponentManager {
     pub fn add_gen(
         &mut self,
         eid: Id,
-        cid: Id,
-        component: Box<dyn Generic<'a>>,
+        cid: TypeId,
+        component: Box<dyn AsAny>,
         em: &mut EntityManager,
     ) -> Option<Id> {
         let id = id::next(&mut self.free, &self.cache);
 
         em.entities.get_mut(&eid)?.insert(cid, id);
 
-        self.cache.insert(id, (cid, component));
+        self.cache.insert(id, component);
 
         Some(id)
     }
 
     pub fn add<C>(&mut self, eid: Id, component: C, em: &mut EntityManager) -> Option<Id>
     where
-        C: Component + 'a,
+        C: Component,
     {
-        self.add_gen(eid, C::id(), Box::new(component), em)
+        self.add_gen(eid, TypeId::of::<C>(), Box::new(component), em)
     }
 
-    pub fn rm_gen(&mut self, eid: Id, cid: Id, em: &mut EntityManager) {
+    pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
         if let Some(id) = em.entities.get_mut(&eid).and_then(|c| c.remove(&cid)) {
             if self.cache.remove(&id).is_some() {
                 self.free.push(id);
@@ -49,10 +49,10 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        self.rm_gen(eid, C::id(), em);
+        self.rm_gen(eid, TypeId::of::<C>(), em);
     }
 
-    pub fn get_gen(&self, eid: Id, cid: Id, em: &EntityManager) -> Option<(Id, &dyn Generic<'a>)> {
+    pub fn get_gen(&self, eid: Id, cid: TypeId, em: &EntityManager) -> Option<&dyn AsAny> {
         self.get_gen_id(eid, cid, em)
             .and_then(|id| self.get_cache_gen(id))
     }
@@ -61,15 +61,16 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        self.get_gen(eid, C::id(), em).map(|(_, g)| Self::cast(g))
+        self.get_gen(eid, TypeId::of::<C>(), em)
+            .and_then(|a| Self::cast(a))
     }
 
     pub fn get_gen_mut(
         &mut self,
         eid: Id,
-        cid: Id,
+        cid: TypeId,
         em: &EntityManager,
-    ) -> Option<(Id, &mut dyn Generic<'a>)> {
+    ) -> Option<&mut dyn AsAny> {
         self.get_gen_id(eid, cid, em)
             .and_then(|id| self.get_cache_gen_mut(id))
     }
@@ -78,11 +79,11 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        self.get_gen_mut(eid, C::id(), em)
-            .map(|(_, g)| Self::cast_mut::<C>(g))
+        self.get_gen_mut(eid, TypeId::of::<C>(), em)
+            .and_then(|a| Self::cast_mut::<C>(a))
     }
 
-    pub fn get_gen_id(&self, eid: Id, cid: Id, em: &EntityManager) -> Option<Id> {
+    pub fn get_gen_id(&self, eid: Id, cid: TypeId, em: &EntityManager) -> Option<Id> {
         em.entities.get(&eid)?.get(&cid).copied()
     }
 
@@ -90,56 +91,42 @@ impl<'a> ComponentManager<'a> {
     where
         C: Component,
     {
-        self.get_gen_id(eid, C::id(), em)
+        self.get_gen_id(eid, TypeId::of::<C>(), em)
     }
 
-    pub fn get_cache_gen(&self, id: Id) -> Option<(Id, &dyn Generic<'a>)> {
-        self.cache.get(&id).map(|(cid, c)| (*cid, c.as_ref()))
+    pub fn get_cache_gen(&self, id: Id) -> Option<&dyn AsAny> {
+        self.cache.get(&id).map(|c| c.as_ref())
     }
 
     pub fn get_cache<C>(&self, id: Id) -> Option<&C>
     where
         C: Component,
     {
-        self.get_cache_gen(id).and_then(Self::cast_checked)
+        self.get_cache_gen(id).and_then(Self::cast)
     }
 
-    pub fn get_cache_gen_mut(&mut self, id: Id) -> Option<(Id, &mut dyn Generic<'a>)> {
-        self.cache.get_mut(&id).map(|(id, c)| (*id, c.as_mut()))
+    pub fn get_cache_gen_mut(&mut self, id: Id) -> Option<&mut dyn AsAny> {
+        self.cache.get_mut(&id).map(|c| c.as_mut())
     }
 
     pub fn get_cache_mut<C>(&mut self, id: Id) -> Option<&mut C>
     where
         C: Component,
     {
-        self.get_cache_gen_mut(id).and_then(Self::cast_mut_checked)
+        self.get_cache_gen_mut(id).and_then(Self::cast_mut)
     }
 
-    pub fn cast<'b, C>(g: &'b dyn Generic<'a>) -> &'b C
+    pub fn cast<C>(a: &dyn AsAny) -> Option<&C>
     where
         C: Component,
     {
-        unsafe { mem::transmute::<&&_, &&_>(&g) }
+        a.as_any().downcast_ref()
     }
 
-    pub fn cast_checked<'b, C>((cid, g): (Id, &'b dyn Generic<'a>)) -> Option<&'b C>
+    pub fn cast_mut<C>(a: &mut dyn AsAny) -> Option<&mut C>
     where
         C: Component,
     {
-        (cid == C::id()).then(|| Self::cast::<C>(g))
-    }
-
-    pub fn cast_mut<'b, C>(mut g: &'b mut dyn Generic<'a>) -> &'b mut C
-    where
-        C: Component,
-    {
-        unsafe { mem::transmute::<&mut &mut _, &mut &mut _>(&mut g) }
-    }
-
-    pub fn cast_mut_checked<'b, C>((cid, g): (Id, &'b mut dyn Generic<'a>)) -> Option<&'b mut C>
-    where
-        C: Component,
-    {
-        (cid == C::id()).then(|| Self::cast_mut::<C>(g))
+        a.as_any_mut().downcast_mut()
     }
 }

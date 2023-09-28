@@ -1,8 +1,20 @@
-use super::Generic;
+use super::AsAny;
 use crate::ecs::Id;
+use std::any::Any;
 
-pub trait Component {
+pub trait Component: 'static {
     fn id() -> Id;
 }
 
-impl<'a, C> Generic<'a> for C where C: Component + 'a {}
+impl<C> AsAny for C
+where
+    C: Component + 'static,
+{
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+}

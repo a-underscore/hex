@@ -1,6 +1,6 @@
 use super::{ComponentManager, Context, EntityManager, Ev};
 
-pub trait System<'a>: 'a {
+pub trait System: 'static {
     fn init(
         &mut self,
         _: &mut Context,

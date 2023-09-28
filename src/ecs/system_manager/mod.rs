@@ -5,14 +5,14 @@ pub use system::System;
 use super::{ComponentManager, Context, EntityManager, Ev};
 
 #[derive(Default)]
-pub struct SystemManager<'a> {
-    pub systems: Vec<Box<dyn System<'a>>>,
+pub struct SystemManager {
+    pub systems: Vec<Box<dyn System>>,
 }
 
-impl<'a> SystemManager<'a> {
+impl SystemManager {
     pub fn add<S>(&mut self, s: S)
     where
-        S: System<'a>,
+        S: System,
     {
         self.systems.push(Box::new(s));
     }
