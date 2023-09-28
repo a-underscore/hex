@@ -5,7 +5,7 @@ pub trait Component: 'static {}
 
 impl<C> AsAny for C
 where
-    C: Component + 'static,
+    C: Component,
 {
     fn as_any(&self) -> &dyn Any {
         self
