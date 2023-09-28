@@ -1,7 +1,6 @@
 use crate::{
     assets::{Shape, Texture},
-    ecs::{component_manager::Component, Id},
-    id,
+    ecs::component_manager::Component,
 };
 
 #[derive(Clone)]
@@ -25,8 +24,4 @@ impl Sprite {
     }
 }
 
-impl Component for Sprite {
-    fn id() -> Id {
-        id!()
-    }
-}
+impl Component for Sprite {}

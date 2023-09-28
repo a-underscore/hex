@@ -1,10 +1,7 @@
 use super::AsAny;
-use crate::ecs::Id;
 use std::any::Any;
 
-pub trait Component: 'static {
-    fn id() -> Id;
-}
+pub trait Component: 'static {}
 
 impl<C> AsAny for C
 where
