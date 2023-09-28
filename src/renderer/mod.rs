@@ -46,7 +46,7 @@ impl System for Renderer {
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = ev {
-            if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
+            if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e, em)
                         .and_then(|c| c.active.then_some(c))?,
@@ -56,9 +56,7 @@ impl System for Renderer {
             }) {
                 let sprites = {
                     let mut sprites: Vec<_> = em
-                        .entities
-                        .keys()
-                        .cloned()
+                        .entities()
                         .filter_map(|e| {
                             Some((
                                 cm.get::<Sprite>(e, em)

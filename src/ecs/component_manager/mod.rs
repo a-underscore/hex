@@ -10,7 +10,7 @@ use std::{any::TypeId, collections::HashMap};
 #[derive(Default)]
 pub struct ComponentManager {
     free: Vec<Id>,
-    pub cache: HashMap<Id, Box<dyn AsAny>>,
+    cache: HashMap<Id, Box<dyn AsAny>>,
 }
 
 impl ComponentManager {

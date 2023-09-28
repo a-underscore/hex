@@ -1,10 +1,14 @@
 use super::{id, ComponentManager, Id};
-use std::{any::TypeId, collections::HashMap};
+use std::{
+    any::TypeId,
+    collections::{hash_map::Keys, HashMap},
+    iter::Cloned,
+};
 
 #[derive(Default)]
 pub struct EntityManager {
     free: Vec<Id>,
-    pub entities: HashMap<Id, HashMap<TypeId, Id>>,
+    pub(super) entities: HashMap<Id, HashMap<TypeId, Id>>,
 }
 
 impl EntityManager {
@@ -28,5 +32,9 @@ impl EntityManager {
                 cm.rm_cache(id);
             }
         }
+    }
+
+    pub fn entities(&self) -> Cloned<Keys<Id, HashMap<TypeId, Id>>> {
+        self.entities.keys().cloned()
     }
 }
