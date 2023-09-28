@@ -27,8 +27,6 @@ impl EntityManager {
             for id in e.values().cloned() {
                 cm.rm_cache(id);
             }
-
-            self.entities.remove(&eid);
         }
     }
 }
