@@ -21,11 +21,11 @@ impl EntityManager {
     }
 
     pub fn rm(&mut self, eid: Id, cm: &mut ComponentManager) {
-        if let Some(e) = self.entities.get(&eid) {
+        if let Some(e) = self.entities.remove(&eid) {
             self.free.push(eid);
 
-            for cid in e.values().cloned() {
-                cm.cache.remove(&cid);
+            for id in e.values().cloned() {
+                cm.rm_cache(id);
             }
 
             self.entities.remove(&eid);

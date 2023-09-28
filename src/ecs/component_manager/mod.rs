@@ -37,11 +37,15 @@ impl ComponentManager {
         self.add_gen(eid, TypeId::of::<C>(), Box::new(component), em)
     }
 
+    pub(super) fn rm_cache(&mut self, id: Id) {
+        if self.cache.remove(&id).is_some() {
+            self.free.push(id);
+        }
+    }
+
     pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
         if let Some(id) = em.entities.get_mut(&eid).and_then(|c| c.remove(&cid)) {
-            if self.cache.remove(&id).is_some() {
-                self.free.push(id);
-            }
+            self.rm_cache(id);
         }
     }
 
