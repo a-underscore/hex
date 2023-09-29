@@ -23,8 +23,8 @@ impl ComponentManager {
     ) -> Option<Id> {
         let id = id::next(&mut self.free, &self.cache);
 
-        em.entities.get_mut(&eid)?.insert(cid);
         em.components.insert((eid, cid), id);
+        em.entities.get_mut(&eid)?.insert(cid);
 
         self.cache.insert(id, component);
 
