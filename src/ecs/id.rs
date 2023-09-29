@@ -1,4 +1,4 @@
-use std::cell::Cell;
+use std::{cell::Cell, collections::BTreeMap};
 
 pub type Id = u32;
 
@@ -12,4 +12,13 @@ pub fn id() -> Id {
 
         count
     })
+}
+
+pub fn next<T>(ids: &BTreeMap<Id, T>) -> Id {
+    ids.keys()
+        .cloned()
+        .enumerate()
+        .find(|(i, id)| *i as Id != *id)
+        .map(|(_, id)| id - 1)
+        .unwrap_or(ids.len() as Id)
 }

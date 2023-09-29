@@ -1,5 +1,4 @@
 use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
-use crate::math::Vec4d;
 use glium::{
     glutin::{
         event::Event,
@@ -11,11 +10,11 @@ use glium::{
 #[derive(Clone)]
 pub struct Scene {
     pub display: Display,
-    pub bg: Vec4d,
+    pub bg: [f32; 4],
 }
 
 impl Scene {
-    pub fn new(display: Display, bg: Vec4d) -> Self {
+    pub fn new(display: Display, bg: [f32; 4]) -> Self {
         Self { display, bg }
     }
 
@@ -49,7 +48,7 @@ impl Scene {
 
                 target.clear_color_and_depth(
                     {
-                        let [r, g, b, a] = self.bg.0;
+                        let [r, g, b, a] = self.bg;
 
                         (r, g, b, a)
                     },
