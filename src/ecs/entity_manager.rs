@@ -28,7 +28,7 @@ impl EntityManager {
         if let Some(e) = self.entities.remove(&eid) {
             self.free.push(eid);
 
-            for id in e.values().cloned() {
+            for id in e.into_values() {
                 cm.rm_cache(id);
             }
         }
