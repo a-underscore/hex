@@ -9,5 +9,5 @@ pub use component_manager::ComponentManager;
 pub use context::Context;
 pub use entity_manager::EntityManager;
 pub use ev::Ev;
-pub use id::{id, Id};
+pub use id::Id;
 pub use system_manager::SystemManager;
