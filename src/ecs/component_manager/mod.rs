@@ -21,10 +21,11 @@ impl ComponentManager {
         component: Box<dyn AsAny>,
         em: &mut EntityManager,
     ) -> Option<Id> {
+        let entity = em.entities.get_mut(&eid)?;
         let id = id::next(&mut self.free, &self.cache);
 
+        entity.insert(cid);
         em.components.insert((eid, cid), id);
-        em.entities.get_mut(&eid)?.insert(cid);
 
         self.cache.insert(id, component);
 
