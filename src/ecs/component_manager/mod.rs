@@ -46,11 +46,11 @@ impl ComponentManager {
     }
 
     pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
-        if let Some(id) = em.components.remove(&(eid, cid)) {
-            self.rm_cache(id);
+        if let Some(components) = em.entities.get_mut(&eid) {
+            components.remove(&cid);
 
-            if let Some(components) = em.entities.get_mut(&eid) {
-                components.remove(&cid);
+            if let Some(id) = em.components.remove(&(eid, cid)) {
+                self.rm_cache(id);
             }
         }
     }
