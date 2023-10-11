@@ -8,7 +8,6 @@ use std::{
 #[derive(Default)]
 pub struct EntityManager {
     free: Vec<Id>,
-    pub(super) components: HashMap<(Id, TypeId), Id>,
     pub(super) entities: HashMap<Id, HashSet<TypeId>>,
 }
 
@@ -30,9 +29,7 @@ impl EntityManager {
             self.free.push(eid);
 
             for cid in e {
-                if let Some(id) = self.components.remove(&(eid, cid)) {
-                    cm.rm_cache(id);
-                }
+                cm.components.remove(&(eid, cid));
             }
         }
     }
