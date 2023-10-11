@@ -34,6 +34,10 @@ impl EntityManager {
         }
     }
 
+    pub fn get(&self, eid: Id) -> Option<&HashSet<TypeId>> {
+        self.entities.get(&eid)
+    }
+
     pub fn entities(&self) -> Cloned<Keys<Id, HashSet<TypeId>>> {
         self.entities.keys().cloned()
     }
