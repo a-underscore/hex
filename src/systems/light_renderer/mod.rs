@@ -3,7 +3,7 @@ use crate::{
     components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
-use cgmath::{prelude::*, Matrix4, Vector2, Vector4};
+use cgmath::{prelude::*, Matrix4, Vector2, Vector4, Transform as _};
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     framebuffer::SimpleFrameBuffer,
@@ -73,11 +73,23 @@ impl LightRenderer {
         })
     }
 
-    /*
-    fn frustrum_corners_world_space(proj: Vector4<f32>, view: Vector4<f32>) -> Vec<Vector4<f32>> {
-        (proj * view).inverse();
+    fn frustrum_corners_world_space(proj: Matrix4<f32>, view: Matrix4<f32>) -> Vec<Vector4<f32>> {
+        let inv = (proj * view).inverse_transform().unwrap_or(Matrix4::identity());
+
+        let mut corners = Vec::new();
+
+        for x in 0..2 {
+            for y in 0..2 {
+                for z in 0..2 {
+                    let pt = inv * Vector4::new(2.0 * x as f32 - 1.0, 2.0 * y as f32 - 1.0, 2.0 * z as f32 - 1.0, 1.0);
+
+                    corners.push(pt);
+                }
+            }
+        }
+
+        corners
     }
-    */
 }
 
 impl System for LightRenderer {
