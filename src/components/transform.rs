@@ -1,5 +1,5 @@
 use crate::ecs::component_manager::Component;
-use cgmath::{prelude::*, Matrix4, Rad, Vector3};
+use cgmath::{Matrix4, Rad, Vector3};
 
 #[derive(Clone)]
 pub struct Transform {

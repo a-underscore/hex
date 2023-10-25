@@ -3,7 +3,7 @@ use crate::{
     components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
-use cgmath::{prelude::*, Matrix4, Vector2, Vector4, Transform as _};
+use cgmath::{prelude::*, Matrix4};
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     framebuffer::SimpleFrameBuffer,
@@ -72,24 +72,6 @@ impl LightRenderer {
             shadow_dims,
         })
     }
-
-    fn frustrum_corners_world_space(proj: Matrix4<f32>, view: Matrix4<f32>) -> Vec<Vector4<f32>> {
-        let inv = (proj * view).inverse_transform().unwrap_or(Matrix4::identity());
-
-        let mut corners = Vec::new();
-
-        for x in 0..2 {
-            for y in 0..2 {
-                for z in 0..2 {
-                    let pt = inv * Vector4::new(2.0 * x as f32 - 1.0, 2.0 * y as f32 - 1.0, 2.0 * z as f32 - 1.0, 1.0);
-
-                    corners.push(pt);
-                }
-            }
-        }
-
-        corners
-    }
 }
 
 impl System for LightRenderer {
@@ -133,8 +115,7 @@ impl System for LightRenderer {
                 let mut shadow_target =
                     SimpleFrameBuffer::depth_only(&scene.display, &shadow_buffer)?;
 
-                shadow_target.clear_color(1.0, 1.0, 1.0, 1.0);
-                shadow_target.clear_depth(1.0);
+                shadow_target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
 
                 for (l, lc) in em.entities().filter_map(|e| {
                     Some((
@@ -144,13 +125,13 @@ impl System for LightRenderer {
                 }) {
                     let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
                     let view = Matrix4::from_translation(l.position);
+                    let light_proj: [[f32; 4]; 4] = lc.matrix().into();
+                    let light_transform: [[f32; 4]; 4] = view.into();
 
                     for (m, t) in &models {
                         let (mesh, _, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let transform: [[f32; 4]; 4] = t.matrix().into();
-                        let light_proj: [[f32; 4]; 4] = lc.matrix().into();
-                        let light_transform: [[f32; 4]; 4] = view.into();
                         let u = uniform! {
                             transform: transform,
                             light_proj: light_proj,
