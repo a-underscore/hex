@@ -1,6 +1,5 @@
 use crate::{
-    ecs::{component_manager::Component, Id},
-    id,
+    ecs::component_manager::Component,
     math::{Mat4d, Vec3d},
 };
 
@@ -67,8 +66,4 @@ impl Transform {
     }
 }
 
-impl Component for Transform {
-    fn id() -> Id {
-        id!()
-    }
-}
+impl Component for Transform {}

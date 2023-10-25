@@ -3,8 +3,7 @@ pub mod proj;
 pub use proj::Proj;
 
 use crate::{
-    ecs::{component_manager::Component, Id},
-    id,
+    ecs::component_manager::Component,
     math::{Mat4d, Vec2d, Vec3d},
 };
 
@@ -55,8 +54,4 @@ impl Camera {
     }
 }
 
-impl Component for Camera {
-    fn id() -> Id {
-        id!()
-    }
-}
+impl Component for Camera {}

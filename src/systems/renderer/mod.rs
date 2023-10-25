@@ -1,7 +1,7 @@
 use crate::{
     assets::Shader,
     components::{Camera, Model, Transform},
-    ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
+    ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
@@ -10,13 +10,13 @@ use glium::{
     Depth, Display, DrawParameters, Surface,
 };
 
-pub struct Renderer<'a> {
-    pub draw_parameters: DrawParameters<'a>,
+pub struct Renderer {
+    pub draw_parameters: DrawParameters<'static>,
     pub texture_shader: Shader,
     pub color_shader: Shader,
 }
 
-impl<'a> Renderer<'a> {
+impl Renderer {
     pub fn new(display: &Display) -> anyhow::Result<Self> {
         Ok(Self {
             draw_parameters: DrawParameters {
@@ -45,32 +45,28 @@ impl<'a> Renderer<'a> {
     }
 }
 
-impl<'a> System<'a> for Renderer<'a> {
+impl System for Renderer {
     fn update(
         &mut self,
         event: &mut Ev,
-        _: &mut Scene,
+        _: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = event {
-            if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
+            if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
-                    cm.get::<Camera>(e, em)
+                    cm.get::<Camera>(e)
                         .and_then(|c| (c.active && c.main).then_some(c))?,
-                    cm.get::<Transform>(e, em)
-                        .and_then(|t| t.active.then_some(t))?,
+                    cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
                 let models = {
                     let mut models: Vec<_> = em
-                        .entities
-                        .keys()
-                        .cloned()
+                        .entities()
                         .filter_map(|e| {
                             Some((
-                                cm.get::<Model>(e, em).and_then(|s| s.active.then_some(s))?,
-                                cm.get::<Transform>(e, em)
-                                    .and_then(|t| t.active.then_some(t))?,
+                                cm.get::<Model>(e).and_then(|s| s.active.then_some(s))?,
+                                cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
                             ))
                         })
                         .collect();

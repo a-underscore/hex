@@ -1,8 +1,4 @@
-use crate::{
-    ecs::{component_manager::Component, Id},
-    id,
-    math::Vec3d,
-};
+use crate::{ecs::component_manager::Component, math::Vec3d};
 
 pub struct Light {
     pub position: Vec3d,
@@ -22,8 +18,4 @@ impl Light {
     }
 }
 
-impl Component for Light {
-    fn id() -> Id {
-        id!()
-    }
-}
+impl Component for Light {}

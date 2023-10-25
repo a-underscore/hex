@@ -1,37 +1,44 @@
 use super::{id, ComponentManager, Id};
-use std::collections::BTreeMap;
+use std::{
+    any::TypeId,
+    collections::{hash_map::Keys, HashMap, HashSet},
+    iter::Cloned,
+};
 
 #[derive(Default)]
 pub struct EntityManager {
-    pub entities: BTreeMap<Id, BTreeMap<Id, Id>>,
+    free: Vec<Id>,
+    pub(super) entities: HashMap<Id, HashSet<TypeId>>,
 }
 
 impl EntityManager {
     pub fn add_gen(&mut self, id: Id) {
-        self.entities.insert(id, BTreeMap::new());
+        self.entities.insert(id, HashSet::new());
     }
 
     pub fn add(&mut self) -> Id {
-        let id = id::next(&self.entities);
+        let id = id::next(&mut self.free, &self.entities);
 
         self.add_gen(id);
 
         id
     }
 
-    pub fn get(&self, eid: Id) -> Option<&BTreeMap<Id, Id>> {
+    pub fn rm(&mut self, eid: Id, cm: &mut ComponentManager) {
+        if let Some(e) = self.entities.remove(&eid) {
+            self.free.push(eid);
+
+            for cid in e {
+                cm.components.remove(&(eid, cid));
+            }
+        }
+    }
+
+    pub fn get(&self, eid: Id) -> Option<&HashSet<TypeId>> {
         self.entities.get(&eid)
     }
 
-    pub fn get_mut(&mut self, eid: Id) -> Option<&mut BTreeMap<Id, Id>> {
-        self.entities.get_mut(&eid)
-    }
-
-    pub fn rm(&mut self, eid: Id, cm: &mut ComponentManager) {
-        if let Some(e) = self.entities.remove(&eid) {
-            for cid in e.values() {
-                cm.cache.remove(cid);
-            }
-        }
+    pub fn entities(&self) -> Cloned<Keys<Id, HashSet<TypeId>>> {
+        self.entities.keys().cloned()
     }
 }

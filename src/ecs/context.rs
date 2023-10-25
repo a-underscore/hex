@@ -8,12 +8,12 @@ use glium::{
 };
 
 #[derive(Clone)]
-pub struct Scene {
+pub struct Context {
     pub display: Display,
     pub bg: [f32; 4],
 }
 
-impl Scene {
+impl Context {
     pub fn new(display: Display, bg: [f32; 4]) -> Self {
         Self { display, bg }
     }
@@ -21,13 +21,13 @@ impl Scene {
     pub fn init(
         mut self,
         event_loop: EventLoop<()>,
-        (mut em, mut cm): (EntityManager, ComponentManager<'static>),
-        mut sm: SystemManager<'static>,
+        (mut em, mut cm): (EntityManager, ComponentManager),
+        mut sm: SystemManager,
     ) -> anyhow::Result<()> {
         sm.init(&mut self, (&mut em, &mut cm))?;
 
-        event_loop.run(move |event, _, flow| {
-            if let Err(e) = self.update(Control::new(event), flow, (&mut em, &mut cm), &mut sm) {
+        event_loop.run(move |event, _, cf| {
+            if let Err(e) = self.update(Control::new(event), cf, (&mut em, &mut cm), &mut sm) {
                 eprintln!("{}", e);
             }
         })

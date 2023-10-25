@@ -2,17 +2,17 @@ pub mod system;
 
 pub use system::System;
 
-use super::{ComponentManager, EntityManager, Ev, Scene};
+use super::{ComponentManager, Context, EntityManager, Ev};
 
 #[derive(Default)]
-pub struct SystemManager<'a> {
-    pub systems: Vec<Box<dyn System<'a>>>,
+pub struct SystemManager {
+    pub systems: Vec<Box<dyn System>>,
 }
 
-impl<'a> SystemManager<'a> {
+impl SystemManager {
     pub fn add<S>(&mut self, s: S)
     where
-        S: System<'a>,
+        S: System,
     {
         self.systems.push(Box::new(s));
     }
@@ -23,7 +23,7 @@ impl<'a> SystemManager<'a> {
 
     pub fn init(
         &mut self,
-        scene: &mut Scene,
+        scene: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
@@ -35,12 +35,12 @@ impl<'a> SystemManager<'a> {
 
     pub fn update(
         &mut self,
-        event: &mut Ev,
-        scene: &mut Scene,
+        ev: &mut Ev,
+        scene: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.update(event, scene, (em, cm))?;
+            s.update(ev, scene, (em, cm))?;
         }
 
         Ok(())

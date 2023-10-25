@@ -1,7 +1,7 @@
 use crate::{
     assets::Shader,
     components::{Camera, Light, Model, Transform},
-    ecs::{system_manager::System, ComponentManager, EntityManager, Ev, Scene},
+    ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
     math::{Mat4d, Vec2d},
 };
 use glium::{
@@ -13,18 +13,18 @@ use glium::{
     Depth, Display, DrawParameters, Surface,
 };
 
-pub struct LightRenderer<'a> {
-    pub lighting_draw_parameters: DrawParameters<'a>,
+pub struct LightRenderer {
+    pub lighting_draw_parameters: DrawParameters<'static>,
     pub lighting_sampler_behavior: SamplerBehavior,
     pub lighting_shader: Shader,
-    pub shadow_draw_parameters: DrawParameters<'a>,
+    pub shadow_draw_parameters: DrawParameters<'static>,
     pub shadow_shader: Shader,
     pub shadow_sampler_behavior: SamplerBehavior,
     pub shadow_dims: (u32, u32),
     pub filter: MagnifySamplerFilter,
 }
 
-impl<'a> LightRenderer<'a> {
+impl LightRenderer {
     pub fn new(
         display: &Display,
         lighting_sampler_behavior: SamplerBehavior,
@@ -74,32 +74,28 @@ impl<'a> LightRenderer<'a> {
     }
 }
 
-impl<'a> System<'a> for LightRenderer<'a> {
+impl System for LightRenderer {
     fn update(
         &mut self,
         event: &mut Ev,
-        scene: &mut Scene,
+        scene: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, target)) = event {
-            if let Some((c, ct)) = em.entities.keys().cloned().find_map(|e| {
+            if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
-                    cm.get::<Camera>(e, em)
+                    cm.get::<Camera>(e)
                         .and_then(|c| (c.active && c.main).then_some(c))?,
-                    cm.get::<Transform>(e, em)
-                        .and_then(|t| t.active.then_some(t))?,
+                    cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
                 let models = {
                     let mut models: Vec<_> = em
-                        .entities
-                        .keys()
-                        .cloned()
+                        .entities()
                         .filter_map(|e| {
                             Some((
-                                cm.get::<Model>(e, em).and_then(|s| s.active.then_some(s))?,
-                                cm.get::<Transform>(e, em)
-                                    .and_then(|t| t.active.then_some(t))?,
+                                cm.get::<Model>(e).and_then(|s| s.active.then_some(s))?,
+                                cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
                             ))
                         })
                         .collect();
@@ -122,11 +118,10 @@ impl<'a> System<'a> for LightRenderer<'a> {
                 shadow_target.clear_color(1.0, 1.0, 1.0, 1.0);
                 shadow_target.clear_depth(1.0);
 
-                for (l, lc) in em.entities.keys().cloned().filter_map(|e| {
+                for (l, lc) in em.entities().filter_map(|e| {
                     Some((
-                        cm.get::<Light>(e, em).and_then(|l| l.active.then_some(l))?,
-                        cm.get::<Camera>(e, em)
-                            .and_then(|l| l.active.then_some(l))?,
+                        cm.get::<Light>(e).and_then(|l| l.active.then_some(l))?,
+                        cm.get::<Camera>(e).and_then(|l| l.active.then_some(l))?,
                     ))
                 }) {
                     let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;

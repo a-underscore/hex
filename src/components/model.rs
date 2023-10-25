@@ -1,7 +1,6 @@
 use crate::{
     assets::{Material, Mesh, Texture},
-    ecs::{component_manager::Component, Id},
-    id,
+    ecs::component_manager::Component,
 };
 use std::rc::Rc;
 
@@ -20,8 +19,4 @@ impl Model {
     }
 }
 
-impl Component for Model {
-    fn id() -> Id {
-        id!()
-    }
-}
+impl Component for Model {}
