@@ -1,4 +1,4 @@
-use cgmath::Vector2;
+use crate::Vector2;
 use glium::implement_vertex;
 
 #[derive(Copy, Clone)]
@@ -7,8 +7,8 @@ pub struct Uv {
 }
 
 impl Uv {
-    pub fn new(uv: Vector2<f32>) -> Self {
-        Self { uv: *uv.as_ref() }
+    pub fn new(uv: Vector2) -> Self {
+        Self { uv: uv.0 }
     }
 }
 

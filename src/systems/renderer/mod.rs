@@ -3,6 +3,7 @@ use crate::{
     components::{Camera, Model, Transform},
     ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
+use cgmath::prelude::*;
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     uniform,
@@ -83,16 +84,20 @@ impl System for Renderer {
                 for (m, t) in models {
                     let (mesh, ma, texture) = &*m.data;
                     let (v, i) = &*mesh.buffer;
+                    let transform: [[f32; 4]; 4] = t.matrix().into();
+                    let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
+                    let camera_proj: [[f32; 4]; 4] = c.matrix().into();
+                    let color: [f32; 4] = ma.color.into();
 
                     match texture {
                         Some(texture) => {
                             let (uv, buffer) = &*texture.buffer;
                             let u = uniform! {
-                                transform: t.matrix().0,
-                                camera_transform: ct.matrix().0,
-                                camera_proj: c.matrix().0,
+                                transform: transform,
+                                camera_transform: camera_transform,
+                                camera_proj: camera_proj,
                                 buffer: Sampler(buffer, texture.sampler_behaviour),
-                                color: ma.color.0,
+                                color: color,
                             };
 
                             target.draw(
@@ -105,10 +110,10 @@ impl System for Renderer {
                         }
                         None => {
                             let u = uniform! {
-                                transform: t.matrix().0,
-                                camera_transform: ct.matrix().0,
-                                camera_proj: c.matrix().0,
-                                color: ma.color.0,
+                                transform: transform,
+                                camera_transform: camera_transform,
+                                camera_proj: camera_proj,
+                                color: color,
                             };
 
                             target.draw(

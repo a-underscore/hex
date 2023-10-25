@@ -1,19 +1,22 @@
-use crate::{
-    ecs::component_manager::Component,
-    math::{Mat4d, Vec3d},
-};
+use crate::ecs::component_manager::Component;
+use cgmath::{prelude::*, Matrix4, Rad, Vector3};
 
 #[derive(Clone)]
 pub struct Transform {
-    position: Vec3d,
-    rotation: Vec3d,
-    scale: Vec3d,
-    matrix: Mat4d,
+    position: Vector3<f32>,
+    rotation: Vector3<f32>,
+    scale: Vector3<f32>,
+    matrix: Matrix4<f32>,
     pub active: bool,
 }
 
 impl Transform {
-    pub fn new(position: Vec3d, rotation: Vec3d, scale: Vec3d, active: bool) -> Self {
+    pub fn new(
+        position: Vector3<f32>,
+        rotation: Vector3<f32>,
+        scale: Vector3<f32>,
+        active: bool,
+    ) -> Self {
         Self {
             position,
             rotation,
@@ -23,37 +26,37 @@ impl Transform {
         }
     }
 
-    pub fn position(&self) -> Vec3d {
+    pub fn position(&self) -> Vector3<f32> {
         self.position
     }
 
-    pub fn set_position(&mut self, position: Vec3d) {
+    pub fn set_position(&mut self, position: Vector3<f32>) {
         self.position = position;
 
         self.update_matrix();
     }
 
-    pub fn rotation(&self) -> Vec3d {
+    pub fn rotation(&self) -> Vector3<f32> {
         self.rotation
     }
 
-    pub fn set_rotation(&mut self, rotation: Vec3d) {
+    pub fn set_rotation(&mut self, rotation: Vector3<f32>) {
         self.rotation = rotation;
 
         self.update_matrix();
     }
 
-    pub fn scale(&self) -> Vec3d {
+    pub fn scale(&self) -> Vector3<f32> {
         self.scale
     }
 
-    pub fn set_scale(&mut self, scale: Vec3d) {
+    pub fn set_scale(&mut self, scale: Vector3<f32>) {
         self.scale = scale;
 
         self.update_matrix();
     }
 
-    pub fn matrix(&self) -> Mat4d {
+    pub fn matrix(&self) -> Matrix4<f32> {
         self.matrix
     }
 
@@ -61,8 +64,16 @@ impl Transform {
         self.matrix = Self::calculate_matrix(self.position, self.rotation, self.scale);
     }
 
-    pub fn calculate_matrix(position: Vec3d, rotation: Vec3d, scale: Vec3d) -> Mat4d {
-        Mat4d::translation(position) * Mat4d::rotation_xyz(rotation) * Mat4d::scale(scale)
+    pub fn calculate_matrix(
+        position: Vector3<f32>,
+        rotation: Vector3<f32>,
+        scale: Vector3<f32>,
+    ) -> Matrix4<f32> {
+        Matrix4::from_translation(position)
+            * Matrix4::from_angle_x(Rad(rotation.x))
+            * Matrix4::from_angle_y(Rad(rotation.y))
+            * Matrix4::from_angle_z(Rad(rotation.z))
+            * Matrix4::from_nonuniform_scale(scale.x, scale.y, scale.z)
     }
 }
 

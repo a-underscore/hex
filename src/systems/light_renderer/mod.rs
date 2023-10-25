@@ -2,8 +2,8 @@ use crate::{
     assets::Shader,
     components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
-    math::{Mat4d, Vec2d},
 };
+use cgmath::{prelude::*, Matrix4, Vector2, Vector4};
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     framebuffer::SimpleFrameBuffer,
@@ -15,8 +15,8 @@ use glium::{
 
 pub struct LightRenderer {
     pub lighting_draw_parameters: DrawParameters<'static>,
-    pub lighting_sampler_behavior: SamplerBehavior,
     pub lighting_shader: Shader,
+    pub lighting_sampler_behavior: SamplerBehavior,
     pub shadow_draw_parameters: DrawParameters<'static>,
     pub shadow_shader: Shader,
     pub shadow_sampler_behavior: SamplerBehavior,
@@ -72,6 +72,12 @@ impl LightRenderer {
             shadow_dims,
         })
     }
+
+    /*
+    fn frustrum_corners_world_space(proj: Vector4<f32>, view: Vector4<f32>) -> Vec<Vector4<f32>> {
+        (proj * view).inverse();
+    }
+    */
 }
 
 impl System for LightRenderer {
@@ -125,15 +131,18 @@ impl System for LightRenderer {
                     ))
                 }) {
                     let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
-                    let view = Mat4d::translation(l.position);
+                    let view = Matrix4::from_translation(l.position);
 
                     for (m, t) in &models {
                         let (mesh, _, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
+                        let transform: [[f32; 4]; 4] = t.matrix().into();
+                        let light_proj: [[f32; 4]; 4] = lc.matrix().into();
+                        let light_transform: [[f32; 4]; 4] = view.into();
                         let u = uniform! {
-                            transform: t.matrix().0,
-                            light_proj: lc.matrix().0,
-                            light_transform: view.0,
+                            transform: transform,
+                            light_proj: light_proj,
+                            light_transform: light_transform,
                         };
 
                         shadow_target.draw(
@@ -150,18 +159,26 @@ impl System for LightRenderer {
 
                         let (mesh, ma, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
+                        let transform: [[f32; 4]; 4] = t.matrix().into();
+                        let camera_proj: [[f32; 4]; 4] = c.matrix().into();
+                        let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
+                        let light_transform: [[f32; 4]; 4] = view.into();
+                        let light_proj: [[f32; 4]; 4] = lc.matrix().into();
+                        let camera_position: [f32; 3] = ct.position().into();
+                        let light_color: [f32; 3] = l.color.into();
+                        let light_position: [f32; 3] = l.position.into();
                         let u = uniform! {
-                            transform: t.matrix().0,
-                            camera_transform: ct.matrix().0,
-                            camera_proj: c.matrix().0,
-                            light_transform: view.0,
-                            light_proj: lc.matrix().0,
+                            transform: transform,
+                            camera_transform: camera_transform,
+                            camera_proj: camera_proj,
+                            light_transform: light_transform,
+                            light_proj: light_proj,
                             buffer: Sampler(&buffer, self.lighting_sampler_behavior),
                             shadow_buffer: Sampler(&shadow_buffer, self.shadow_sampler_behavior),
-                            camera_position: ct.position().0,
-                            light_color: l.color.0,
-                            light_position: l.position.0,
-                            screen_dims: Vec2d::new(surface_width as f32, surface_height as f32).0,
+                            camera_position: camera_position,
+                            light_color: light_color,
+                            light_position: light_position,
+                            screen_dims: [surface_width as f32, surface_height as f32],
                             light_strength: l.strength,
                             ambient_strength: ma.ambient,
                             diffuse_strength: ma.diffuse,

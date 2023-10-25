@@ -1,28 +1,21 @@
-use crate::math::{Mat4d, Vec2d, Vec3d};
+use cgmath::{Matrix4, Rad, Vector2, Vector3};
 
 #[derive(Clone)]
 pub enum Proj {
-    Perspective((f32, f32, Vec2d)),
-    Ortho(Vec3d),
+    Perspective((f32, f32, Vector2<f32>)),
+    Ortho(Vector3<f32>),
 }
 
 impl Proj {
-    pub fn matrix(&self) -> Mat4d {
+    pub fn matrix(&self) -> Matrix4<f32> {
         match self {
             Self::Perspective((fov, aspect, clip)) => {
-                Mat4d::perspective(*fov, *aspect, clip.x(), clip.y())
+                cgmath::perspective(Rad(*fov), *aspect, clip.x, clip.y)
             }
             Self::Ortho(dims) => {
                 let dims = *dims / 2.0;
 
-                Mat4d::ortho(
-                    -dims.x(),
-                    dims.x(),
-                    -dims.y(),
-                    dims.y(),
-                    -dims.z(),
-                    dims.z(),
-                )
+                cgmath::ortho(-dims.x, dims.x, -dims.y, dims.y, -dims.z, dims.z)
             }
         }
     }

@@ -1,4 +1,4 @@
-use crate::math::Vec3d;
+use cgmath::Vector3;
 use glium::implement_vertex;
 
 #[derive(Copy, Clone)]
@@ -8,10 +8,10 @@ pub struct Vertex {
 }
 
 impl Vertex {
-    pub fn new(position: Vec3d, normal: Vec3d) -> Self {
+    pub fn new(position: Vector3<f32>, normal: Vector3<f32>) -> Self {
         Self {
-            position: position.0,
-            normal: normal.0,
+            position: *position.as_ref(),
+            normal: *normal.as_ref(),
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::math::{Mat4d, Vec4d};
+use cgmath::{Matrix4, Vector4};
 use glium::implement_vertex;
 
 #[derive(Copy, Clone)]
@@ -8,10 +8,10 @@ pub struct InstanceData {
 }
 
 impl InstanceData {
-    pub fn new(transform: Mat4d, color: Vec4d) -> Self {
+    pub fn new(transform: Matrix4<f32>, color: Vector4<f32>) -> Self {
         Self {
-            transform: transform.0,
-            color: color.0,
+            transform: *transform.as_ref(),
+            color: *color.as_ref(),
         }
     }
 }

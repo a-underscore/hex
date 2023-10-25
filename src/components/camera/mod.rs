@@ -2,15 +2,13 @@ pub mod proj;
 
 pub use proj::Proj;
 
-use crate::{
-    ecs::component_manager::Component,
-    math::{Mat4d, Vec2d, Vec3d},
-};
+use crate::ecs::component_manager::Component;
+use cgmath::{Matrix4, Vector2, Vector3};
 
 #[derive(Clone)]
 pub struct Camera {
     proj: Proj,
-    matrix: Mat4d,
+    matrix: Matrix4<f32>,
     pub main: bool,
     pub active: bool,
 }
@@ -27,11 +25,17 @@ impl Camera {
         }
     }
 
-    pub fn perspective(fov: f32, aspect: f32, clip: Vec2d, main: bool, active: bool) -> Self {
+    pub fn perspective(
+        fov: f32,
+        aspect: f32,
+        clip: Vector2<f32>,
+        main: bool,
+        active: bool,
+    ) -> Self {
         Self::new(Proj::Perspective((fov, aspect, clip)), main, active)
     }
 
-    pub fn ortho(dims: Vec3d, main: bool, active: bool) -> Self {
+    pub fn ortho(dims: Vector3<f32>, main: bool, active: bool) -> Self {
         Self::new(Proj::Ortho(dims), main, active)
     }
 
@@ -45,7 +49,7 @@ impl Camera {
         self.update_matrix()
     }
 
-    pub fn matrix(&self) -> Mat4d {
+    pub fn matrix(&self) -> Matrix4<f32> {
         self.matrix
     }
 

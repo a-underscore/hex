@@ -1,8 +1,8 @@
-use crate::math::Vec4d;
+use cgmath::Vector4;
 
 #[derive(Clone)]
 pub struct Material {
-    pub color: Vec4d,
+    pub color: Vector4<f32>,
     pub ambient: f32,
     pub diffuse: f32,
     pub specular: f32,
@@ -12,7 +12,7 @@ pub struct Material {
 
 impl Material {
     pub fn new(
-        color: Vec4d,
+        color: Vector4<f32>,
         ambient: f32,
         diffuse: f32,
         specular: f32,
