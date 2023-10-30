@@ -1,42 +1,10 @@
 use crate::{
-    assets::Shader,
     components::{Camera, Sprite, Transform},
-    ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
-};
-use glium::{
-    draw_parameters::{Blend, DepthTest},
-    index::NoIndices,
-    uniform,
-    uniforms::Sampler,
-    Depth, Display, DrawParameters, Surface,
+    ecs::{system_manager::System, ComponentManager, Context, EntityManager},
 };
 
-pub struct Renderer {
-    pub draw_parameters: DrawParameters<'static>,
-    pub shader: Shader,
-}
-
-impl Renderer {
-    pub fn new(display: &Display) -> anyhow::Result<Self> {
-        Ok(Self {
-            draw_parameters: DrawParameters {
-                depth: Depth {
-                    test: DepthTest::IfLessOrEqual,
-                    write: true,
-                    ..Default::default()
-                },
-                blend: Blend::alpha_blending(),
-                ..Default::default()
-            },
-            shader: Shader::new(
-                display,
-                include_str!("vertex.glsl"),
-                include_str!("fragment.glsl"),
-                None,
-            )?,
-        })
-    }
-}
+#[derive(Default)]
+pub struct Renderer;
 
 impl System for Renderer {
     fn update(

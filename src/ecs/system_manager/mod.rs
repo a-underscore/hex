@@ -2,7 +2,7 @@ pub mod system;
 
 pub use system::System;
 
-use super::{ComponentManager, Context, EntityManager, Ev};
+use super::{ComponentManager, Context, EntityManager};
 
 #[derive(Default)]
 pub struct SystemManager {

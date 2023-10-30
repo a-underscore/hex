@@ -1,4 +1,4 @@
-use super::{ComponentManager, Context, EntityManager, Ev};
+use super::{ComponentManager, Context, EntityManager};
 
 pub trait System: 'static {
     fn init(
