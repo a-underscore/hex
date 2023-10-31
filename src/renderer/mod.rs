@@ -1,6 +1,6 @@
 use crate::{
     components::{Camera, Sprite, Transform},
-    ecs::{system_manager::System, ComponentManager, Context, EntityManager},
+    ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
 use std::sync::Arc;
 use vulkano::{
@@ -49,7 +49,7 @@ pub struct Renderer;
 impl System for Renderer {
     fn update(
         &mut self,
-        ev: &mut Event,
+        ev: &mut Ev,
         _: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
@@ -77,22 +77,7 @@ impl System for Renderer {
                 };
 
                 for (s, t) in sprites {
-                    let uniform = uniform! {
-                        z: s.z,
-                        transform: t.matrix().0,
-                        camera_transform: ct.matrix().0,
-                        camera_proj: c.proj().0,
-                        color: s.color,
-                        tex: Sampler(&*s.texture.buffer, s.texture.sampler_behaviour),
-                    };
-
-                    target.draw(
-                        &*s.shape.vertices,
-                        NoIndices(s.shape.format),
-                        &self.shader.program,
-                        &uniform,
-                        &self.draw_parameters,
-                    )?;
+                    s.draw(t);
                 }
             }
         }

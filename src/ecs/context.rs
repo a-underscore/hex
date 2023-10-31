@@ -111,7 +111,7 @@ impl Context {
                 ..Default::default()
             },
         )?;
-        let queue = queues.next()?;
+        let queue = queues.next().unwrap();
         let (mut swapchain, images) = {
             let surface_capabilities = device
                 .physical_device()

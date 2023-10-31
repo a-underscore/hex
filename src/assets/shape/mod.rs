@@ -5,7 +5,7 @@ pub use vertex2d::Vertex2d;
 use crate::math::Vec2d;
 use std::sync::Arc;
 use vulkano::{
-    buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage},
+    buffer::{subbuffer::Subbuffer, Buffer, BufferContents, BufferCreateInfo, BufferUsage},
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
         RenderingAttachmentInfo, RenderingInfo,
@@ -16,7 +16,9 @@ use vulkano::{
     },
     image::{view::ImageView, Image, ImageUsage},
     instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
-    memory::allocator::{MemoryAllocator, AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
+    memory::allocator::{
+        AllocationCreateInfo, MemoryAllocator, MemoryTypeFilter, StandardMemoryAllocator,
+    },
     pipeline::{
         graphics::{
             color_blend::{ColorBlendAttachmentState, ColorBlendState},
@@ -24,7 +26,7 @@ use vulkano::{
             multisample::MultisampleState,
             rasterization::RasterizationState,
             subpass::PipelineRenderingCreateInfo,
-            vertex_input::{VertexDefinition},
+            vertex_input::VertexDefinition,
             viewport::{Viewport, ViewportState},
             GraphicsPipelineCreateInfo,
         },
@@ -46,7 +48,7 @@ use winit::{
 
 #[derive(Clone)]
 pub struct Shape {
-    pub vertices: Arc<Buffer>,
+    pub vertices: Arc<Subbuffer<[Vertex2d]>>,
 }
 
 impl Shape {
@@ -66,7 +68,7 @@ impl Shape {
                         | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
                     ..Default::default()
                 },
-                vertices,
+                vertices.iter().cloned(),
             )?),
         })
     }
@@ -83,6 +85,6 @@ impl Shape {
             ]
         };
 
-        Self::new(display, &vertices, PrimitiveType::TriangleFan)
+        Self::new(memory_allocator, &vertices)
     }
 }

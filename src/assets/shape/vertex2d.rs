@@ -40,7 +40,7 @@ use winit::{
     window::WindowBuilder,
 };
 
-#[derive(BufferContents, Vertex)]
+#[derive(Copy, Clone, BufferContents, Vertex)]
 #[repr(C)]
 pub struct Vertex2d {
     #[format(R32G32_SFLOAT)]

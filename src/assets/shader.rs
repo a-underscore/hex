@@ -61,12 +61,8 @@ pub struct Shader {
 impl Shader {
     pub fn new(device: Arc<Device>) -> anyhow::Result<Self> {
         Ok(Self {
-            vertex: vs::load(device.clone())?
-                .entry_point("main")
-                .unwrap_or_default(),
-            fragment: fs::load(device.clone())?
-                .entry_point("main")
-                .unwrap_or_default(),
+            vertex: vs::load(device.clone())?,
+            fragment: fs::load(device.clone())?,
         })
     }
 }
