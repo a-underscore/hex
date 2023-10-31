@@ -1,118 +1,118 @@
-use super::{ComponentManager, Control, EntityManager, SystemManager};
-use std::sync::Arc;
+use super::{ComponentManager, ev::Control, EntityManager, SystemManager};
+use std::{error::Error, sync::Arc};
 use vulkano::{
     buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage},
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
-        RenderingAttachmentInfo, RenderingInfo,
+        CopyBufferToImageInfo, PrimaryCommandBufferAbstract, RenderPassBeginInfo,
+    },
+    descriptor_set::{
+        allocator::StandardDescriptorSetAllocator, PersistentDescriptorSet, WriteDescriptorSet,
     },
     device::{
-        physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Features,
-        QueueCreateInfo, QueueFlags,
+        physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, QueueCreateInfo,
+        QueueFlags,
     },
-    image::{view::ImageView, Image, ImageUsage},
+    format::Format,
+    image::{
+        sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo},
+        view::ImageView,
+        Image, ImageCreateInfo, ImageType, ImageUsage,
+    },
     instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
-    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
+    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator, MemoryAllocator},
     pipeline::{
         graphics::{
-            color_blend::{ColorBlendAttachmentState, ColorBlendState},
-            input_assembly::InputAssemblyState,
+            color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
+            input_assembly::{InputAssemblyState, PrimitiveTopology},
             multisample::MultisampleState,
             rasterization::RasterizationState,
-            subpass::PipelineRenderingCreateInfo,
             vertex_input::{Vertex, VertexDefinition},
             viewport::{Viewport, ViewportState},
             GraphicsPipelineCreateInfo,
         },
         layout::PipelineDescriptorSetLayoutCreateInfo,
-        DynamicState, GraphicsPipeline, PipelineLayout, PipelineShaderStageCreateInfo,
+        DynamicState, GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
+        PipelineShaderStageCreateInfo,
     },
-    render_pass::{AttachmentLoadOp, AttachmentStoreOp},
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
     swapchain::{
         acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
     },
     sync::{self, GpuFuture},
-    Validated, Version, VulkanError, VulkanLibrary,
+    DeviceSize, Validated, VulkanError, VulkanLibrary,
 };
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
+    window::{Window, WindowBuilder},
 };
 
-#[derive(Clone)]
 pub struct Context {
-    pub display: Arc<Device>,
+    pub device: Arc<Device>,
+    pub memory_allocator: Arc<dyn MemoryAllocator>,
+    pub event_loop: EventLoop<()>,
+    pub window: Arc<Window>,
+    pub em: EntityManager,
+    pub cm: ComponentManager,
+    pub sm: SystemManager,
     pub bg: [f32; 4],
 }
 
 impl Context {
-    pub fn new(bg: [f32; 4]) -> anyhow::Result<Self> {
-        let event_loop = EventLoop::new();
-        let library = VulkanLibrary::new()?;
-        let required_extensions = Surface::required_extensions(&event_loop);
-        let instance = Instance::new(
-            library,
-            InstanceCreateInfo {
-                flags: InstanceCreateFlags::ENUMERATE_PORTABILITY,
-                enabled_extensions: required_extensions,
+    pub fn new((em, cm): (EntityManager, ComponentManager), sm: SystemManager, bg: [f32; 4]) -> anyhow::Result<Self> {
+    let event_loop = EventLoop::new()?; let library = VulkanLibrary::new()?;
+    let required_extensions = Surface::required_extensions(&event_loop);
+    let instance = Instance::new(
+        library,
+        InstanceCreateInfo {
+            flags: InstanceCreateFlags::ENUMERATE_PORTABILITY,
+            enabled_extensions: required_extensions,
+            ..Default::default()
+        },
+    )?;
+    let window = Arc::new(WindowBuilder::new().build(&event_loop)?);
+    let surface = Surface::from_window(instance.clone(), window.clone())?;
+    let device_extensions = DeviceExtensions {
+        khr_swapchain: true,
+        ..DeviceExtensions::empty()
+    };
+    let (physical_device, queue_family_index) = instance
+        .enumerate_physical_devices()
+        ?
+        .filter(|p| p.supported_extensions().contains(&device_extensions))
+        .filter_map(|p| {
+            p.queue_family_properties()
+                .iter()
+                .enumerate()
+                .position(|(i, q)| {
+                    q.queue_flags.intersects(QueueFlags::GRAPHICS)
+                        && p.surface_support(i as u32, &surface).unwrap_or(false)
+                })
+                .map(|i| (p, i as u32))
+        })
+        .min_by_key(|(p, _)| match p.properties().device_type {
+            PhysicalDeviceType::DiscreteGpu => 0,
+            PhysicalDeviceType::IntegratedGpu => 1,
+            PhysicalDeviceType::VirtualGpu => 2,
+            PhysicalDeviceType::Cpu => 3,
+            PhysicalDeviceType::Other => 4,
+            _ => 5,
+        })
+        .unwrap();
+    let (device, mut queues) = Device::new(
+        physical_device,
+        DeviceCreateInfo {
+            enabled_extensions: device_extensions,
+            queue_create_infos: vec![QueueCreateInfo {
+                queue_family_index,
                 ..Default::default()
-            },
-        )?;
-        let window = Arc::new(WindowBuilder::new().build(&event_loop)?);
-        let surface = Surface::from_window(instance.clone(), window.clone())?;
-        let mut device_extensions = DeviceExtensions {
-            khr_swapchain: true,
-            ..DeviceExtensions::empty()
-        };
-        let (physical_device, queue_family_index) = instance
-            .enumerate_physical_devices()?
-            .filter(|p| {
-                p.api_version() >= Version::V1_3 || p.supported_extensions().khr_dynamic_rendering
-            })
-            .filter(|p| p.supported_extensions().contains(&device_extensions))
-            .filter_map(|p| {
-                p.queue_family_properties()
-                    .iter()
-                    .enumerate()
-                    .position(|(i, q)| {
-                        q.queue_flags.intersects(QueueFlags::GRAPHICS)
-                            && p.surface_support(i as u32, &surface).unwrap_or(false)
-                    })
-                    .map(|i| (p, i as u32))
-            })
-            .min_by_key(|(p, _)| match p.properties().device_type {
-                PhysicalDeviceType::DiscreteGpu => 0,
-                PhysicalDeviceType::IntegratedGpu => 1,
-                PhysicalDeviceType::VirtualGpu => 2,
-                PhysicalDeviceType::Cpu => 3,
-                PhysicalDeviceType::Other => 4,
-                _ => 5,
-            })
-            .expect("no suitable physical device found");
-
-        if physical_device.api_version() < Version::V1_3 {
-            device_extensions.khr_dynamic_rendering = true;
-        }
-
-        let (device, mut queues) = Device::new(
-            physical_device,
-            DeviceCreateInfo {
-                queue_create_infos: vec![QueueCreateInfo {
-                    queue_family_index,
-                    ..Default::default()
-                }],
-                enabled_extensions: device_extensions,
-                enabled_features: Features {
-                    dynamic_rendering: true,
-                    ..Features::empty()
-                },
-
-                ..Default::default()
-            },
-        )?;
-        let queue = queues.next().unwrap();
-        let (mut swapchain, images) = {
+            }],
+            ..Default::default()
+        },
+    )
+    ?;
+    let queue = queues.next().unwrap(); let (mut swapchain, images) = {
             let surface_capabilities = device
                 .physical_device()
                 .surface_capabilities(&surface, Default::default())?;
@@ -131,36 +131,33 @@ impl Context {
                     composite_alpha: surface_capabilities
                         .supported_composite_alpha
                         .into_iter()
-                        .next()?,
+                        .next().unwrap(),
                     ..Default::default()
                 },
             )?
         };
-
         let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
 
-        Ok(Self { device, bg })
+        Ok(Self { window, device, memory_allocator, event_loop, em, cm, sm, bg })
     }
 
     pub fn init(
         mut self,
-        event_loop: EventLoop<()>,
-        (mut em, mut cm): (EntityManager, ComponentManager),
-        mut sm: SystemManager,
     ) -> anyhow::Result<()> {
-        sm.init(&mut self, (&mut em, &mut cm))?;
+        self.sm.init(&mut self, (&mut self.em, &mut self.cm))?;
 
-        event_loop.run(move |event, _, cf| {
-            if let Err(e) = self.update(Control::new(event), cf, (&mut em, &mut cm), &mut sm) {
+        self.event_loop.run(move |event, elwt| {
+            if let Err(e) = self.update(Control::new(event, elwt), (&mut self.em, &mut self.cm), &mut self.sm) {
                 eprintln!("{}", e);
             }
-        })
+        });
+
+        Ok(())
     }
 
     pub fn update(
         &mut self,
         mut control: Control,
-        cf: &mut ControlFlow,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
         sm: &mut SystemManager,
     ) -> anyhow::Result<()> {

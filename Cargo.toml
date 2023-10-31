@@ -7,4 +7,4 @@ edition = "2021"
 anyhow = { version = "1.0.58", features = ["backtrace"] }
 vulkano = "0.34.1"
 vulkano-shaders = "0.34.0"
-winit = "0.29.3"
+winit = { version = "0.29.3", features = ["rwh_05"] }

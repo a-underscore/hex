@@ -1,12 +1,12 @@
-use winit::{event::Event, event_loop::ControlFlow};
+use winit::{event::Event, event_loop::EventLoopWindowTarget};
 
-pub struct Control {
+pub struct Control<'a> {
     pub event: Event<()>,
-    pub flow: Option<ControlFlow>,
+    pub elwt: &'a EventLoopWindowTarget<()>,
 }
 
-impl Control {
-    pub fn new(event: Event<()>) -> Self {
-        Self { event, flow: None }
+impl<'a> Control<'a> {
+    pub fn new(event: Event<()>, elwt: &'a EventLoopWindowTarget<()>) -> Self {
+        Self { event, elwt }
     }
 }
