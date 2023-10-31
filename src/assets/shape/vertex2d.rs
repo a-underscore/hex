@@ -1,3 +1,4 @@
+use crate::math::Vec2d;
 use std::sync::Arc;
 use vulkano::{
     buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage},
@@ -39,25 +40,20 @@ use winit::{
     window::WindowBuilder,
 };
 
-#[derive(Clone)]
-pub struct Texture {
-    pub buffer: Arc<Buffer>,
-    pub sampler_behaviour: SamplerBehavior,
+#[derive(BufferContents, Vertex)]
+#[repr(C)]
+pub struct Vertex2d {
+    #[format(R32G32_SFLOAT)]
+    pub position: [f32; 2],
+    #[format(R32G32_SFLOAT)]
+    pub uv: [f32; 2],
 }
 
-impl Texture {
-    pub fn new<'a, T>(
-        display: &Display,
-        source: T,
-        mipmaps_option: MipmapsOption,
-        sampler_behaviour: SamplerBehavior,
-    ) -> anyhow::Result<Self>
-    where
-        T: Texture2dDataSource<'a>,
-    {
-        Ok(Self {
-            buffer: Rc::new(Texture2d::with_mipmaps(display, source, mipmaps_option)?),
-            sampler_behaviour,
-        })
+impl Vertex2d {
+    pub fn new(position: Vec2d, uv: Vec2d) -> Self {
+        Self {
+            position: position.0,
+            uv: uv.0,
+        }
     }
 }
