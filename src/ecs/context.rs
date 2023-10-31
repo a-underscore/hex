@@ -3,9 +3,10 @@ use std::{error::Error, sync::Arc};
 use vulkano::{
     buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage},
     command_buffer::{
-        allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder,
-        CommandBufferAllocator, CommandBufferExecFuture, CommandBufferUsage, CopyBufferToImageInfo,
-        PrimaryAutoCommandBuffer, PrimaryCommandBufferAbstract, RenderPassBeginInfo,
+        allocator::{CommandBufferAllocator, StandardCommandBufferAllocator},
+        AutoCommandBufferBuilder, CommandBufferExecFuture, CommandBufferUsage,
+        CopyBufferToImageInfo, PrimaryAutoCommandBuffer, PrimaryCommandBufferAbstract,
+        RenderPassBeginInfo,
     },
     descriptor_set::{
         allocator::StandardDescriptorSetAllocator, PersistentDescriptorSet, WriteDescriptorSet,
@@ -54,12 +55,14 @@ use winit::{
 pub struct Context {
     pub device: Arc<Device>,
     pub queue: Arc<Queue>,
-    pub memory_allocator: Arc<dyn CommandBufferAllocator>,
-    pub command_allocator: Arc<dyn CommandBufferAllocator>,
-    pub descriptor_buffer_allocator: Arc<dyn MemoryAllocator>,
-    pub uploads: AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
+    pub memory_allocator: Arc<StandardMemoryAllocator>,
+    pub command_buffer_allocator: Arc<StandardCommandBufferAllocator>,
+    pub descriptor_set_allocator: Arc<StandardDescriptorSetAllocator>,
+    pub uploads: AutoCommandBufferBuilder<PrimaryAutoCommandBuffer<StandardCommandBufferAllocator>, StandardCommandBufferAllocator>,
     pub event_loop: EventLoop<()>,
+    pub swapchain: Arc<Swapchain>,
     pub window: Arc<Window>,
+    pub viewport: Arc<Viewport>,
     pub em: EntityManager,
     pub cm: ComponentManager,
     pub sm: SystemManager,
@@ -164,7 +167,6 @@ impl Context {
                 depth_stencil: {},
             },
         )?;
-
         let descriptor_set_allocator = Arc::new(StandardDescriptorSetAllocator::new(
             device.clone(),
             Default::default(),
@@ -185,7 +187,9 @@ impl Context {
             descriptor_set_allocator,
             window,
             device,
+            queue,
             memory_allocator,
+            swapchain,
             event_loop,
             em,
             cm,
@@ -360,7 +364,7 @@ impl Context {
 
         images
             .iter()
-            .map(|image| ImageView::new_default(image.clone())?)
-            .collect::<Vec<_>>()
+            .map(|image| ImageView::new_default(image.clone()).unwrap())
+            .collect()
     }
 }
