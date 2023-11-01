@@ -42,8 +42,10 @@ impl Context {
     ) -> anyhow::Result<()> {
         sm.update(&mut Ev::Event(&mut control), self, (em, cm))?;
 
-        if let Event::RedrawRequested(window_id) = control.event {
-            if window_id == self.display.gl_window().window().id() {
+        match control.event {
+            Event::RedrawRequested(window_id)
+                if window_id == self.display.gl_window().window().id() =>
+            {
                 let mut target = self.display.draw();
 
                 target.clear_color_and_depth(
@@ -59,10 +61,10 @@ impl Context {
 
                 target.finish()?;
             }
-        }
-
-        if let Event::MainEventsCleared = control.event {
-            self.display.gl_window().window().request_redraw();
+            Event::MainEventsCleared => {
+                self.display.gl_window().window().request_redraw();
+            }
+            _ => {}
         }
 
         *cf = match control {
