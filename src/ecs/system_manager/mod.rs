@@ -23,11 +23,11 @@ impl SystemManager {
 
     pub fn init(
         &mut self,
-        scene: &mut Context,
+        context: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.init(scene, (em, cm))?;
+            s.init(context, (em, cm))?;
         }
 
         Ok(())
@@ -36,11 +36,11 @@ impl SystemManager {
     pub fn update(
         &mut self,
         ev: &mut Ev,
-        scene: &mut Context,
+        context: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.update(ev, scene, (em, cm))?;
+            s.update(ev, context, (em, cm))?;
         }
 
         Ok(())
