@@ -1,54 +1,26 @@
 use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
-use std::{error::Error, sync::Arc};
+use std::sync::Arc;
 use vulkano::{
-    buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage},
     command_buffer::{
-        allocator::{CommandBufferAllocator, StandardCommandBufferAllocator},
-        AutoCommandBufferBuilder, CommandBufferExecFuture, CommandBufferUsage,
-        CopyBufferToImageInfo, PrimaryAutoCommandBuffer, PrimaryCommandBufferAbstract,
-        RenderPassBeginInfo,
+        allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
     },
-    descriptor_set::{
-        allocator::StandardDescriptorSetAllocator, PersistentDescriptorSet, WriteDescriptorSet,
-    },
+    descriptor_set::allocator::StandardDescriptorSetAllocator,
     device::{
         physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue,
         QueueCreateInfo, QueueFlags,
     },
-    format::Format,
-    image::{
-        sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo},
-        view::ImageView,
-        Image, ImageCreateInfo, ImageType, ImageUsage,
-    },
+    image::{view::ImageView, Image, ImageUsage},
     instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
-    memory::allocator::{
-        AllocationCreateInfo, MemoryAllocator, MemoryTypeFilter, StandardMemoryAllocator,
-    },
-    pipeline::{
-        graphics::{
-            color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
-            input_assembly::{InputAssemblyState, PrimitiveTopology},
-            multisample::MultisampleState,
-            rasterization::RasterizationState,
-            vertex_input::{Vertex, VertexDefinition},
-            viewport::{Viewport, ViewportState},
-            GraphicsPipelineCreateInfo,
-        },
-        layout::PipelineDescriptorSetLayoutCreateInfo,
-        DynamicState, GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
-        PipelineShaderStageCreateInfo,
-    },
-    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
-    swapchain::{
-        acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
-    },
-    sync::{self, future::NowFuture, GpuFuture},
-    DeviceSize, Validated, VulkanError, VulkanLibrary,
+    memory::allocator::StandardMemoryAllocator,
+    pipeline::graphics::viewport::Viewport,
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass},
+    swapchain::{acquire_next_image, Surface, Swapchain, SwapchainCreateInfo},
+    sync::GpuFuture,
+    Validated, VulkanError, VulkanLibrary,
 };
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
+    event_loop::EventLoop,
     window::{Window, WindowBuilder},
 };
 
@@ -119,7 +91,7 @@ impl Context {
             },
         )?;
         let queue = queues.next().unwrap();
-        let (mut swapchain, images) = {
+        let (swapchain, images) = {
             let surface_capabilities = device
                 .physical_device()
                 .surface_capabilities(&surface, Default::default())?;
@@ -278,7 +250,7 @@ impl Context {
                 *recreate_swapchain = false;
             }
 
-            let (image_index, suboptimal, acquire_future) =
+            let (_image_index, suboptimal, _acquire_future) =
                 match acquire_next_image(self.swapchain.clone(), None).map_err(Validated::unwrap) {
                     Ok(r) => r,
                     Err(VulkanError::OutOfDate) => {
@@ -299,7 +271,7 @@ impl Context {
                 CommandBufferUsage::OneTimeSubmit,
             )?;
 
-            sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm));
+            sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
         }
 
         Ok(())

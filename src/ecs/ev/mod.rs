@@ -3,7 +3,7 @@ pub use control::Control;
 
 use std::sync::Arc;
 use vulkano::command_buffer::{
-    allocator::{CommandBufferAllocator, StandardCommandBufferAllocator},
+    allocator::StandardCommandBufferAllocator,
     auto::{AutoCommandBufferBuilder, PrimaryAutoCommandBuffer},
 };
 
