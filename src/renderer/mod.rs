@@ -53,7 +53,7 @@ impl System for Renderer {
         _: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
-        if let Event::RedrawRequested = ev {
+        if let Ev::Draw((_, _)) = ev {
             if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e).and_then(|c| c.active.then_some(c))?,
@@ -76,9 +76,7 @@ impl System for Renderer {
                     sprites
                 };
 
-                for (s, t) in sprites {
-                    s.draw(t);
-                }
+                for (s, t) in sprites {}
             }
         }
 

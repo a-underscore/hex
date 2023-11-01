@@ -2,7 +2,7 @@ pub mod vertex2d;
 
 pub use vertex2d::Vertex2d;
 
-use crate::math::Vec2d;
+use crate::{ecs::Context, math::Vec2d};
 use std::sync::Arc;
 use vulkano::{
     buffer::{subbuffer::Subbuffer, Buffer, BufferContents, BufferCreateInfo, BufferUsage},
@@ -52,13 +52,10 @@ pub struct Shape {
 }
 
 impl Shape {
-    pub fn new(
-        memory_allocator: Arc<dyn MemoryAllocator>,
-        vertices: &[Vertex2d],
-    ) -> anyhow::Result<Self> {
+    pub fn new(context: &mut Context, vertices: &[Vertex2d]) -> anyhow::Result<Self> {
         Ok(Self {
             vertices: Arc::new(Buffer::from_iter(
-                memory_allocator,
+                context.memory_allocator.clone(),
                 BufferCreateInfo {
                     usage: BufferUsage::VERTEX_BUFFER,
                     ..Default::default()
@@ -73,7 +70,7 @@ impl Shape {
         })
     }
 
-    pub fn rect(memory_allocator: Arc<dyn MemoryAllocator>, dims: Vec2d) -> anyhow::Result<Self> {
+    pub fn rect(context: &mut Context, dims: Vec2d) -> anyhow::Result<Self> {
         let vertices = {
             let dims = dims / 2.0;
 
@@ -85,6 +82,6 @@ impl Shape {
             ]
         };
 
-        Self::new(memory_allocator, &vertices)
+        Self::new(context, &vertices)
     }
 }

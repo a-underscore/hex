@@ -1,3 +1,4 @@
+use crate::ecs::Context;
 use std::sync::Arc;
 use vulkano::{
     buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage},
@@ -51,12 +52,14 @@ use winit::{
 
 #[derive(Clone)]
 pub struct Texture2d {
-    pub image: Arc<Image>,
+    pub image: Arc<ImageView>,
+    pub sampler: Arc<Sampler>,
 }
 
 impl Texture2d {
     pub fn new<T>(
-        memory_allocator: Arc<dyn MemoryAllocator>,
+        memory_allocator: Arc<StandardMemoryAllocator>,
+        sampler: Arc<Sampler>,
         source: T,
         width: u32,
         height: u32,
@@ -65,7 +68,7 @@ impl Texture2d {
         T: BufferContents,
     {
         let buffer = Buffer::from_data(
-            memory_allocator,
+            memory_allocator.clone(),
             BufferCreateInfo {
                 usage: BufferUsage::TRANSFER_SRC,
                 ..Default::default()
@@ -78,7 +81,7 @@ impl Texture2d {
             source,
         )?;
         let image = Image::new(
-            memory_allocator,
+            memory_allocator.clone(),
             ImageCreateInfo {
                 image_type: ImageType::Dim2d,
                 format: Format::R8G8B8A8_SRGB,
@@ -89,6 +92,9 @@ impl Texture2d {
             AllocationCreateInfo::default(),
         )?;
 
-        Ok(Self { image })
+        Ok(Self {
+            image: ImageView::new_default(image)?,
+            sampler,
+        })
     }
 }
