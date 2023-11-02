@@ -170,7 +170,7 @@ impl Context {
             )?,
             images,
             recreate_swapchain: false,
-            previous_frame_end: None,
+            previous_frame_end: Some(sync::now(device.clone()).boxed()),
             render_pass,
             viewport,
             command_buffer_allocator,
@@ -288,8 +288,7 @@ impl Context {
                 .take()
                 .unwrap()
                 .join(acquire_future)
-                .then_execute(self.queue.clone(), command_buffer)
-                .unwrap()
+                .then_execute(self.queue.clone(), command_buffer)?
                 .then_swapchain_present(
                     self.queue.clone(),
                     SwapchainPresentInfo::swapchain_image_index(
