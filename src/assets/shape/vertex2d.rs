@@ -2,7 +2,7 @@ use crate::math::Vec2d;
 
 use vulkano::{buffer::BufferContents, pipeline::graphics::vertex_input::Vertex};
 
-#[derive(Copy, Clone, BufferContents, Vertex)]
+#[derive(BufferContents, Vertex, Copy, Clone)]
 #[repr(C)]
 pub struct Vertex2d {
     #[format(R32G32_SFLOAT)]

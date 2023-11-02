@@ -1,26 +1,50 @@
 use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
 use std::sync::Arc;
 use vulkano::{
+    buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage},
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
+        CopyBufferToImageInfo, PrimaryCommandBufferAbstract, RenderPassBeginInfo,
     },
-    descriptor_set::allocator::StandardDescriptorSetAllocator,
+    descriptor_set::{
+        allocator::StandardDescriptorSetAllocator, PersistentDescriptorSet, WriteDescriptorSet,
+    },
     device::{
         physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue,
         QueueCreateInfo, QueueFlags,
     },
-    image::{view::ImageView, Image, ImageUsage},
+    format::Format,
+    image::{
+        sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo},
+        view::ImageView,
+        Image, ImageCreateInfo, ImageType, ImageUsage,
+    },
     instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
-    memory::allocator::StandardMemoryAllocator,
-    pipeline::graphics::viewport::Viewport,
-    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass},
-    swapchain::{acquire_next_image, Surface, Swapchain, SwapchainCreateInfo},
-    sync::GpuFuture,
-    Validated, VulkanError, VulkanLibrary,
+    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
+    pipeline::{
+        graphics::{
+            color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
+            input_assembly::{InputAssemblyState, PrimitiveTopology},
+            multisample::MultisampleState,
+            rasterization::RasterizationState,
+            vertex_input::{Vertex, VertexDefinition},
+            viewport::{Viewport, ViewportState},
+            GraphicsPipelineCreateInfo,
+        },
+        layout::PipelineDescriptorSetLayoutCreateInfo,
+        DynamicState, GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
+        PipelineShaderStageCreateInfo,
+    },
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
+    swapchain::{
+        acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
+    },
+    sync::{self, GpuFuture},
+    DeviceSize, Validated, VulkanError, VulkanLibrary,
 };
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::EventLoop,
+    event_loop::{ControlFlow, EventLoop},
     window::{Window, WindowBuilder},
 };
 
@@ -35,6 +59,8 @@ pub struct Context {
     pub swapchain: Arc<Swapchain>,
     pub window: Arc<Window>,
     pub viewport: Viewport,
+    pub recreate_swapchain: bool,
+    pub previous_frame_end: Option<Box<dyn GpuFuture>>,
     pub bg: [f32; 4],
 }
 
@@ -153,7 +179,9 @@ impl Context {
                     &images,
                     render_pass.clone(),
                     &mut viewport,
-                ),
+                )?,
+                recreate_swapchain: false,
+                previous_frame_end: None,
                 render_pass,
                 viewport,
                 command_buffer_allocator,
@@ -176,17 +204,8 @@ impl Context {
     ) -> anyhow::Result<()> {
         sm.init(&mut self, (&mut em, &mut cm))?;
 
-        let mut recreate_swapchain = false;
-        let mut previous_frame_end = None;
-
         event_loop.run(move |event, elwt| {
-            if let Err(e) = self.update(
-                &mut sm,
-                (&mut em, &mut cm),
-                Control::new(event, elwt),
-                &mut recreate_swapchain,
-                &mut previous_frame_end,
-            ) {
+            if let Err(e) = self.update(&mut sm, (&mut em, &mut cm), Control::new(event, elwt)) {
                 eprintln!("{}", e);
             }
         })?;
@@ -199,8 +218,6 @@ impl Context {
         sm: &mut SystemManager,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
         mut control: Control,
-        recreate_swapchain: &mut bool,
-        previous_frame_end: &mut Option<Box<dyn GpuFuture>>,
     ) -> anyhow::Result<()> {
         match control.event {
             Event::WindowEvent {
@@ -213,7 +230,7 @@ impl Context {
                 event: WindowEvent::Resized(_),
                 ..
             } => {
-                *recreate_swapchain = true;
+                self.recreate_swapchain = true;
             }
             Event::AboutToWait => self.window.request_redraw(),
             _ => {}
@@ -230,39 +247,36 @@ impl Context {
                 return Ok(());
             }
 
-            previous_frame_end.as_mut().unwrap().cleanup_finished();
+            self.previous_frame_end.as_mut().unwrap().cleanup_finished();
 
-            if *recreate_swapchain {
-                let (new_swapchain, new_images) = self
-                    .swapchain
-                    .recreate(SwapchainCreateInfo {
-                        image_extent,
-                        ..self.swapchain.create_info()
-                    })
-                    .expect("failed to recreate swapchain");
+            if self.recreate_swapchain {
+                let (new_swapchain, new_images) = self.swapchain.recreate(SwapchainCreateInfo {
+                    image_extent,
+                    ..self.swapchain.create_info()
+                })?;
 
                 self.swapchain = new_swapchain;
                 self.framebuffers = Self::window_size_dependent_setup(
                     &new_images,
                     self.render_pass.clone(),
                     &mut self.viewport,
-                );
-                *recreate_swapchain = false;
+                )?;
+                self.recreate_swapchain = false;
             }
 
-            let (_image_index, suboptimal, _acquire_future) =
+            let (image_index, suboptimal, acquire_future) =
                 match acquire_next_image(self.swapchain.clone(), None).map_err(Validated::unwrap) {
                     Ok(r) => r,
                     Err(VulkanError::OutOfDate) => {
-                        *recreate_swapchain = true;
+                        self.recreate_swapchain = true;
 
                         return Ok(());
                     }
-                    Err(e) => panic!("failed to acquire next image: {e}"),
+                    Err(e) => return Err(e.into()),
                 };
 
             if suboptimal {
-                *recreate_swapchain = true;
+                self.recreate_swapchain = true;
             }
 
             let mut builder = AutoCommandBufferBuilder::primary(
@@ -271,7 +285,33 @@ impl Context {
                 CommandBufferUsage::OneTimeSubmit,
             )?;
 
+            builder.begin_render_pass(
+                RenderPassBeginInfo {
+                    clear_values: vec![Some([0.0, 0.0, 1.0, 1.0].into())],
+                    ..RenderPassBeginInfo::framebuffer(
+                        self.framebuffers[image_index as usize].clone(),
+                    )
+                },
+                Default::default(),
+            )?;
+
             sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
+
+            let command_buffer = builder.build()?;
+            let future = self
+                .previous_frame_end
+                .take()
+                .unwrap()
+                .join(acquire_future)
+                .then_execute(self.queue.clone(), command_buffer)?
+                .then_swapchain_present(
+                    self.queue.clone(),
+                    SwapchainPresentInfo::swapchain_image_index(
+                        self.swapchain.clone(),
+                        image_index,
+                    ),
+                )
+                .then_signal_fence_and_flush();
         }
 
         Ok(())
@@ -281,22 +321,22 @@ impl Context {
         images: &[Arc<Image>],
         render_pass: Arc<RenderPass>,
         viewport: &mut Viewport,
-    ) -> Vec<Arc<Framebuffer>> {
+    ) -> anyhow::Result<Vec<Arc<Framebuffer>>> {
         let extent = images[0].extent();
         viewport.extent = [extent[0] as f32, extent[1] as f32];
 
         images
             .iter()
             .map(|image| {
-                let view = ImageView::new_default(image.clone()).unwrap();
-                Framebuffer::new(
+                let view = ImageView::new_default(image.clone())?;
+
+                Ok(Framebuffer::new(
                     render_pass.clone(),
                     FramebufferCreateInfo {
                         attachments: vec![view],
                         ..Default::default()
                     },
-                )
-                .unwrap()
+                )?)
             })
             .collect()
     }

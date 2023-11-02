@@ -1,20 +1,126 @@
+pub mod fragment;
+pub mod vertex;
+
 use crate::{
+    assets::shape::Vertex2d,
     components::{Camera, Sprite, Transform},
     ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
+use std::{error::Error, sync::Arc};
+use vulkano::{
+    buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage},
+    command_buffer::{
+        allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
+        CopyBufferToImageInfo, PrimaryCommandBufferAbstract, RenderPassBeginInfo,
+    },
+    descriptor_set::{
+        allocator::StandardDescriptorSetAllocator, PersistentDescriptorSet, WriteDescriptorSet,
+    },
+    device::{
+        physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, QueueCreateInfo,
+        QueueFlags,
+    },
+    format::Format,
+    image::{
+        sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo},
+        view::ImageView,
+        Image, ImageCreateInfo, ImageType, ImageUsage,
+    },
+    instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
+    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
+    pipeline::{
+        graphics::{
+            color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
+            input_assembly::{InputAssemblyState, PrimitiveTopology},
+            multisample::MultisampleState,
+            rasterization::RasterizationState,
+            vertex_input::{Vertex, VertexDefinition},
+            viewport::{Viewport, ViewportState},
+            GraphicsPipelineCreateInfo,
+        },
+        layout::PipelineDescriptorSetLayoutCreateInfo,
+        DynamicState, GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
+        PipelineShaderStageCreateInfo,
+    },
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
+    swapchain::{
+        acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
+    },
+    sync::{self, GpuFuture},
+    DeviceSize, Validated, VulkanError, VulkanLibrary,
+};
+use winit::{
+    event::{Event, WindowEvent},
+    event_loop::{ControlFlow, EventLoop},
+    window::WindowBuilder,
+};
 
-#[derive(Default)]
-pub struct Renderer;
+pub struct Renderer {
+    pub pipeline: Arc<GraphicsPipeline>,
+}
+
+impl Renderer {
+    pub fn new(context: &mut Context) -> anyhow::Result<Self> {
+        let pipeline = {
+            let vs = vertex::load(context.device.clone())?
+                .entry_point("main")
+                .unwrap();
+            let fs = vertex::load(context.device.clone())?
+                .entry_point("main")
+                .unwrap();
+            let vertex_input_state =
+                Vertex2d::per_vertex().definition(&vs.info().input_interface)?;
+            let stages = [
+                PipelineShaderStageCreateInfo::new(vs),
+                PipelineShaderStageCreateInfo::new(fs),
+            ];
+            let layout = PipelineLayout::new(
+                context.device.clone(),
+                PipelineDescriptorSetLayoutCreateInfo::from_stages(&stages)
+                    .into_pipeline_layout_create_info(context.device.clone())?,
+            )?;
+            let subpass = Subpass::from(context.render_pass.clone(), 0).unwrap();
+
+            GraphicsPipeline::new(
+                context.device.clone(),
+                None,
+                GraphicsPipelineCreateInfo {
+                    stages: stages.into_iter().collect(),
+                    vertex_input_state: Some(vertex_input_state),
+                    input_assembly_state: Some(InputAssemblyState {
+                        topology: PrimitiveTopology::TriangleStrip,
+                        ..Default::default()
+                    }),
+                    viewport_state: Some(ViewportState::default()),
+                    rasterization_state: Some(RasterizationState::default()),
+                    multisample_state: Some(MultisampleState::default()),
+                    color_blend_state: Some(ColorBlendState::with_attachment_states(
+                        subpass.num_color_attachments(),
+                        ColorBlendAttachmentState {
+                            blend: Some(AttachmentBlend::alpha()),
+                            ..Default::default()
+                        },
+                    )),
+                    dynamic_state: [DynamicState::Viewport].into_iter().collect(),
+                    subpass: Some(subpass.into()),
+                    ..GraphicsPipelineCreateInfo::layout(layout)
+                },
+            )?
+        };
+
+        Ok(Self { pipeline })
+    }
+}
 
 impl System for Renderer {
     fn update(
         &mut self,
         ev: &mut Ev,
-        _: &mut Context,
+        context: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
-        if let Ev::Draw((_, _)) = ev {
-            if let Some((_c, _ct)) = em.entities().find_map(|e| {
+        if let Ev::Draw((_, builder)) = ev {
+            if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e).and_then(|c| c.active.then_some(c))?,
                     cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
@@ -36,7 +142,33 @@ impl System for Renderer {
                     sprites
                 };
 
-                for (_s, _t) in sprites {}
+                for (s, t) in sprites {
+                    let set = {
+                        let layout = self.pipeline.layout().set_layouts().get(0).unwrap();
+
+                        PersistentDescriptorSet::new(
+                            &context.descriptor_set_allocator,
+                            layout.clone(),
+                            [
+                                WriteDescriptorSet::sampler(0, s.texture.sampler.clone()),
+                                WriteDescriptorSet::image_view(1, s.texture.image.clone()),
+                            ],
+                            [],
+                        )?
+                    };
+
+                    builder
+                        .set_viewport(0, [context.viewport.clone()].into_iter().collect())?
+                        .bind_pipeline_graphics(self.pipeline.clone())?
+                        .bind_descriptor_sets(
+                            PipelineBindPoint::Graphics,
+                            self.pipeline.layout().clone(),
+                            0,
+                            set.clone(),
+                        )?
+                        .bind_vertex_buffers(0, s.shape.vertices.clone())?
+                        .draw(s.shape.vertices.len() as u32, 1, 0, 0)?;
+                }
             }
         }
 

@@ -11,13 +11,13 @@ use vulkano::{
 
 #[derive(Clone)]
 pub struct Shape {
-    pub vertices: Arc<Subbuffer<[Vertex2d]>>,
+    pub vertices: Subbuffer<[Vertex2d]>,
 }
 
 impl Shape {
     pub fn new(context: &mut Context, vertices: &[Vertex2d]) -> anyhow::Result<Self> {
         Ok(Self {
-            vertices: Arc::new(Buffer::from_iter(
+            vertices: Buffer::from_iter(
                 context.memory_allocator.clone(),
                 BufferCreateInfo {
                     usage: BufferUsage::VERTEX_BUFFER,
@@ -29,7 +29,7 @@ impl Shape {
                     ..Default::default()
                 },
                 vertices.iter().cloned(),
-            )?),
+            )?,
         })
     }
 
