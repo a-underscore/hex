@@ -15,7 +15,7 @@ pub struct Shape2d {
 }
 
 impl Shape2d {
-    pub fn new(context: &mut Context, vertices: &[Vertex2d]) -> anyhow::Result<Self> {
+    pub fn new(context: &Context, vertices: &[Vertex2d]) -> anyhow::Result<Self> {
         Ok(Self {
             vertices: Buffer::from_iter(
                 context.memory_allocator.clone(),
@@ -33,7 +33,7 @@ impl Shape2d {
         })
     }
 
-    pub fn rect(context: &mut Context, dims: Vec2d) -> anyhow::Result<Self> {
+    pub fn rect(context: &Context, dims: Vec2d) -> anyhow::Result<Self> {
         let vertices = {
             let dims = dims / 2.0;
 

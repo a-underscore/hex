@@ -41,7 +41,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn new(context: &mut Context) -> anyhow::Result<Self> {
+    pub fn new(context: &Context) -> anyhow::Result<Self> {
         let vertex = vertex::load(context.device.clone())?
             .entry_point("main")
             .unwrap();
@@ -58,7 +58,7 @@ impl Renderer {
     }
 
     fn pipeline(
-        context: &mut Context,
+        context: &Context,
         vertex: EntryPoint,
         fragment: EntryPoint,
     ) -> anyhow::Result<Arc<GraphicsPipeline>> {
