@@ -1,47 +1,32 @@
 use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
-use crate::assets::shape::Vertex2d;
+
 use std::sync::Arc;
 use vulkano::{
-    buffer::{
-        allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
-        Buffer, BufferCreateInfo, BufferUsage,
-    },
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
         RenderPassBeginInfo,
     },
     descriptor_set::{
-        allocator::StandardDescriptorSetAllocator, PersistentDescriptorSet, WriteDescriptorSet,
+        allocator::StandardDescriptorSetAllocator,
     },
     device::{
-        physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, DeviceOwned,
+        physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions,
         Queue, QueueCreateInfo, QueueFlags,
     },
     format::Format,
     image::{view::ImageView, Image, ImageCreateInfo, ImageType, ImageUsage},
     instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
-    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
+    memory::allocator::{AllocationCreateInfo, StandardMemoryAllocator},
     pipeline::{
         graphics::{
-            color_blend::{ColorBlendAttachmentState, ColorBlendState},
-            depth_stencil::{DepthState, DepthStencilState},
-            input_assembly::InputAssemblyState,
-            multisample::MultisampleState,
-            rasterization::RasterizationState,
-            vertex_input::{Vertex, VertexDefinition},
-            viewport::{Viewport, ViewportState},
-            GraphicsPipelineCreateInfo,
+            viewport::{Viewport},
         },
-        layout::PipelineDescriptorSetLayoutCreateInfo,
-        GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
-        PipelineShaderStageCreateInfo,
     },
-    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
-    shader::EntryPoint,
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass},
     swapchain::{
         acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
     },
-    sync::{self, GpuFuture},
+    sync::{GpuFuture},
     Validated, VulkanError, VulkanLibrary,
 };
 use winit::{
