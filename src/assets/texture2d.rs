@@ -2,16 +2,9 @@ use crate::ecs::Context;
 use std::sync::Arc;
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage},
-    command_buffer::{
-        AutoCommandBufferBuilder, CommandBufferUsage,
-        CopyBufferToImageInfo,
-    },
+    command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, CopyBufferToImageInfo},
     format::Format,
-    image::{
-        sampler::{Sampler},
-        view::ImageView,
-        Image, ImageCreateInfo, ImageType, ImageUsage,
-    },
+    image::{sampler::Sampler, view::ImageView, Image, ImageCreateInfo, ImageType, ImageUsage},
     memory::allocator::{AllocationCreateInfo, MemoryTypeFilter},
 };
 
@@ -28,8 +21,7 @@ impl Texture2d {
         source: &[u8],
         width: u32,
         height: u32,
-    ) -> anyhow::Result<Self>
-    {
+    ) -> anyhow::Result<Self> {
         let mut upload = AutoCommandBufferBuilder::primary(
             &context.command_buffer_allocator,
             context.queue.queue_family_index(),
