@@ -2,10 +2,14 @@ use crate::ecs::Context;
 use std::sync::Arc;
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage},
-    command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, CopyBufferToImageInfo},
+    command_buffer::{
+        AutoCommandBufferBuilder, CommandBufferUsage, CopyBufferToImageInfo,
+        PrimaryCommandBufferAbstract,
+    },
     format::Format,
     image::{sampler::Sampler, view::ImageView, Image, ImageCreateInfo, ImageType, ImageUsage},
     memory::allocator::{AllocationCreateInfo, MemoryTypeFilter},
+    sync::GpuFuture,
 };
 
 #[derive(Clone)]
@@ -16,7 +20,7 @@ pub struct Texture2d {
 
 impl Texture2d {
     pub fn new(
-        context: &Context,
+        context: &mut Context,
         sampler: Arc<Sampler>,
         source: &[u8],
         width: u32,
@@ -53,6 +57,8 @@ impl Texture2d {
         )?;
 
         upload.copy_buffer_to_image(CopyBufferToImageInfo::buffer_image(buffer, image.clone()))?;
+
+        context.previous_frame_end = Some(upload.build()?.execute(context.queue.clone())?.boxed());
 
         Ok(Self {
             image: ImageView::new_default(image)?,

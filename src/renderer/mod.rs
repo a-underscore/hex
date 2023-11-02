@@ -186,6 +186,28 @@ impl System for Renderer {
                             [],
                         )?
                     };
+                    let color = {
+                        let layout = self.pipeline.layout().set_layouts().get(2).unwrap();
+                        let subbuffer_allocator = SubbufferAllocator::new(
+                            context.memory_allocator.clone(),
+                            SubbufferAllocatorCreateInfo {
+                                buffer_usage: BufferUsage::UNIFORM_BUFFER,
+                                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+                                ..Default::default()
+                            },
+                        );
+                        let subbuffer = subbuffer_allocator.allocate_sized()?;
+
+                        *subbuffer.write()? = fragment::Color { color: s.color };
+
+                        PersistentDescriptorSet::new(
+                            &context.descriptor_set_allocator,
+                            layout.clone(),
+                            [WriteDescriptorSet::buffer(0, subbuffer)],
+                            [],
+                        )?
+                    };
 
                     builder
                         .set_viewport(0, [context.viewport.clone()].into_iter().collect())?
@@ -201,6 +223,12 @@ impl System for Renderer {
                             self.pipeline.layout().clone(),
                             1,
                             texture.clone(),
+                        )?
+                        .bind_descriptor_sets(
+                            PipelineBindPoint::Graphics,
+                            self.pipeline.layout().clone(),
+                            2,
+                            color.clone(),
                         )?
                         .bind_vertex_buffers(0, s.shape.vertices.clone())?
                         .draw(s.shape.vertices.len() as u32, 1, 0, 0)?;

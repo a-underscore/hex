@@ -193,9 +193,8 @@ impl Context {
         sm.init(&mut self, (&mut em, &mut cm))?;
 
         event_loop.run(move |event, elwt| {
-            if let Err(e) = self.update(&mut sm, (&mut em, &mut cm), Control::new(event, elwt)) {
-                eprintln!("{}", e);
-            }
+            self.update(&mut sm, (&mut em, &mut cm), Control::new(event, elwt))
+                .unwrap();
         })?;
 
         Ok(())
@@ -229,6 +228,38 @@ impl Context {
             ..
         } = control.event
         {
+            let image_extent: [u32; 2] = self.window.inner_size().into();
+
+            if image_extent.contains(&0) {
+                return Ok(());
+            }
+
+            self.previous_frame_end.as_mut().unwrap().cleanup_finished();
+
+            let mut builder = AutoCommandBufferBuilder::primary(
+                &self.command_buffer_allocator,
+                self.queue.queue_family_index(),
+                CommandBufferUsage::OneTimeSubmit,
+            )?;
+
+            let mut recreate_swapchain = self.recreate_swapchain;
+
+            if recreate_swapchain {
+                let (new_swapchain, new_images) = self.swapchain.recreate(SwapchainCreateInfo {
+                    image_extent,
+                    ..self.swapchain.create_info()
+                })?;
+                self.swapchain = new_swapchain;
+                self.images = new_images;
+                self.framebuffers = Self::window_size_dependent_setup(
+                    self.memory_allocator.clone(),
+                    &self.images,
+                    self.render_pass.clone(),
+                )?;
+
+                recreate_swapchain = false;
+            }
+
             let (image_index, suboptimal, acquire_future) =
                 match acquire_next_image(self.swapchain.clone(), None).map_err(Validated::unwrap) {
                     Ok(r) => r,
@@ -240,19 +271,9 @@ impl Context {
                     Err(e) => return Err(e.into()),
                 };
 
-            if suboptimal {
-                self.recreate_swapchain = true;
-            }
-
-            let mut builder = AutoCommandBufferBuilder::primary(
-                &self.command_buffer_allocator,
-                self.queue.queue_family_index(),
-                CommandBufferUsage::OneTimeSubmit,
-            )?;
-
             builder.begin_render_pass(
                 RenderPassBeginInfo {
-                    clear_values: vec![Some(self.bg.into())],
+                    clear_values: vec![Some(self.bg.into()), Some(1f32.into())],
                     ..RenderPassBeginInfo::framebuffer(
                         self.framebuffers[image_index as usize].clone(),
                     )
@@ -260,27 +281,13 @@ impl Context {
                 Default::default(),
             )?;
 
-            if self.recreate_swapchain {
-                let image_extent: [u32; 2] = self.window.inner_size().into();
-                let (new_swapchain, new_images) = self.swapchain.recreate(SwapchainCreateInfo {
-                    image_extent,
-                    ..self.swapchain.create_info()
-                })?;
-                self.swapchain = new_swapchain;
-                self.framebuffers = Self::window_size_dependent_setup(
-                    self.memory_allocator.clone(),
-                    &new_images,
-                    self.render_pass.clone(),
-                )?;
-
-                sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
-
-                self.recreate_swapchain = false;
-            } else {
-                sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
-            }
+            sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
 
             builder.end_render_pass(Default::default())?;
+
+            if suboptimal {
+                recreate_swapchain = true;
+            }
 
             let command_buffer = builder.build()?;
             let future = self
@@ -303,13 +310,16 @@ impl Context {
                     self.previous_frame_end = Some(future.boxed());
                 }
                 Err(VulkanError::OutOfDate) => {
-                    self.recreate_swapchain = true;
+                    recreate_swapchain = true;
+
                     self.previous_frame_end = Some(sync::now(self.device.clone()).boxed());
                 }
                 Err(_) => {
                     self.previous_frame_end = Some(sync::now(self.device.clone()).boxed());
                 }
             }
+
+            self.recreate_swapchain = recreate_swapchain;
         }
 
         Ok(())
