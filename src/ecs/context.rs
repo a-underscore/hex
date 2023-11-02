@@ -26,7 +26,7 @@ use vulkano::{
 use winit::{
     event::{Event, WindowEvent},
     event_loop::EventLoop,
-    window::{Window, WindowBuilder},
+    window::Window,
 };
 
 pub struct Context {
@@ -47,8 +47,11 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(bg: [f32; 4]) -> anyhow::Result<(EventLoop<()>, Self)> {
-        let event_loop = EventLoop::new()?;
+    pub fn new(
+        event_loop: &EventLoop<()>,
+        window: Arc<Window>,
+        bg: [f32; 4],
+    ) -> anyhow::Result<Self> {
         let library = VulkanLibrary::new()?;
         let required_extensions = Surface::required_extensions(&event_loop);
         let instance = Instance::new(
@@ -59,7 +62,6 @@ impl Context {
                 ..Default::default()
             },
         )?;
-        let window = Arc::new(WindowBuilder::new().build(&event_loop)?);
         let surface = Surface::from_window(instance.clone(), window.clone())?;
         let device_extensions = DeviceExtensions {
             khr_swapchain: true,
@@ -160,29 +162,26 @@ impl Context {
             depth_range: 0.0..=1.0,
         };
 
-        Ok((
-            event_loop,
-            Self {
-                framebuffers: Self::window_size_dependent_setup(
-                    memory_allocator.clone(),
-                    &images,
-                    render_pass.clone(),
-                )?,
-                images,
-                recreate_swapchain: false,
-                previous_frame_end: None,
-                render_pass,
-                viewport,
-                command_buffer_allocator,
-                descriptor_set_allocator,
-                window,
-                device,
-                queue,
-                memory_allocator,
-                swapchain,
-                bg,
-            },
-        ))
+        Ok(Self {
+            framebuffers: Self::window_size_dependent_setup(
+                memory_allocator.clone(),
+                &images,
+                render_pass.clone(),
+            )?,
+            images,
+            recreate_swapchain: false,
+            previous_frame_end: None,
+            render_pass,
+            viewport,
+            command_buffer_allocator,
+            descriptor_set_allocator,
+            window,
+            device,
+            queue,
+            memory_allocator,
+            swapchain,
+            bg,
+        })
     }
 
     pub fn init(
@@ -281,13 +280,16 @@ impl Context {
                 sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
             }
 
+            builder.end_render_pass(Default::default())?;
+
             let command_buffer = builder.build()?;
             let future = self
                 .previous_frame_end
                 .take()
                 .unwrap()
                 .join(acquire_future)
-                .then_execute(self.queue.clone(), command_buffer)?
+                .then_execute(self.queue.clone(), command_buffer)
+                .unwrap()
                 .then_swapchain_present(
                     self.queue.clone(),
                     SwapchainPresentInfo::swapchain_image_index(
