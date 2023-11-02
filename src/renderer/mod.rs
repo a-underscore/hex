@@ -45,7 +45,7 @@ impl Renderer {
         let vertex = vertex::load(context.device.clone())?
             .entry_point("main")
             .unwrap();
-        let fragment = vertex::load(context.device.clone())?
+        let fragment = fragment::load(context.device.clone())?
             .entry_point("main")
             .unwrap();
         let pipeline = Self::pipeline(context, vertex.clone(), fragment.clone())?;
