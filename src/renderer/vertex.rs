@@ -20,7 +20,7 @@ void main(void) {
 
         gl_Position = vec4(vec3(pos, z), 1.0) * camera_proj;
 
-	tex_pos = uv;
+    	tex_pos = uv;
 }
         ",
 }

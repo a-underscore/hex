@@ -115,7 +115,7 @@ impl System for Renderer {
 
                 for (s, _t) in sprites {
                     let set = {
-                        let layout = self.pipeline.layout().set_layouts().get(0).unwrap();
+                        let layout = self.pipeline.layout().set_layouts().get(1).unwrap();
 
                         PersistentDescriptorSet::new(
                             &context.descriptor_set_allocator,
