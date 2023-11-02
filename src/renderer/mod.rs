@@ -118,7 +118,10 @@ impl System for Renderer {
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, builder)) = ev {
-            self.pipeline = Self::pipeline(context, self.vertex.clone(), self.fragment.clone())?;
+            if context.recreate_swapchain {
+                self.pipeline =
+                    Self::pipeline(context, self.vertex.clone(), self.fragment.clone())?;
+            }
 
             if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((

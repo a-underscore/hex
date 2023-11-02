@@ -20,7 +20,7 @@ use vulkano::{
     swapchain::{
         acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
     },
-    sync::GpuFuture,
+    sync::{self, GpuFuture},
     Validated, VulkanError, VulkanLibrary,
 };
 use winit::{
@@ -261,10 +261,30 @@ impl Context {
                 Default::default(),
             )?;
 
-            sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
+            let recreate_swapchain = self.recreate_swapchain;
+
+            if self.recreate_swapchain {
+                let image_extent: [u32; 2] = self.window.inner_size().into();
+                let (new_swapchain, new_images) = self.swapchain.recreate(SwapchainCreateInfo {
+                    image_extent,
+                    ..self.swapchain.create_info()
+                })?;
+                self.swapchain = new_swapchain;
+                self.framebuffers = Self::window_size_dependent_setup(
+                    self.memory_allocator.clone(),
+                    &new_images,
+                    self.render_pass.clone(),
+                )?;
+
+                sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
+
+                self.recreate_swapchain = false;
+            } else {
+                sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
+            }
 
             let command_buffer = builder.build()?;
-            let _future = self
+            let future = self
                 .previous_frame_end
                 .take()
                 .unwrap()
@@ -278,6 +298,19 @@ impl Context {
                     ),
                 )
                 .then_signal_fence_and_flush();
+
+            match future.map_err(Validated::unwrap) {
+                Ok(future) => {
+                    self.previous_frame_end = Some(future.boxed());
+                }
+                Err(VulkanError::OutOfDate) => {
+                    self.recreate_swapchain = true;
+                    self.previous_frame_end = Some(sync::now(self.device.clone()).boxed());
+                }
+                Err(_) => {
+                    self.previous_frame_end = Some(sync::now(self.device.clone()).boxed());
+                }
+            }
         }
 
         Ok(())
