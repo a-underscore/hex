@@ -1,10 +1,6 @@
 use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
 use std::sync::Arc;
 use vulkano::{
-    buffer::{
-        allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
-        BufferUsage,
-    },
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
         RenderPassBeginInfo,
@@ -16,7 +12,7 @@ use vulkano::{
     },
     image::{view::ImageView, Image, ImageUsage},
     instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
-    memory::allocator::{MemoryTypeFilter, StandardMemoryAllocator},
+    memory::allocator::StandardMemoryAllocator,
     pipeline::graphics::viewport::Viewport,
     render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass},
     swapchain::{

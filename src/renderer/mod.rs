@@ -10,10 +10,10 @@ use std::sync::Arc;
 use vulkano::{
     buffer::{
         allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
-        Buffer, BufferCreateInfo, BufferUsage,
+        BufferUsage,
     },
     descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet},
-    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
+    memory::allocator::MemoryTypeFilter,
     padded::Padded,
     pipeline::{
         graphics::{
