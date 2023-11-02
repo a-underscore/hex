@@ -8,7 +8,12 @@ use crate::{
 };
 use std::sync::Arc;
 use vulkano::{
+    buffer::{
+        allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
+        Buffer, BufferCreateInfo, BufferUsage,
+    },
     descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet},
+    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
     padded::Padded,
     pipeline::{
         graphics::{
@@ -117,13 +122,21 @@ impl System for Renderer {
                 for (s, t) in sprites {
                     let view = {
                         let layout = self.pipeline.layout().set_layouts().get(0).unwrap();
-
-                        let subbuffer = context.subbuffer_allocator.allocate_sized()?;
+                        let subbuffer_allocator = SubbufferAllocator::new(
+                            context.memory_allocator.clone(),
+                            SubbufferAllocatorCreateInfo {
+                                buffer_usage: BufferUsage::UNIFORM_BUFFER,
+                                memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                                    | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+                                ..Default::default()
+                            },
+                        );
+                        let subbuffer = subbuffer_allocator.allocate_sized()?;
 
                         *subbuffer.write()? = vertex::View {
                             z: Padded(s.z),
-                            transform: t.matrix().0.map(|i| Padded(i)),
-                            camera_transform: ct.matrix().0.map(|i| Padded(i)),
+                            transform: t.matrix().0.map(Padded),
+                            camera_transform: ct.matrix().0.map(Padded),
                             camera_proj: c.proj().0,
                         };
 
