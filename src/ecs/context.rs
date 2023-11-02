@@ -261,8 +261,6 @@ impl Context {
                 Default::default(),
             )?;
 
-            let recreate_swapchain = self.recreate_swapchain;
-
             if self.recreate_swapchain {
                 let image_extent: [u32; 2] = self.window.inner_size().into();
                 let (new_swapchain, new_images) = self.swapchain.recreate(SwapchainCreateInfo {
