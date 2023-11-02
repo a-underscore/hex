@@ -1,24 +1,47 @@
 use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
+use crate::assets::shape::Vertex2d;
 use std::sync::Arc;
 use vulkano::{
+    buffer::{
+        allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
+        Buffer, BufferCreateInfo, BufferUsage,
+    },
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
         RenderPassBeginInfo,
     },
-    descriptor_set::allocator::StandardDescriptorSetAllocator,
-    device::{
-        physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue,
-        QueueCreateInfo, QueueFlags,
+    descriptor_set::{
+        allocator::StandardDescriptorSetAllocator, PersistentDescriptorSet, WriteDescriptorSet,
     },
-    image::{view::ImageView, Image, ImageUsage},
+    device::{
+        physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, DeviceOwned,
+        Queue, QueueCreateInfo, QueueFlags,
+    },
+    format::Format,
+    image::{view::ImageView, Image, ImageCreateInfo, ImageType, ImageUsage},
     instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
-    memory::allocator::StandardMemoryAllocator,
-    pipeline::graphics::viewport::Viewport,
-    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass},
+    memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator},
+    pipeline::{
+        graphics::{
+            color_blend::{ColorBlendAttachmentState, ColorBlendState},
+            depth_stencil::{DepthState, DepthStencilState},
+            input_assembly::InputAssemblyState,
+            multisample::MultisampleState,
+            rasterization::RasterizationState,
+            vertex_input::{Vertex, VertexDefinition},
+            viewport::{Viewport, ViewportState},
+            GraphicsPipelineCreateInfo,
+        },
+        layout::PipelineDescriptorSetLayoutCreateInfo,
+        GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
+        PipelineShaderStageCreateInfo,
+    },
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
+    shader::EntryPoint,
     swapchain::{
         acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
     },
-    sync::GpuFuture,
+    sync::{self, GpuFuture},
     Validated, VulkanError, VulkanLibrary,
 };
 use winit::{
@@ -34,6 +57,7 @@ pub struct Context {
     pub command_buffer_allocator: Arc<StandardCommandBufferAllocator>,
     pub descriptor_set_allocator: Arc<StandardDescriptorSetAllocator>,
     pub render_pass: Arc<RenderPass>,
+    pub images: Vec<Arc<Image>>,
     pub framebuffers: Vec<Arc<Framebuffer>>,
     pub swapchain: Arc<Swapchain>,
     pub window: Arc<Window>,
@@ -131,10 +155,16 @@ impl Context {
                     load_op: Clear,
                     store_op: Store,
                 },
+                depth_stencil: {
+                    format: Format::D16_UNORM,
+                samples: 1,
+                load_op: Clear,
+                store_op: DontCare,
+                },
             },
             pass: {
                 color: [color],
-                depth_stencil: {},
+                depth_stencil: {depth_stencil},
             },
         )?;
         let descriptor_set_allocator = Arc::new(StandardDescriptorSetAllocator::new(
@@ -145,7 +175,7 @@ impl Context {
             device.clone(),
             Default::default(),
         ));
-        let mut viewport = Viewport {
+        let viewport = Viewport {
             offset: [0.0, 0.0],
             extent: [0.0, 0.0],
             depth_range: 0.0..=1.0,
@@ -155,10 +185,11 @@ impl Context {
             event_loop,
             Self {
                 framebuffers: Self::window_size_dependent_setup(
+                    memory_allocator.clone(),
                     &images,
                     render_pass.clone(),
-                    &mut viewport,
                 )?,
+                images,
                 recreate_swapchain: false,
                 previous_frame_end: None,
                 render_pass,
@@ -220,29 +251,6 @@ impl Context {
             ..
         } = control.event
         {
-            let image_extent: [u32; 2] = self.window.inner_size().into();
-
-            if image_extent.contains(&0) {
-                return Ok(());
-            }
-
-            self.previous_frame_end.as_mut().unwrap().cleanup_finished();
-
-            if self.recreate_swapchain {
-                let (new_swapchain, new_images) = self.swapchain.recreate(SwapchainCreateInfo {
-                    image_extent,
-                    ..self.swapchain.create_info()
-                })?;
-
-                self.swapchain = new_swapchain;
-                self.framebuffers = Self::window_size_dependent_setup(
-                    &new_images,
-                    self.render_pass.clone(),
-                    &mut self.viewport,
-                )?;
-                self.recreate_swapchain = false;
-            }
-
             let (image_index, suboptimal, acquire_future) =
                 match acquire_next_image(self.swapchain.clone(), None).map_err(Validated::unwrap) {
                     Ok(r) => r,
@@ -266,7 +274,7 @@ impl Context {
 
             builder.begin_render_pass(
                 RenderPassBeginInfo {
-                    clear_values: vec![Some([0.0, 0.0, 1.0, 1.0].into())],
+                    clear_values: vec![Some(self.bg.into())],
                     ..RenderPassBeginInfo::framebuffer(
                         self.framebuffers[image_index as usize].clone(),
                     )
@@ -297,26 +305,40 @@ impl Context {
     }
 
     fn window_size_dependent_setup(
+        memory_allocator: Arc<StandardMemoryAllocator>,
         images: &[Arc<Image>],
         render_pass: Arc<RenderPass>,
-        viewport: &mut Viewport,
     ) -> anyhow::Result<Vec<Arc<Framebuffer>>> {
-        let extent = images[0].extent();
-        viewport.extent = [extent[0] as f32, extent[1] as f32];
-
-        images
+        let depth_buffer = ImageView::new_default(
+            Image::new(
+                memory_allocator,
+                ImageCreateInfo {
+                    image_type: ImageType::Dim2d,
+                    format: Format::D16_UNORM,
+                    extent: images[0].extent(),
+                    usage: ImageUsage::DEPTH_STENCIL_ATTACHMENT | ImageUsage::TRANSIENT_ATTACHMENT,
+                    ..Default::default()
+                },
+                AllocationCreateInfo::default(),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        let framebuffers = images
             .iter()
             .map(|image| {
-                let view = ImageView::new_default(image.clone())?;
-
-                Ok(Framebuffer::new(
+                let view = ImageView::new_default(image.clone()).unwrap();
+                Framebuffer::new(
                     render_pass.clone(),
                     FramebufferCreateInfo {
-                        attachments: vec![view],
+                        attachments: vec![view, depth_buffer.clone()],
                         ..Default::default()
                     },
-                )?)
+                )
+                .unwrap()
             })
-            .collect()
+            .collect();
+
+        Ok(framebuffers)
     }
 }

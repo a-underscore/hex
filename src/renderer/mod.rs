@@ -17,12 +17,13 @@ use vulkano::{
     padded::Padded,
     pipeline::{
         graphics::{
-            color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
-            input_assembly::{InputAssemblyState, PrimitiveTopology},
+            color_blend::{ColorBlendAttachmentState, ColorBlendState},
+            depth_stencil::{DepthState, DepthStencilState},
+            input_assembly::InputAssemblyState,
             multisample::MultisampleState,
             rasterization::RasterizationState,
             vertex_input::{Vertex, VertexDefinition},
-            viewport::ViewportState,
+            viewport::{Viewport, ViewportState},
             GraphicsPipelineCreateInfo,
         },
         layout::PipelineDescriptorSetLayoutCreateInfo,
@@ -30,62 +31,82 @@ use vulkano::{
         PipelineShaderStageCreateInfo,
     },
     render_pass::Subpass,
+    shader::EntryPoint,
 };
 
 pub struct Renderer {
+    pub vertex: EntryPoint,
+    pub fragment: EntryPoint,
     pub pipeline: Arc<GraphicsPipeline>,
 }
 
 impl Renderer {
     pub fn new(context: &mut Context) -> anyhow::Result<Self> {
-        let pipeline = {
-            let vs = vertex::load(context.device.clone())?
-                .entry_point("main")
-                .unwrap();
-            let fs = vertex::load(context.device.clone())?
-                .entry_point("main")
-                .unwrap();
-            let vertex_input_state =
-                Vertex2d::per_vertex().definition(&vs.info().input_interface)?;
-            let stages = [
-                PipelineShaderStageCreateInfo::new(vs),
-                PipelineShaderStageCreateInfo::new(fs),
-            ];
-            let layout = PipelineLayout::new(
-                context.device.clone(),
-                PipelineDescriptorSetLayoutCreateInfo::from_stages(&stages)
-                    .into_pipeline_layout_create_info(context.device.clone())?,
-            )?;
-            let subpass = Subpass::from(context.render_pass.clone(), 0).unwrap();
+        let vertex = vertex::load(context.device.clone())?
+            .entry_point("main")
+            .unwrap();
+        let fragment = vertex::load(context.device.clone())?
+            .entry_point("main")
+            .unwrap();
+        let pipeline = Self::pipeline(context, vertex.clone(), fragment.clone())?;
 
-            GraphicsPipeline::new(
-                context.device.clone(),
-                None,
-                GraphicsPipelineCreateInfo {
-                    stages: stages.into_iter().collect(),
-                    vertex_input_state: Some(vertex_input_state),
-                    input_assembly_state: Some(InputAssemblyState {
-                        topology: PrimitiveTopology::TriangleStrip,
-                        ..Default::default()
-                    }),
-                    viewport_state: Some(ViewportState::default()),
-                    rasterization_state: Some(RasterizationState::default()),
-                    multisample_state: Some(MultisampleState::default()),
-                    color_blend_state: Some(ColorBlendState::with_attachment_states(
-                        subpass.num_color_attachments(),
-                        ColorBlendAttachmentState {
-                            blend: Some(AttachmentBlend::alpha()),
-                            ..Default::default()
-                        },
-                    )),
-                    dynamic_state: [DynamicState::Viewport].into_iter().collect(),
-                    subpass: Some(subpass.into()),
-                    ..GraphicsPipelineCreateInfo::layout(layout)
-                },
-            )?
-        };
+        Ok(Self {
+            vertex,
+            fragment,
+            pipeline,
+        })
+    }
 
-        Ok(Self { pipeline })
+    fn pipeline(
+        context: &mut Context,
+        vertex: EntryPoint,
+        fragment: EntryPoint,
+    ) -> anyhow::Result<Arc<GraphicsPipeline>> {
+        let vertex_input_state =
+            Vertex2d::per_vertex().definition(&vertex.info().input_interface)?;
+        let stages = [
+            PipelineShaderStageCreateInfo::new(vertex),
+            PipelineShaderStageCreateInfo::new(fragment),
+        ];
+        let layout = PipelineLayout::new(
+            context.device.clone(),
+            PipelineDescriptorSetLayoutCreateInfo::from_stages(&stages)
+                .into_pipeline_layout_create_info(context.device.clone())?,
+        )?;
+        let subpass = Subpass::from(context.render_pass.clone(), 0).unwrap();
+        let extent = context.images[0].extent();
+
+        Ok(GraphicsPipeline::new(
+            context.device.clone(),
+            None,
+            GraphicsPipelineCreateInfo {
+                stages: stages.into_iter().collect(),
+                vertex_input_state: Some(vertex_input_state),
+                input_assembly_state: Some(InputAssemblyState::default()),
+                viewport_state: Some(ViewportState {
+                    viewports: [Viewport {
+                        offset: [0.0, 0.0],
+                        extent: [extent[0] as f32, extent[1] as f32],
+                        depth_range: 0.0..=1.0,
+                    }]
+                    .into_iter()
+                    .collect(),
+                    ..Default::default()
+                }),
+                rasterization_state: Some(RasterizationState::default()),
+                depth_stencil_state: Some(DepthStencilState {
+                    depth: Some(DepthState::simple()),
+                    ..Default::default()
+                }),
+                multisample_state: Some(MultisampleState::default()),
+                color_blend_state: Some(ColorBlendState::with_attachment_states(
+                    subpass.num_color_attachments(),
+                    ColorBlendAttachmentState::default(),
+                )),
+                subpass: Some(subpass.into()),
+                ..GraphicsPipelineCreateInfo::layout(layout)
+            },
+        )?)
     }
 }
 
@@ -97,6 +118,8 @@ impl System for Renderer {
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, builder)) = ev {
+            self.pipeline = Self::pipeline(context, self.vertex.clone(), self.fragment.clone())?;
+
             if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e).and_then(|c| c.active.then_some(c))?,
