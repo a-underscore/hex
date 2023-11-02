@@ -4,5 +4,5 @@ version = "0.2.0"
 edition = "2021"
 
 [dependencies]
-anyhow = { version = "1.0.58", features = ["backtrace"] }
+anyhow = "1.0.58"
 glium = "0.32.1"
