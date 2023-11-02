@@ -9,6 +9,7 @@ use crate::{
 use std::sync::Arc;
 use vulkano::{
     descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet},
+    padded::Padded,
     pipeline::{
         graphics::{
             color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
@@ -91,7 +92,7 @@ impl System for Renderer {
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if let Ev::Draw((_, builder)) = ev {
-            if let Some((_c, _ct)) = em.entities().find_map(|e| {
+            if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e).and_then(|c| c.active.then_some(c))?,
                     cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
@@ -113,8 +114,27 @@ impl System for Renderer {
                     sprites
                 };
 
-                for (s, _t) in sprites {
-                    let set = {
+                for (s, t) in sprites {
+                    let view = {
+                        let layout = self.pipeline.layout().set_layouts().get(0).unwrap();
+
+                        let subbuffer = context.subbuffer_allocator.allocate_sized()?;
+
+                        *subbuffer.write()? = vertex::View {
+                            z: Padded(s.z),
+                            transform: t.matrix().0.map(|i| Padded(i)),
+                            camera_transform: ct.matrix().0.map(|i| Padded(i)),
+                            camera_proj: c.proj().0,
+                        };
+
+                        PersistentDescriptorSet::new(
+                            &context.descriptor_set_allocator,
+                            layout.clone(),
+                            [WriteDescriptorSet::buffer(0, subbuffer)],
+                            [],
+                        )?
+                    };
+                    let texture = {
                         let layout = self.pipeline.layout().set_layouts().get(1).unwrap();
 
                         PersistentDescriptorSet::new(
@@ -135,7 +155,13 @@ impl System for Renderer {
                             PipelineBindPoint::Graphics,
                             self.pipeline.layout().clone(),
                             0,
-                            set.clone(),
+                            view.clone(),
+                        )?
+                        .bind_descriptor_sets(
+                            PipelineBindPoint::Graphics,
+                            self.pipeline.layout().clone(),
+                            1,
+                            texture.clone(),
                         )?
                         .bind_vertex_buffers(0, s.shape.vertices.clone())?
                         .draw(s.shape.vertices.len() as u32, 1, 0, 0)?;
