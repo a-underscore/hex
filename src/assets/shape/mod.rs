@@ -3,7 +3,7 @@ pub mod vertex2d;
 pub use vertex2d::Vertex2d;
 
 use crate::{ecs::Context, math::Vec2d};
-use std::sync::Arc;
+
 use vulkano::{
     buffer::{subbuffer::Subbuffer, Buffer, BufferCreateInfo, BufferUsage},
     memory::allocator::{AllocationCreateInfo, MemoryTypeFilter},
