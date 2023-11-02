@@ -2,7 +2,7 @@ pub mod fragment;
 pub mod vertex;
 
 use crate::{
-    assets::shape::Vertex2d,
+    assets::shape2d::Vertex2d,
     components::{Camera, Sprite, Transform},
     ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
