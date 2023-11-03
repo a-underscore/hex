@@ -58,12 +58,10 @@ impl Texture2d {
         let command_buffer = upload.build()?;
 
         let future = sync::now(context.device.clone())
-            .then_execute(context.queue.clone(), command_buffer)
-            .unwrap()
-            .then_signal_fence_and_flush()
-            .unwrap();
+            .then_execute(context.queue.clone(), command_buffer)?
+            .then_signal_fence_and_flush()?;
 
-        future.wait(None).unwrap();
+        future.wait(None)?;
 
         Ok(Self {
             image: ImageView::new_default(image)?,
