@@ -17,7 +17,7 @@ pub struct Texture2d {
 
 impl Texture2d {
     pub fn new(
-        context: &Context,
+        context: &mut Context,
         sampler: Arc<Sampler>,
         source: &[u8],
         width: u32,
@@ -57,11 +57,18 @@ impl Texture2d {
 
         let command_buffer = upload.build()?;
 
-        let future = sync::now(context.device.clone())
-            .then_execute(context.queue.clone(), command_buffer)?
-            .then_signal_fence_and_flush()?;
-
-        future.wait(None)?;
+        context.previous_frame_end = Some(
+            context
+                .previous_frame_end
+                .take()
+                .unwrap()
+                .join(
+                    sync::now(context.device.clone())
+                        .then_execute(context.queue.clone(), command_buffer)?
+                        .then_signal_fence_and_flush()?,
+                )
+                .boxed(),
+        );
 
         Ok(Self {
             image: ImageView::new_default(image)?,
