@@ -129,6 +129,10 @@ impl System for Renderer {
                     Self::pipeline(context, self.vertex.clone(), self.fragment.clone())?;
             }
 
+            builder
+                .set_viewport(0, [context.viewport.clone()].into_iter().collect())?
+                .bind_pipeline_graphics(self.pipeline.clone())?;
+
             if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
                     cm.get::<Camera>(e).and_then(|c| c.active.then_some(c))?,
@@ -216,8 +220,6 @@ impl System for Renderer {
                     };
 
                     builder
-                        .set_viewport(0, [context.viewport.clone()].into_iter().collect())?
-                        .bind_pipeline_graphics(self.pipeline.clone())?
                         .bind_descriptor_sets(
                             PipelineBindPoint::Graphics,
                             self.pipeline.layout().clone(),
