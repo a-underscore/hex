@@ -193,8 +193,9 @@ impl Context {
         sm.init(&mut self, (&mut em, &mut cm))?;
 
         event_loop.run(move |event, elwt| {
-            self.update(&mut sm, (&mut em, &mut cm), Control::new(event, elwt))
-                .unwrap();
+            if let Err(e) = self.update(&mut sm, (&mut em, &mut cm), Control::new(event, elwt)) {
+                eprintln!("{}", e);
+            }
         })?;
 
         Ok(())
