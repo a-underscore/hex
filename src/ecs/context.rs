@@ -207,6 +207,8 @@ impl Context {
         (em, cm): (&mut EntityManager, &mut ComponentManager),
         mut control: Control,
     ) -> anyhow::Result<()> {
+        sm.update(&mut Ev::Event(&mut control), self, (em, cm))?;
+
         match control.event {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
