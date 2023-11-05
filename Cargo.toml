@@ -4,7 +4,7 @@ version = "0.2.0"
 edition = "2021"
 
 [dependencies]
-anyhow = { version = "1.0.58", features = ["backtrace"] }
+anyhow = "1.0.58" 
 vulkano = "0.34.1"
 vulkano-shaders = "0.34.0"
 winit = { version = "0.29.3", features = ["rwh_05"] }
