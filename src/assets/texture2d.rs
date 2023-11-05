@@ -6,7 +6,7 @@ use vulkano::{
     format::Format,
     image::{sampler::Sampler, view::ImageView, Image, ImageCreateInfo, ImageType, ImageUsage},
     memory::allocator::{AllocationCreateInfo, MemoryTypeFilter},
-    sync::GpuFuture,
+    sync::{self, GpuFuture},
 };
 
 #[derive(Clone)]
@@ -62,8 +62,11 @@ impl Texture2d {
                 .previous_frame_end
                 .take()
                 .unwrap()
-                .then_execute(context.queue.clone(), command_buffer)?
-                .then_signal_fence_and_flush()?
+                .join(
+                    sync::now(context.device.clone())
+                        .then_execute(context.queue.clone(), command_buffer)?
+                        .then_signal_fence_and_flush()?,
+                )
                 .boxed(),
         );
 
