@@ -57,7 +57,7 @@ impl Renderer {
         })
     }
 
-    fn pipeline(
+    pub fn pipeline(
         context: &Context,
         vertex: EntryPoint,
         fragment: EntryPoint,
