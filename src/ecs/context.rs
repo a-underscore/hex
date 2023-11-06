@@ -333,36 +333,31 @@ impl Context {
         images: &[Arc<Image>],
         render_pass: Arc<RenderPass>,
     ) -> anyhow::Result<Vec<Arc<Framebuffer>>> {
-        let depth_buffer = ImageView::new_default(
-            Image::new(
-                memory_allocator,
-                ImageCreateInfo {
-                    image_type: ImageType::Dim2d,
-                    format: Format::D16_UNORM,
-                    extent: images[0].extent(),
-                    usage: ImageUsage::DEPTH_STENCIL_ATTACHMENT | ImageUsage::TRANSIENT_ATTACHMENT,
-                    ..Default::default()
-                },
-                AllocationCreateInfo::default(),
-            )
-            .unwrap(),
-        )
-        .unwrap();
-        let framebuffers = images
+        let depth_buffer = ImageView::new_default(Image::new(
+            memory_allocator,
+            ImageCreateInfo {
+                image_type: ImageType::Dim2d,
+                format: Format::D16_UNORM,
+                extent: images[0].extent(),
+                usage: ImageUsage::DEPTH_STENCIL_ATTACHMENT | ImageUsage::TRANSIENT_ATTACHMENT,
+                ..Default::default()
+            },
+            AllocationCreateInfo::default(),
+        )?)?;
+
+        images
             .iter()
             .map(|image| {
-                let view = ImageView::new_default(image.clone()).unwrap();
-                Framebuffer::new(
+                let view = ImageView::new_default(image.clone())?;
+
+                Ok(Framebuffer::new(
                     render_pass.clone(),
                     FramebufferCreateInfo {
                         attachments: vec![view, depth_buffer.clone()],
                         ..Default::default()
                     },
-                )
-                .unwrap()
+                )?)
             })
-            .collect();
-
-        Ok(framebuffers)
+            .collect()
     }
 }
