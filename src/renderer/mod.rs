@@ -129,10 +129,6 @@ impl System for Renderer {
                     Self::pipeline(context, self.vertex.clone(), self.fragment.clone())?;
             }
 
-            builder
-                .set_viewport(0, [context.viewport.clone()].into_iter().collect())?
-                .bind_pipeline_graphics(self.pipeline.clone())?;
-
             if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
                     cm.get_ref::<Camera>(e)
@@ -158,6 +154,10 @@ impl System for Renderer {
 
                     sprites
                 };
+
+                builder
+                    .set_viewport(0, [context.viewport.clone()].into_iter().collect())?
+                    .bind_pipeline_graphics(self.pipeline.clone())?;
 
                 for (s, t) in sprites {
                     let view = {
