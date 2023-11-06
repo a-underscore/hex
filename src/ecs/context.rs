@@ -244,7 +244,6 @@ impl Context {
                 self.queue.queue_family_index(),
                 CommandBufferUsage::OneTimeSubmit,
             )?;
-
             let mut recreate_swapchain = self.recreate_swapchain;
 
             if recreate_swapchain {
@@ -274,15 +273,17 @@ impl Context {
                     Err(e) => return Err(e.into()),
                 };
 
-            builder.begin_render_pass(
-                RenderPassBeginInfo {
-                    clear_values: vec![Some(self.bg.into()), Some(1f32.into())],
-                    ..RenderPassBeginInfo::framebuffer(
-                        self.framebuffers[image_index as usize].clone(),
-                    )
-                },
-                Default::default(),
-            )?;
+            builder
+                .begin_render_pass(
+                    RenderPassBeginInfo {
+                        clear_values: vec![Some(self.bg.into()), Some(1f32.into())],
+                        ..RenderPassBeginInfo::framebuffer(
+                            self.framebuffers[image_index as usize].clone(),
+                        )
+                    },
+                    Default::default(),
+                )?
+                .set_viewport(0, [self.viewport.clone()].into_iter().collect())?;
 
             sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
 

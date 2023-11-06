@@ -155,9 +155,7 @@ impl System for Renderer {
                     sprites
                 };
 
-                builder
-                    .set_viewport(0, [context.viewport.clone()].into_iter().collect())?
-                    .bind_pipeline_graphics(self.pipeline.clone())?;
+                builder.bind_pipeline_graphics(self.pipeline.clone())?;
 
                 for (s, t) in sprites {
                     let view = {
