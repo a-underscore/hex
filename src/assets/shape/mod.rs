@@ -10,11 +10,11 @@ use vulkano::{
 };
 
 #[derive(Clone)]
-pub struct Shape2d {
+pub struct Shape {
     pub vertices: Subbuffer<[Vertex2d]>,
 }
 
-impl Shape2d {
+impl Shape {
     pub fn new(context: &Context, vertices: &[Vertex2d]) -> anyhow::Result<Self> {
         Ok(Self {
             vertices: Buffer::from_iter(

@@ -10,12 +10,12 @@ use vulkano::{
 };
 
 #[derive(Clone)]
-pub struct Texture2d {
+pub struct Texture {
     pub image: Arc<ImageView>,
     pub sampler: Arc<Sampler>,
 }
 
-impl Texture2d {
+impl Texture {
     pub fn new(
         context: &mut Context,
         sampler: Arc<Sampler>,
