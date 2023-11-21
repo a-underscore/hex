@@ -6,7 +6,7 @@ use super::{ComponentManager, Context, EntityManager, Ev};
 
 #[derive(Default)]
 pub struct SystemManager {
-    pub systems: Vec<Box<dyn System>>,
+    systems: Vec<Box<dyn System>>,
 }
 
 impl SystemManager {
