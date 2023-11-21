@@ -5,15 +5,11 @@ pub use as_any::AsAny;
 pub use component::Component;
 
 use super::{EntityManager, Id};
-use std::{
-    any::TypeId,
-    collections::HashMap,
-    sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard},
-};
+use std::{any::TypeId, collections::HashMap};
 
 #[derive(Default)]
 pub struct ComponentManager {
-    pub(super) components: HashMap<(Id, TypeId), Arc<dyn AsAny>>,
+    pub(super) components: HashMap<(Id, TypeId), Box<dyn AsAny>>,
 }
 
 impl ComponentManager {
@@ -21,7 +17,7 @@ impl ComponentManager {
         &mut self,
         eid: Id,
         cid: TypeId,
-        component: Arc<dyn AsAny>,
+        component: Box<dyn AsAny>,
         em: &mut EntityManager,
     ) {
         if let Some(entity) = em.entities.get_mut(&eid) {
@@ -35,7 +31,7 @@ impl ComponentManager {
     where
         C: Component,
     {
-        self.add_gen(eid, TypeId::of::<C>(), Arc::new(RwLock::new(component)), em);
+        self.add_gen(eid, TypeId::of::<C>(), Box::new(component), em);
     }
 
     pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
@@ -53,32 +49,40 @@ impl ComponentManager {
         self.rm_gen(eid, TypeId::of::<C>(), em);
     }
 
-    pub fn get_gen(&self, eid: Id, cid: TypeId) -> Option<&Arc<dyn AsAny>> {
-        self.components.get(&(eid, cid))
+    pub fn get_gen(&self, eid: Id, cid: TypeId) -> Option<&dyn AsAny> {
+        self.components.get(&(eid, cid)).map(|c| c.as_ref())
     }
 
-    pub fn get_ref<C>(&self, eid: Id) -> Option<RwLockReadGuard<C>>
+    pub fn get<C>(&self, eid: Id) -> Option<&C>
     where
         C: Component,
     {
-        self.get_gen(eid, TypeId::of::<C>())
-            .and_then(Self::cast)
-            .and_then(|c| c.read().ok())
+        self.get_gen(eid, TypeId::of::<C>()).and_then(Self::cast)
     }
 
-    pub fn get_mut<C>(&self, eid: Id) -> Option<RwLockWriteGuard<C>>
+    pub fn get_gen_mut(&mut self, eid: Id, cid: TypeId) -> Option<&mut dyn AsAny> {
+        self.components.get_mut(&(eid, cid)).map(|c| c.as_mut())
+    }
+
+    pub fn get_mut<C>(&mut self, eid: Id) -> Option<&mut C>
     where
         C: Component,
     {
-        self.get_gen(eid, TypeId::of::<C>())
-            .and_then(Self::cast)
-            .and_then(|c| c.write().ok())
+        self.get_gen_mut(eid, TypeId::of::<C>())
+            .and_then(Self::cast_mut)
     }
 
-    pub fn cast<C>(a: &Arc<dyn AsAny>) -> Option<&RwLock<C>>
+    pub fn cast<C>(a: &dyn AsAny) -> Option<&C>
     where
         C: Component,
     {
         a.as_any().downcast_ref()
+    }
+
+    pub fn cast_mut<C>(a: &mut dyn AsAny) -> Option<&mut C>
+    where
+        C: Component,
+    {
+        a.as_any_mut().downcast_mut()
     }
 }

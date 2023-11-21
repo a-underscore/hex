@@ -131,10 +131,8 @@ impl System for Renderer {
 
             if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
-                    cm.get_ref::<Camera>(e)
-                        .and_then(|c| c.active.then_some(c))?,
-                    cm.get_ref::<Transform>(e)
-                        .and_then(|t| t.active.then_some(t))?,
+                    cm.get::<Camera>(e).and_then(|c| c.active.then_some(c))?,
+                    cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
                 ))
             }) {
                 let sprites = {
@@ -142,10 +140,8 @@ impl System for Renderer {
                         .entities()
                         .filter_map(|e| {
                             Some((
-                                cm.get_ref::<Sprite>(e)
-                                    .and_then(|s| s.active.then_some(s))?,
-                                cm.get_ref::<Transform>(e)
-                                    .and_then(|t| t.active.then_some(t))?,
+                                cm.get::<Sprite>(e).and_then(|s| s.active.then_some(s))?,
+                                cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
                             ))
                         })
                         .collect();
