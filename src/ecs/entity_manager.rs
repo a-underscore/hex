@@ -1,4 +1,4 @@
-use super::{id, ComponentManager, Id};
+use super::{ComponentManager, Id};
 use std::{
     any::TypeId,
     collections::{hash_map::Keys, HashMap, HashSet},
