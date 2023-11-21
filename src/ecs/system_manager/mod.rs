@@ -10,11 +10,15 @@ pub struct SystemManager {
 }
 
 impl SystemManager {
+    pub fn add_gen(&mut self, s: Box<dyn System>) {
+        self.systems.push(s);
+    }
+
     pub fn add<S>(&mut self, s: S)
     where
         S: System,
     {
-        self.systems.push(Box::new(s));
+        self.add_gen(Box::new(s));
     }
 
     pub fn rm(&mut self) {
