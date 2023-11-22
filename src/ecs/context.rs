@@ -1,6 +1,5 @@
-use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
-
-use std::sync::Arc;
+use super::{ComponentManager, Control, Draw, EntityManager, SystemManager};
+use std::sync::{Arc, RwLock};
 use vulkano::{
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
@@ -25,7 +24,7 @@ use vulkano::{
 };
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::EventLoop,
+    event_loop::{EventLoop, EventLoopWindowTarget},
     window::Window,
 };
 
@@ -185,15 +184,21 @@ impl Context {
     }
 
     pub fn init(
-        mut self,
+        context: Arc<RwLock<Self>>,
         event_loop: EventLoop<()>,
         mut sm: SystemManager,
-        (mut em, mut cm): (EntityManager, ComponentManager),
+        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
     ) -> anyhow::Result<()> {
-        sm.init(&mut self, (&mut em, &mut cm))?;
+        sm.init(context.clone(), (em.clone(), cm.clone()))?;
 
         event_loop.run(move |event, elwt| {
-            if let Err(e) = self.update(&mut sm, (&mut em, &mut cm), Control::new(event, elwt)) {
+            if let Err(e) = Self::update(
+                context.clone(),
+                &mut sm,
+                (em.clone(), cm.clone()),
+                elwt,
+                Control::new(event),
+            ) {
                 eprintln!("{}", e);
             }
         })?;
@@ -202,27 +207,31 @@ impl Context {
     }
 
     pub fn update(
-        &mut self,
+        context: Arc<RwLock<Self>>,
         sm: &mut SystemManager,
-        (em, cm): (&mut EntityManager, &mut ComponentManager),
-        mut control: Control,
+        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
+        elwt: &EventLoopWindowTarget<()>,
+        control: Arc<RwLock<Control>>,
     ) -> anyhow::Result<()> {
-        sm.update(&mut Ev::Event(&mut control), self, (em, cm))?;
+        sm.update(control.clone(), context.clone(), (em.clone(), cm.clone()))?;
+
+        let mut control = control.write().unwrap();
+        let mut context = context.write().unwrap();
 
         match control.event {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
             } => {
-                control.elwt.exit();
+                elwt.exit();
             }
             Event::WindowEvent {
                 event: WindowEvent::Resized(_),
                 ..
             } => {
-                self.recreate_swapchain = true;
+                context.recreate_swapchain = true;
             }
-            Event::AboutToWait => self.window.request_redraw(),
+            Event::AboutToWait => context.window.request_redraw(),
             _ => {}
         }
 
@@ -231,61 +240,74 @@ impl Context {
             ..
         } = control.event
         {
-            let image_extent: [u32; 2] = self.window.inner_size().into();
+            let image_extent: [u32; 2] = context.window.inner_size().into();
 
             if image_extent.contains(&0) {
                 return Ok(());
             }
 
-            self.previous_frame_end.as_mut().unwrap().cleanup_finished();
+            context
+                .previous_frame_end
+                .as_mut()
+                .unwrap()
+                .cleanup_finished();
 
             let mut builder = AutoCommandBufferBuilder::primary(
-                &self.command_buffer_allocator,
-                self.queue.queue_family_index(),
+                &context.command_buffer_allocator,
+                context.queue.queue_family_index(),
                 CommandBufferUsage::OneTimeSubmit,
             )?;
-            let mut recreate_swapchain = self.recreate_swapchain;
+            let mut recreate_swapchain = context.recreate_swapchain;
 
             if recreate_swapchain {
-                let (new_swapchain, new_images) = self.swapchain.recreate(SwapchainCreateInfo {
-                    image_extent,
-                    ..self.swapchain.create_info()
-                })?;
-                self.swapchain = new_swapchain;
-                self.images = new_images;
-                self.framebuffers = Self::window_size_dependent_setup(
-                    self.memory_allocator.clone(),
-                    &self.images,
-                    self.render_pass.clone(),
+                let (new_swapchain, new_images) =
+                    context.swapchain.recreate(SwapchainCreateInfo {
+                        image_extent,
+                        ..context.swapchain.create_info()
+                    })?;
+                context.swapchain = new_swapchain;
+                context.images = new_images;
+                context.framebuffers = Self::window_size_dependent_setup(
+                    context.memory_allocator.clone(),
+                    &context.images,
+                    context.render_pass.clone(),
                 )?;
 
                 recreate_swapchain = false;
             }
 
-            let (image_index, suboptimal, acquire_future) =
-                match acquire_next_image(self.swapchain.clone(), None).map_err(Validated::unwrap) {
-                    Ok(r) => r,
-                    Err(VulkanError::OutOfDate) => {
-                        self.recreate_swapchain = true;
+            let (image_index, suboptimal, acquire_future) = match acquire_next_image(
+                context.swapchain.clone(),
+                None,
+            )
+            .map_err(Validated::unwrap)
+            {
+                Ok(r) => r,
+                Err(VulkanError::OutOfDate) => {
+                    context.recreate_swapchain = true;
 
-                        return Ok(());
-                    }
-                    Err(e) => return Err(e.into()),
-                };
+                    return Ok(());
+                }
+                Err(e) => return Err(e.into()),
+            };
 
             builder
                 .begin_render_pass(
                     RenderPassBeginInfo {
-                        clear_values: vec![Some(self.bg.into()), Some(1f32.into())],
+                        clear_values: vec![Some(context.bg.into()), Some(1f32.into())],
                         ..RenderPassBeginInfo::framebuffer(
-                            self.framebuffers[image_index as usize].clone(),
+                            context.framebuffers[image_index as usize].clone(),
                         )
                     },
                     Default::default(),
                 )?
-                .set_viewport(0, [self.viewport.clone()].into_iter().collect())?;
+                .set_viewport(0, [context.viewport.clone()].into_iter().collect())?;
 
-            sm.update(&mut Ev::Draw((&mut control, &mut builder)), self, (em, cm))?;
+            sm.draw(
+                &mut Draw(&mut control, &mut builder),
+                &mut context,
+                (em.clone(), cm.clone()),
+            )?;
 
             builder.end_render_pass(Default::default())?;
 
@@ -294,16 +316,16 @@ impl Context {
             }
 
             let command_buffer = builder.build()?;
-            let future = self
+            let future = context
                 .previous_frame_end
                 .take()
                 .unwrap()
                 .join(acquire_future)
-                .then_execute(self.queue.clone(), command_buffer)?
+                .then_execute(context.queue.clone(), command_buffer)?
                 .then_swapchain_present(
-                    self.queue.clone(),
+                    context.queue.clone(),
                     SwapchainPresentInfo::swapchain_image_index(
-                        self.swapchain.clone(),
+                        context.swapchain.clone(),
                         image_index,
                     ),
                 )
@@ -311,21 +333,25 @@ impl Context {
 
             match future.map_err(Validated::unwrap) {
                 Ok(future) => {
-                    self.previous_frame_end = Some(future.boxed_send_sync());
+                    context.previous_frame_end = Some(future.boxed_send_sync());
                 }
                 Err(VulkanError::OutOfDate) => {
                     recreate_swapchain = true;
 
-                    self.previous_frame_end =
-                        Some(sync::now(self.device.clone()).boxed_send_sync());
+                    context.previous_frame_end =
+                        Some(sync::now(context.device.clone()).boxed_send_sync());
                 }
                 Err(_) => {
-                    self.previous_frame_end =
-                        Some(sync::now(self.device.clone()).boxed_send_sync());
+                    context.previous_frame_end =
+                        Some(sync::now(context.device.clone()).boxed_send_sync());
                 }
             }
 
-            self.recreate_swapchain = recreate_swapchain;
+            context.recreate_swapchain = recreate_swapchain;
+        }
+
+        if control.exit {
+            elwt.exit();
         }
 
         Ok(())

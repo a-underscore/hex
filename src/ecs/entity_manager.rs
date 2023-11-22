@@ -3,6 +3,7 @@ use std::{
     any::TypeId,
     collections::{hash_map::Keys, HashMap, HashSet},
     iter::Cloned,
+    sync::{Arc, RwLock},
 };
 
 #[derive(Default)]
@@ -12,6 +13,10 @@ pub struct EntityManager {
 }
 
 impl EntityManager {
+    pub fn new() -> Arc<RwLock<Self>> {
+        Default::default()
+    }
+
     pub fn add_gen(&mut self, id: Id) {
         self.entities.insert(id, HashSet::new());
     }

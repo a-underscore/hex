@@ -1,20 +1,21 @@
 use super::{ComponentManager, Context, EntityManager};
-use crate::ecs::Ev;
+use crate::ecs::Control;
+use std::sync::{Arc, RwLock};
 
-pub trait System: 'static {
+pub trait System: Send + Sync + 'static {
     fn init(
         &mut self,
-        _: &mut Context,
-        _: (&mut EntityManager, &mut ComponentManager),
+        _: Arc<RwLock<Context>>,
+        _: (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
     ) -> anyhow::Result<()> {
         Ok(())
     }
 
     fn update(
         &mut self,
-        _: &mut Ev,
-        _: &mut Context,
-        _: (&mut EntityManager, &mut ComponentManager),
+        _: Arc<RwLock<Control>>,
+        _: Arc<RwLock<Context>>,
+        _: (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
     ) -> anyhow::Result<()> {
         Ok(())
     }
