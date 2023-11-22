@@ -38,6 +38,21 @@ impl SystemManager {
         }
     }
 
+    pub fn add_renderer_gen(&mut self, r: Arc<RwLock<dyn Renderer>>) {
+        self.renderers.push(r);
+    }
+
+    pub fn add_renderer<R>(&mut self, r: R)
+    where
+        R: Renderer,
+    {
+        self.add_renderer_gen(Arc::new(RwLock::new(r)));
+    }
+
+    pub fn rm_renderer(&mut self) {
+        self.renderers.pop();
+    }
+
     pub fn init(
         &mut self,
         context: Arc<RwLock<Context>>,
