@@ -50,7 +50,7 @@ impl Context {
         event_loop: &EventLoop<()>,
         window: Arc<Window>,
         bg: [f32; 4],
-    ) -> anyhow::Result<Self> {
+    ) -> anyhow::Result<Arc<RwLock<Self>>> {
         let library = VulkanLibrary::new()?;
         let required_extensions = Surface::required_extensions(&event_loop);
         let instance = Instance::new(
@@ -161,7 +161,7 @@ impl Context {
             depth_range: 0.0..=1.0,
         };
 
-        Ok(Self {
+        Ok(Arc::new(RwLock::new(Self {
             framebuffers: Self::window_size_dependent_setup(
                 memory_allocator.clone(),
                 &images,
@@ -180,7 +180,7 @@ impl Context {
             memory_allocator,
             swapchain,
             bg,
-        })
+        })))
     }
 
     pub fn init(
