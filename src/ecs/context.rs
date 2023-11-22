@@ -42,7 +42,7 @@ pub struct Context {
     pub window: Arc<Window>,
     pub viewport: Viewport,
     pub recreate_swapchain: bool,
-    pub previous_frame_end: Option<Box<dyn GpuFuture>>,
+    pub previous_frame_end: Option<Box<dyn GpuFuture + Send + Sync>>,
     pub bg: [f32; 4],
 }
 
@@ -170,7 +170,7 @@ impl Context {
             )?,
             images,
             recreate_swapchain: false,
-            previous_frame_end: Some(sync::now(device.clone()).boxed()),
+            previous_frame_end: Some(sync::now(device.clone()).boxed_send_sync()),
             render_pass,
             viewport,
             command_buffer_allocator,
@@ -311,15 +311,17 @@ impl Context {
 
             match future.map_err(Validated::unwrap) {
                 Ok(future) => {
-                    self.previous_frame_end = Some(future.boxed());
+                    self.previous_frame_end = Some(future.boxed_send_sync());
                 }
                 Err(VulkanError::OutOfDate) => {
                     recreate_swapchain = true;
 
-                    self.previous_frame_end = Some(sync::now(self.device.clone()).boxed());
+                    self.previous_frame_end =
+                        Some(sync::now(self.device.clone()).boxed_send_sync());
                 }
                 Err(_) => {
-                    self.previous_frame_end = Some(sync::now(self.device.clone()).boxed());
+                    self.previous_frame_end =
+                        Some(sync::now(self.device.clone()).boxed_send_sync());
                 }
             }
 

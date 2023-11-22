@@ -67,7 +67,7 @@ impl Texture {
                         .then_execute(context.queue.clone(), command_buffer)?
                         .then_signal_fence_and_flush()?,
                 )
-                .boxed(),
+                .boxed_send_sync(),
         );
 
         Ok(Self {
