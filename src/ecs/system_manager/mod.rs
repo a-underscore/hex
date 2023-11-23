@@ -2,7 +2,7 @@ pub mod system;
 
 pub use system::System;
 
-use super::{ComponentManager, Context, Control, Draw, EntityManager, Id};
+use super::{ComponentManager, Context, Control, EntityManager, Id};
 use rayon::prelude::*;
 use std::{
     collections::HashMap,

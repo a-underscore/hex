@@ -2,10 +2,9 @@ pub mod renderer;
 
 pub use renderer::Renderer;
 
-use super::{ComponentManager, Context, Control, Draw, EntityManager, Id};
-use rayon::prelude::*;
+use super::{ComponentManager, Context, Draw, EntityManager};
+
 use std::{
-    collections::HashMap,
     sync::{Arc, RwLock},
 };
 
