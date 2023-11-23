@@ -41,7 +41,7 @@ pub struct Context {
     pub window: Arc<Window>,
     pub viewport: Viewport,
     pub recreate_swapchain: bool,
-    pub previous_frame_end: Option<Box<dyn GpuFuture + Send + Sync>>,
+    pub previous_frame_end: Arc<RwLock<Option<Box<dyn GpuFuture + Send + Sync>>>>,
     pub bg: [f32; 4],
 }
 
@@ -169,7 +169,9 @@ impl Context {
             )?,
             images,
             recreate_swapchain: false,
-            previous_frame_end: Some(sync::now(device.clone()).boxed_send_sync()),
+            previous_frame_end: Arc::new(RwLock::new(Some(
+                sync::now(device.clone()).boxed_send_sync(),
+            ))),
             render_pass,
             viewport,
             command_buffer_allocator,
@@ -248,6 +250,8 @@ impl Context {
 
             context
                 .previous_frame_end
+                .write()
+                .unwrap()
                 .as_mut()
                 .unwrap()
                 .cleanup_finished();
@@ -316,34 +320,37 @@ impl Context {
             }
 
             let command_buffer = builder.build()?;
-            let future = context
-                .previous_frame_end
-                .take()
-                .unwrap()
-                .join(acquire_future)
-                .then_execute(context.queue.clone(), command_buffer)?
-                .then_swapchain_present(
-                    context.queue.clone(),
-                    SwapchainPresentInfo::swapchain_image_index(
-                        context.swapchain.clone(),
-                        image_index,
-                    ),
-                )
-                .then_signal_fence_and_flush();
 
-            match future.map_err(Validated::unwrap) {
-                Ok(future) => {
-                    context.previous_frame_end = Some(future.boxed_send_sync());
-                }
-                Err(VulkanError::OutOfDate) => {
-                    recreate_swapchain = true;
+            {
+                let mut previous_frame_end = context.previous_frame_end.write().unwrap();
+                let future = previous_frame_end
+                    .take()
+                    .unwrap()
+                    .join(acquire_future)
+                    .then_execute(context.queue.clone(), command_buffer)?
+                    .then_swapchain_present(
+                        context.queue.clone(),
+                        SwapchainPresentInfo::swapchain_image_index(
+                            context.swapchain.clone(),
+                            image_index,
+                        ),
+                    )
+                    .then_signal_fence_and_flush();
 
-                    context.previous_frame_end =
-                        Some(sync::now(context.device.clone()).boxed_send_sync());
-                }
-                Err(_) => {
-                    context.previous_frame_end =
-                        Some(sync::now(context.device.clone()).boxed_send_sync());
+                match future.map_err(Validated::unwrap) {
+                    Ok(future) => {
+                        *previous_frame_end = Some(future.boxed_send_sync());
+                    }
+                    Err(VulkanError::OutOfDate) => {
+                        recreate_swapchain = true;
+
+                        *previous_frame_end =
+                            Some(sync::now(context.device.clone()).boxed_send_sync());
+                    }
+                    Err(_) => {
+                        *previous_frame_end =
+                            Some(sync::now(context.device.clone()).boxed_send_sync());
+                    }
                 }
             }
 

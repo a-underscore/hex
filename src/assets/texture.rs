@@ -56,10 +56,10 @@ impl Texture {
         upload.copy_buffer_to_image(CopyBufferToImageInfo::buffer_image(buffer, image.clone()))?;
 
         let command_buffer = upload.build()?;
+        let mut previous_frame_end = context.previous_frame_end.write().unwrap();
 
-        context.previous_frame_end = Some(
-            context
-                .previous_frame_end
+        *previous_frame_end = Some(
+            previous_frame_end
                 .take()
                 .unwrap()
                 .join(
