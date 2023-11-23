@@ -4,9 +4,7 @@ pub use renderer::Renderer;
 
 use super::{ComponentManager, Context, Draw, EntityManager};
 
-use std::{
-    sync::{Arc, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
 #[derive(Default)]
 pub struct RendererManager {
