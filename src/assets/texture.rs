@@ -17,7 +17,7 @@ pub struct Texture {
 
 impl Texture {
     pub fn new(
-        context: &mut Context,
+        context: &Context,
         sampler: Arc<Sampler>,
         source: &[u8],
         width: u32,
