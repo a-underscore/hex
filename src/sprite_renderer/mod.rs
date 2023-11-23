@@ -4,7 +4,7 @@ pub mod vertex;
 use crate::{
     assets::shape::Vertex2d,
     components::{Camera, Sprite, Transform},
-    ecs::{system_manager::Renderer, ComponentManager, Context, Draw, EntityManager},
+    ecs::{renderer_manager::Renderer, ComponentManager, Context, Draw, EntityManager},
 };
 use std::sync::{Arc, RwLock};
 use vulkano::{

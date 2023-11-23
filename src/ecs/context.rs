@@ -1,4 +1,4 @@
-use super::{ComponentManager, Control, Draw, EntityManager, SystemManager};
+use super::{ComponentManager, Control, Draw, EntityManager, RendererManager, SystemManager};
 use std::sync::{Arc, RwLock};
 use vulkano::{
     command_buffer::{
@@ -189,6 +189,7 @@ impl Context {
         context: Arc<RwLock<Self>>,
         event_loop: EventLoop<()>,
         mut sm: SystemManager,
+        mut rm: RendererManager,
         (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
     ) -> anyhow::Result<()> {
         sm.init(context.clone(), (em.clone(), cm.clone()))?;
@@ -197,6 +198,7 @@ impl Context {
             if let Err(e) = Self::update(
                 context.clone(),
                 &mut sm,
+                &mut rm,
                 (em.clone(), cm.clone()),
                 elwt,
                 Control::new(event),
@@ -211,6 +213,7 @@ impl Context {
     pub fn update(
         context: Arc<RwLock<Self>>,
         sm: &mut SystemManager,
+        rm: &mut RendererManager,
         (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
         elwt: &EventLoopWindowTarget<()>,
         control: Arc<RwLock<Control>>,
@@ -307,7 +310,7 @@ impl Context {
                 )?
                 .set_viewport(0, [context.viewport.clone()].into_iter().collect())?;
 
-            sm.draw(
+            rm.draw(
                 &mut Draw(&mut control, &mut builder),
                 &mut context,
                 (em.clone(), cm.clone()),

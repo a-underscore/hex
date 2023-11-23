@@ -1,7 +1,5 @@
-pub mod renderer;
 pub mod system;
 
-pub use renderer::Renderer;
 pub use system::System;
 
 use super::{ComponentManager, Context, Control, Draw, EntityManager, Id};
@@ -14,10 +12,13 @@ use std::{
 #[derive(Default)]
 pub struct SystemManager {
     pipelines: HashMap<Id, Vec<Arc<RwLock<dyn System>>>>,
-    renderers: Vec<Arc<RwLock<dyn Renderer>>>,
 }
 
 impl SystemManager {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
     pub fn add_gen(&mut self, pid: Id, s: Arc<RwLock<dyn System>>) {
         self.pipelines
             .entry(pid)
@@ -36,21 +37,6 @@ impl SystemManager {
         if let Some(p) = self.pipelines.get_mut(&pid) {
             p.pop();
         }
-    }
-
-    pub fn add_renderer_gen(&mut self, r: Arc<RwLock<dyn Renderer>>) {
-        self.renderers.push(r);
-    }
-
-    pub fn add_renderer<R>(&mut self, r: R)
-    where
-        R: Renderer,
-    {
-        self.add_renderer_gen(Arc::new(RwLock::new(r)));
-    }
-
-    pub fn rm_renderer(&mut self) {
-        self.renderers.pop();
     }
 
     pub fn init(
@@ -100,21 +86,6 @@ impl SystemManager {
             .collect();
 
         res?;
-
-        Ok(())
-    }
-
-    pub fn draw(
-        &mut self,
-        draw: &mut Draw,
-        context: &mut Context,
-        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
-    ) -> anyhow::Result<()> {
-        for r in &self.renderers {
-            r.write()
-                .unwrap()
-                .draw(draw, context, (em.clone(), cm.clone()))?;
-        }
 
         Ok(())
     }
