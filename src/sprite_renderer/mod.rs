@@ -6,7 +6,7 @@ use crate::{
     components::{Camera, Sprite, Transform},
     ecs::{renderer_manager::Renderer, ComponentManager, Context, Draw, EntityManager},
 };
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use vulkano::{
     buffer::{
         allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
@@ -121,14 +121,11 @@ impl Renderer for SpriteRenderer {
         &mut self,
         Draw(_, builder): &mut Draw,
         context: &mut Context,
-        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
+        (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         if context.recreate_swapchain {
             self.pipeline = Self::pipeline(&*context, self.vertex.clone(), self.fragment.clone())?;
         }
-
-        let em = em.read().unwrap();
-        let cm = cm.read().unwrap();
 
         if let Some((c, ct)) = em.entities().find_map(|e| {
             Some((

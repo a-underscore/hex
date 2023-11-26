@@ -313,7 +313,7 @@ impl Context {
             rm.draw(
                 &mut Draw(&mut control, &mut builder),
                 &mut context,
-                (em.clone(), cm.clone()),
+                (&mut em.write().unwrap(), &mut cm.write().unwrap()),
             )?;
 
             builder.end_render_pass(Default::default())?;
