@@ -9,9 +9,11 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+type Pipeline = Arc<RwLock<Vec<Box<dyn System>>>>;
+
 #[derive(Default)]
 pub struct SystemManager {
-    pipelines: HashMap<Id, Arc<RwLock<Vec<Box<dyn System>>>>>,
+    pipelines: HashMap<Id, Pipeline>,
 }
 
 impl SystemManager {

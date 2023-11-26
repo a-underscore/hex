@@ -223,15 +223,13 @@ impl Context {
     ) -> anyhow::Result<()> {
         sm.update(control.clone(), context.clone(), (em.clone(), cm.clone()))?;
 
-        let res = if let Event::WindowEvent {
-            event: WindowEvent::RedrawRequested,
-            ..
-        } = control.read().unwrap().event
-        {
-            true
-        } else {
-            false
-        };
+        let res = matches!(
+            control.read().unwrap().event,
+            Event::WindowEvent {
+                event: WindowEvent::RedrawRequested,
+                ..
+            }
+        );
 
         if res {
             let (mut builder, suboptimal, mut recreate_swapchain, acquire_future, image_index) = {

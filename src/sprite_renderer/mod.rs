@@ -129,7 +129,7 @@ impl Renderer for SpriteRenderer {
         let context = context.read().unwrap();
 
         if context.recreate_swapchain {
-            self.pipeline = Self::pipeline(&*context, self.vertex.clone(), self.fragment.clone())?;
+            self.pipeline = Self::pipeline(&context, self.vertex.clone(), self.fragment.clone())?;
         }
 
         let em = em.read().unwrap();
