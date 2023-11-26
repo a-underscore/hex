@@ -11,7 +11,7 @@ use std::{
 
 #[derive(Default)]
 pub struct SystemManager {
-    pipelines: HashMap<Id, Vec<Arc<RwLock<dyn System>>>>,
+    pipelines: HashMap<Id, Arc<RwLock<Vec<Box<dyn System>>>>>,
 }
 
 impl SystemManager {
@@ -19,10 +19,12 @@ impl SystemManager {
         Default::default()
     }
 
-    pub fn add_gen(&mut self, pid: Id, s: Arc<RwLock<dyn System>>) {
+    pub fn add_gen(&mut self, pid: Id, s: Box<dyn System>) {
         self.pipelines
             .entry(pid)
             .or_insert(Default::default())
+            .write()
+            .unwrap()
             .push(s);
     }
 
@@ -30,17 +32,17 @@ impl SystemManager {
     where
         S: System,
     {
-        self.add_gen(pid, Arc::new(RwLock::new(s)));
+        self.add_gen(pid, Box::new(s));
     }
 
     pub fn rm(&mut self, pid: Id) {
         if let Some(p) = self.pipelines.get_mut(&pid) {
-            p.pop();
+            p.write().unwrap().pop();
         }
     }
 
     pub fn init(
-        &mut self,
+        &self,
         context: Arc<RwLock<Context>>,
         (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
     ) -> anyhow::Result<()> {
@@ -48,10 +50,8 @@ impl SystemManager {
             .pipelines
             .par_iter()
             .map(|(_, p)| {
-                for s in p {
-                    s.write()
-                        .unwrap()
-                        .init(context.clone(), (em.clone(), cm.clone()))?;
+                for s in &mut *p.write().unwrap() {
+                    s.init(context.clone(), (em.clone(), cm.clone()))?;
                 }
 
                 Ok(())
@@ -64,7 +64,7 @@ impl SystemManager {
     }
 
     pub fn update(
-        &mut self,
+        &self,
         control: Arc<RwLock<Control>>,
         context: Arc<RwLock<Context>>,
         (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
@@ -73,12 +73,8 @@ impl SystemManager {
             .pipelines
             .par_iter()
             .map(|(_, p)| {
-                for s in p {
-                    s.write().unwrap().update(
-                        control.clone(),
-                        context.clone(),
-                        (em.clone(), cm.clone()),
-                    )?;
+                for s in &mut *p.write().unwrap() {
+                    s.update(control.clone(), context.clone(), (em.clone(), cm.clone()))?;
                 }
 
                 Ok(())

@@ -1,14 +1,16 @@
+pub mod draw;
 pub mod renderer;
 
+pub use draw::Draw;
 pub use renderer::Renderer;
 
-use super::{ComponentManager, Context, Draw, EntityManager};
+use super::{ComponentManager, Context, EntityManager};
 
 use std::sync::{Arc, RwLock};
 
 #[derive(Default)]
 pub struct RendererManager {
-    renderers: Vec<Arc<RwLock<dyn Renderer>>>,
+    renderers: Vec<Box<dyn Renderer>>,
 }
 
 impl RendererManager {
@@ -16,7 +18,7 @@ impl RendererManager {
         Default::default()
     }
 
-    pub fn add_gen(&mut self, r: Arc<RwLock<dyn Renderer>>) {
+    pub fn add_gen(&mut self, r: Box<dyn Renderer>) {
         self.renderers.push(r);
     }
 
@@ -24,7 +26,7 @@ impl RendererManager {
     where
         R: Renderer,
     {
-        self.add_gen(Arc::new(RwLock::new(r)));
+        self.add_gen(Box::new(r));
     }
 
     pub fn rm(&mut self) {
@@ -34,11 +36,11 @@ impl RendererManager {
     pub fn draw(
         &mut self,
         draw: &mut Draw,
-        context: &mut Context,
-        (em, cm): (&mut EntityManager, &mut ComponentManager),
+        context: Arc<RwLock<Context>>,
+        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
     ) -> anyhow::Result<()> {
-        for r in &self.renderers {
-            r.write().unwrap().draw(draw, context, (em, cm))?;
+        for r in &mut self.renderers {
+            r.draw(draw, context.clone(), (em.clone(), cm.clone()))?;
         }
 
         Ok(())

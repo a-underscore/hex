@@ -4,9 +4,12 @@ pub mod vertex;
 use crate::{
     assets::shape::Vertex2d,
     components::{Camera, Sprite, Transform},
-    ecs::{renderer_manager::Renderer, ComponentManager, Context, Draw, EntityManager},
+    ecs::{
+        renderer_manager::Draw, renderer_manager::Renderer, ComponentManager, Context,
+        EntityManager,
+    },
 };
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use vulkano::{
     buffer::{
         allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
@@ -120,12 +123,17 @@ impl Renderer for SpriteRenderer {
     fn draw(
         &mut self,
         Draw(_, builder): &mut Draw,
-        context: &mut Context,
-        (em, cm): (&mut EntityManager, &mut ComponentManager),
+        context: Arc<RwLock<Context>>,
+        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
     ) -> anyhow::Result<()> {
+        let context = context.read().unwrap();
+
         if context.recreate_swapchain {
             self.pipeline = Self::pipeline(&*context, self.vertex.clone(), self.fragment.clone())?;
         }
+
+        let em = em.read().unwrap();
+        let cm = cm.read().unwrap();
 
         if let Some((c, ct)) = em.entities().find_map(|e| {
             Some((
