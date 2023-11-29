@@ -128,7 +128,7 @@ impl Renderer for SpriteRenderer {
     ) -> anyhow::Result<()> {
         let context = context.read().unwrap();
 
-        if context.recreate_swapchain {
+        if context.recreate_swapchain() {
             self.pipeline = Self::pipeline(&context, self.vertex.clone(), self.fragment.clone())?;
         }
 

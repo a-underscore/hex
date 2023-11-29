@@ -43,9 +43,9 @@ pub struct Context {
     pub swapchain: Arc<Swapchain>,
     pub window: Arc<Window>,
     pub viewport: Viewport,
-    pub recreate_swapchain: bool,
     pub previous_frame_end: Arc<RwLock<Option<Box<dyn GpuFuture + Send + Sync>>>>,
     pub bg: [f32; 4],
+    recreate_swapchain: bool,
 }
 
 impl Context {
@@ -186,6 +186,10 @@ impl Context {
             swapchain,
             bg,
         })))
+    }
+
+    pub fn recreate_swapchain(&self) -> bool {
+        self.recreate_swapchain
     }
 
     pub fn init(
