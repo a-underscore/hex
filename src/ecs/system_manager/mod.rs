@@ -53,7 +53,7 @@ impl SystemManager {
             .par_iter()
             .map(|(_, p)| {
                 for s in &mut *p.write().unwrap() {
-                    s.init(context.clone(), (em.clone(), cm.clone()))?;
+                    s.init(context.clone(), em.clone(), cm.clone())?;
                 }
 
                 Ok(())
@@ -76,7 +76,7 @@ impl SystemManager {
             .par_iter()
             .map(|(_, p)| {
                 for s in &mut *p.write().unwrap() {
-                    s.update(control.clone(), context.clone(), (em.clone(), cm.clone()))?;
+                    s.update(control.clone(), context.clone(), em.clone(), cm.clone())?;
                 }
 
                 Ok(())
