@@ -6,7 +6,8 @@ pub trait Renderer: Send + Sync + 'static {
         &mut self,
         _: &mut Draw,
         _: Arc<RwLock<Context>>,
-        _: (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
+        _: Arc<RwLock<EntityManager>>,
+        _: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         Ok(())
     }
