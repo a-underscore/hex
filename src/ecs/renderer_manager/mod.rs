@@ -41,7 +41,7 @@ impl RendererManager {
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         for r in &mut self.renderers {
-            r.draw(draw, context.clone(), (em.clone(), cm.clone()))?;
+            r.draw(draw, context.clone(), em.clone(), cm.clone())?;
         }
 
         Ok(())
