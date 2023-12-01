@@ -327,6 +327,7 @@ impl Context {
 
             {
                 let mut context = context.write().unwrap();
+
                 {
                     let mut previous_frame_end = context.previous_frame_end.write().unwrap();
                     let future = previous_frame_end
