@@ -197,7 +197,8 @@ impl Context {
         event_loop: EventLoop<()>,
         mut sm: SystemManager,
         mut rm: RendererManager,
-        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
+        em: Arc<RwLock<EntityManager>>,
+        cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         sm.init(context.clone(), (em.clone(), cm.clone()))?;
 
@@ -206,7 +207,8 @@ impl Context {
                 context.clone(),
                 &mut sm,
                 &mut rm,
-                (em.clone(), cm.clone()),
+                em.clone(),
+                cm.clone(),
                 elwt,
                 Control::new(event),
             ) {
@@ -221,7 +223,8 @@ impl Context {
         context: Arc<RwLock<Self>>,
         sm: &mut SystemManager,
         rm: &mut RendererManager,
-        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
+        em: Arc<RwLock<EntityManager>>,
+        cm: Arc<RwLock<ComponentManager>>,
         elwt: &EventLoopWindowTarget<()>,
         control: Arc<RwLock<Control>>,
     ) -> anyhow::Result<()> {
