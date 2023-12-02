@@ -171,7 +171,6 @@ impl Context {
                 render_pass.clone(),
             )?,
             images,
-            recreate_swapchain: false,
             previous_frame_end: Arc::new(RwLock::new(Some(
                 sync::now(device.clone()).boxed_send_sync(),
             ))),
@@ -185,6 +184,7 @@ impl Context {
             memory_allocator,
             swapchain,
             bg,
+            recreate_swapchain: false,
         })))
     }
 
@@ -239,7 +239,7 @@ impl Context {
         );
 
         if res {
-            let (mut builder, suboptimal, mut recreate_swapchain, acquire_future, image_index) = {
+            let (mut builder, mut recreate_swapchain, suboptimal, acquire_future, image_index) = {
                 let mut context = context.write().unwrap();
                 let image_extent: [u32; 2] = context.window.inner_size().into();
 
@@ -306,8 +306,8 @@ impl Context {
 
                 (
                     builder,
-                    suboptimal,
                     recreate_swapchain,
+                    suboptimal,
                     acquire_future,
                     image_index,
                 )
