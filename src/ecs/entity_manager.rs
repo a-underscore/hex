@@ -1,4 +1,4 @@
-use super::{id, ComponentManager, Id};
+use super::{ComponentManager, Id};
 use std::{
     any::TypeId,
     collections::{hash_map::Keys, HashMap, HashSet},
@@ -17,7 +17,7 @@ impl EntityManager {
     }
 
     pub fn add(&mut self) -> Id {
-        let id = id::next(&mut self.free, &self.entities);
+        let id = self.free.pop().unwrap_or(self.entities.len() as Id);
 
         self.add_gen(id);
 
