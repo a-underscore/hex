@@ -43,7 +43,7 @@ pub struct Context {
     pub swapchain: Arc<Swapchain>,
     pub window: Arc<Window>,
     pub viewport: Viewport,
-    pub previous_frame_end: Arc<RwLock<Option<Box<dyn GpuFuture + Send + Sync>>>>,
+    pub previous_frame_end: Option<Box<dyn GpuFuture + Send + Sync>>,
     pub bg: [f32; 4],
     recreate_swapchain: bool,
 }
@@ -171,9 +171,7 @@ impl Context {
                 render_pass.clone(),
             )?,
             images,
-            previous_frame_end: Arc::new(RwLock::new(Some(
-                sync::now(device.clone()).boxed_send_sync(),
-            ))),
+            previous_frame_end: Some(sync::now(device.clone()).boxed_send_sync()),
             render_pass,
             viewport,
             command_buffer_allocator,
@@ -186,10 +184,6 @@ impl Context {
             bg,
             recreate_swapchain: false,
         })))
-    }
-
-    pub fn recreate_swapchain(&self) -> bool {
-        self.recreate_swapchain
     }
 
     pub fn init(
@@ -239,7 +233,7 @@ impl Context {
         );
 
         if res {
-            let (mut builder, mut recreate_swapchain, suboptimal, acquire_future, image_index) = {
+            let (mut builder, recreate_swapchain, suboptimal, acquire_future, image_index) = {
                 let mut context = context.write().unwrap();
                 let image_extent: [u32; 2] = context.window.inner_size().into();
 
@@ -249,8 +243,6 @@ impl Context {
 
                 context
                     .previous_frame_end
-                    .write()
-                    .unwrap()
                     .as_mut()
                     .unwrap()
                     .cleanup_finished();
@@ -260,7 +252,8 @@ impl Context {
                     context.queue.queue_family_index(),
                     CommandBufferUsage::OneTimeSubmit,
                 )?;
-                let mut recreate_swapchain = context.recreate_swapchain;
+
+                let recreate_swapchain = context.recreate_swapchain;
 
                 if recreate_swapchain {
                     let (new_swapchain, new_images) =
@@ -276,7 +269,7 @@ impl Context {
                         context.render_pass.clone(),
                     )?;
 
-                    recreate_swapchain = false;
+                    context.recreate_swapchain = false;
                 }
 
                 let (image_index, suboptimal, acquire_future) =
@@ -314,7 +307,7 @@ impl Context {
             };
 
             rm.draw(
-                &mut Draw(control.clone(), &mut builder),
+                &mut Draw(control.clone(), &mut builder, recreate_swapchain),
                 context.clone(),
                 em.clone(),
                 cm.clone(),
@@ -322,18 +315,18 @@ impl Context {
 
             builder.end_render_pass(Default::default())?;
 
-            if suboptimal {
-                recreate_swapchain = true;
-            }
-
             let command_buffer = builder.build()?;
 
             {
                 let mut context = context.write().unwrap();
 
+                if suboptimal {
+                    context.recreate_swapchain = true;
+                }
+
                 {
-                    let mut previous_frame_end = context.previous_frame_end.write().unwrap();
-                    let future = previous_frame_end
+                    let future = context
+                        .previous_frame_end
                         .take()
                         .unwrap()
                         .join(acquire_future)
@@ -349,16 +342,16 @@ impl Context {
 
                     match future.map_err(Validated::unwrap) {
                         Ok(future) => {
-                            *previous_frame_end = Some(future.boxed_send_sync());
+                            context.previous_frame_end = Some(future.boxed_send_sync());
                         }
                         Err(VulkanError::OutOfDate) => {
-                            recreate_swapchain = true;
+                            context.recreate_swapchain = true;
 
-                            *previous_frame_end =
+                            context.previous_frame_end =
                                 Some(sync::now(context.device.clone()).boxed_send_sync());
                         }
                         Err(_) => {
-                            *previous_frame_end =
+                            context.previous_frame_end =
                                 Some(sync::now(context.device.clone()).boxed_send_sync());
                         }
                     }

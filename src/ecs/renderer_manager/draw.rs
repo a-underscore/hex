@@ -11,4 +11,5 @@ pub struct Draw<'a>(
         PrimaryAutoCommandBuffer<Arc<StandardCommandBufferAllocator>>,
         Arc<StandardCommandBufferAllocator>,
     >,
+    pub bool,
 );
