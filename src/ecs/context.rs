@@ -226,15 +226,13 @@ impl Context {
     ) -> anyhow::Result<()> {
         sm.update(control.clone(), context.clone(), (em.clone(), cm.clone()))?;
 
-        let res = matches!(
+        if matches!(
             control.read().unwrap().event,
             Event::WindowEvent {
                 event: WindowEvent::RedrawRequested,
                 ..
             }
-        );
-
-        if res {
+        ) {
             let (mut builder, rs, suboptimal, acquire_future, image_index) = {
                 let mut context = context.write().unwrap();
                 let image_extent: [u32; 2] = context.window.inner_size().into();
