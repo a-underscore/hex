@@ -316,48 +316,43 @@ impl Context {
             builder.end_render_pass(Default::default())?;
 
             let command_buffer = builder.build()?;
+            let mut context = context.write().unwrap();
+
+            if suboptimal {
+                context.recreate_swapchain = true;
+            }
 
             {
-                let mut context = context.write().unwrap();
+                let future = context
+                    .previous_frame_end
+                    .take()
+                    .unwrap()
+                    .join(acquire_future)
+                    .then_execute(context.queue.clone(), command_buffer)?
+                    .then_swapchain_present(
+                        context.queue.clone(),
+                        SwapchainPresentInfo::swapchain_image_index(
+                            context.swapchain.clone(),
+                            image_index,
+                        ),
+                    )
+                    .then_signal_fence_and_flush();
 
-                if suboptimal {
-                    context.recreate_swapchain = true;
-                }
+                match future.map_err(Validated::unwrap) {
+                    Ok(future) => {
+                        context.previous_frame_end = Some(future.boxed_send_sync());
+                    }
+                    Err(VulkanError::OutOfDate) => {
+                        context.recreate_swapchain = true;
 
-                {
-                    let future = context
-                        .previous_frame_end
-                        .take()
-                        .unwrap()
-                        .join(acquire_future)
-                        .then_execute(context.queue.clone(), command_buffer)?
-                        .then_swapchain_present(
-                            context.queue.clone(),
-                            SwapchainPresentInfo::swapchain_image_index(
-                                context.swapchain.clone(),
-                                image_index,
-                            ),
-                        )
-                        .then_signal_fence_and_flush();
-
-                    match future.map_err(Validated::unwrap) {
-                        Ok(future) => {
-                            context.previous_frame_end = Some(future.boxed_send_sync());
-                        }
-                        Err(VulkanError::OutOfDate) => {
-                            context.recreate_swapchain = true;
-
-                            context.previous_frame_end =
-                                Some(sync::now(context.device.clone()).boxed_send_sync());
-                        }
-                        Err(_) => {
-                            context.previous_frame_end =
-                                Some(sync::now(context.device.clone()).boxed_send_sync());
-                        }
+                        context.previous_frame_end =
+                            Some(sync::now(context.device.clone()).boxed_send_sync());
+                    }
+                    Err(_) => {
+                        context.previous_frame_end =
+                            Some(sync::now(context.device.clone()).boxed_send_sync());
                     }
                 }
-
-                context.recreate_swapchain = recreate_swapchain;
             }
         }
 
