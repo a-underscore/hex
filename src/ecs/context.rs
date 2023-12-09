@@ -253,7 +253,7 @@ impl Context {
 
                 let rs = *recreate_swapchain;
 
-                if rs {
+                if *recreate_swapchain {
                     let (new_swapchain, new_images) =
                         context.swapchain.recreate(SwapchainCreateInfo {
                             image_extent,
