@@ -45,7 +45,6 @@ pub struct Context {
     pub viewport: Viewport,
     pub previous_frame_end: Option<Box<dyn GpuFuture + Send + Sync>>,
     pub bg: [f32; 4],
-    recreate_swapchain: bool,
 }
 
 impl Context {
@@ -182,7 +181,6 @@ impl Context {
             memory_allocator,
             swapchain,
             bg,
-            recreate_swapchain: false,
         })))
     }
 
@@ -196,6 +194,8 @@ impl Context {
     ) -> anyhow::Result<()> {
         sm.init(context.clone(), (em.clone(), cm.clone()))?;
 
+        let mut recreate_swapchain = false;
+
         event_loop.run(move |event, elwt| {
             if let Err(e) = Self::update(
                 context.clone(),
@@ -203,8 +203,7 @@ impl Context {
                 &mut rm,
                 em.clone(),
                 cm.clone(),
-                elwt,
-                Control::new(event),
+                (elwt, Control::new(event), &mut recreate_swapchain),
             ) {
                 eprintln!("{}", e);
             }
@@ -219,8 +218,11 @@ impl Context {
         rm: &mut RendererManager,
         em: Arc<RwLock<EntityManager>>,
         cm: Arc<RwLock<ComponentManager>>,
-        elwt: &EventLoopWindowTarget<()>,
-        control: Arc<RwLock<Control>>,
+        (elwt, control, recreate_swapchain): (
+            &EventLoopWindowTarget<()>,
+            Arc<RwLock<Control>>,
+            &mut bool,
+        ),
     ) -> anyhow::Result<()> {
         sm.update(control.clone(), context.clone(), (em.clone(), cm.clone()))?;
 
@@ -233,7 +235,7 @@ impl Context {
         );
 
         if res {
-            let (mut builder, recreate_swapchain, suboptimal, acquire_future, image_index) = {
+            let (mut builder, rs, suboptimal, acquire_future, image_index) = {
                 let mut context = context.write().unwrap();
                 let image_extent: [u32; 2] = context.window.inner_size().into();
 
@@ -253,9 +255,9 @@ impl Context {
                     CommandBufferUsage::OneTimeSubmit,
                 )?;
 
-                let recreate_swapchain = context.recreate_swapchain;
+                let rs = *recreate_swapchain;
 
-                if recreate_swapchain {
+                if rs {
                     let (new_swapchain, new_images) =
                         context.swapchain.recreate(SwapchainCreateInfo {
                             image_extent,
@@ -269,7 +271,7 @@ impl Context {
                         context.render_pass.clone(),
                     )?;
 
-                    context.recreate_swapchain = false;
+                    *recreate_swapchain = false;
                 }
 
                 let (image_index, suboptimal, acquire_future) =
@@ -278,7 +280,7 @@ impl Context {
                     {
                         Ok(r) => r,
                         Err(VulkanError::OutOfDate) => {
-                            context.recreate_swapchain = true;
+                            *recreate_swapchain = true;
 
                             return Ok(());
                         }
@@ -297,17 +299,11 @@ impl Context {
                     )?
                     .set_viewport(0, [context.viewport.clone()].into_iter().collect())?;
 
-                (
-                    builder,
-                    recreate_swapchain,
-                    suboptimal,
-                    acquire_future,
-                    image_index,
-                )
+                (builder, rs, suboptimal, acquire_future, image_index)
             };
 
             rm.draw(
-                &mut Draw(control.clone(), &mut builder, recreate_swapchain),
+                &mut Draw(control.clone(), &mut builder, rs),
                 context.clone(),
                 em.clone(),
                 cm.clone(),
@@ -319,7 +315,7 @@ impl Context {
             let mut context = context.write().unwrap();
 
             if suboptimal {
-                context.recreate_swapchain = true;
+                *recreate_swapchain = true;
             }
 
             {
@@ -343,7 +339,7 @@ impl Context {
                         context.previous_frame_end = Some(future.boxed_send_sync());
                     }
                     Err(VulkanError::OutOfDate) => {
-                        context.recreate_swapchain = true;
+                        *recreate_swapchain = true;
 
                         context.previous_frame_end =
                             Some(sync::now(context.device.clone()).boxed_send_sync());
@@ -373,7 +369,7 @@ impl Context {
                 event: WindowEvent::Resized(_),
                 ..
             } => {
-                context.write().unwrap().recreate_swapchain = true;
+                *recreate_swapchain = true;
             }
             Event::AboutToWait => context.read().unwrap().window.request_redraw(),
             _ => {}
