@@ -356,12 +356,6 @@ impl Context {
 
         match control.event {
             Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                ..
-            } => {
-                elwt.exit();
-            }
-            Event::WindowEvent {
                 event: WindowEvent::Resized(_),
                 ..
             } => {
