@@ -54,7 +54,9 @@ impl ComponentManager {
     }
 
     pub fn get_gen(&self, eid: Id, cid: TypeId) -> Option<Ref<'_, Box<dyn AsAny>>> {
-        self.components.get(&(eid, cid)).map(|c| c.borrow())
+        self.components
+            .get(&(eid, cid))
+            .and_then(|c| c.try_borrow().ok())
     }
 
     pub fn get<C>(&self, eid: Id) -> Option<Ref<'_, C>>
@@ -65,7 +67,9 @@ impl ComponentManager {
     }
 
     pub fn get_gen_mut(&self, eid: Id, cid: TypeId) -> Option<RefMut<'_, Box<dyn AsAny>>> {
-        self.components.get(&(eid, cid)).map(|c| c.borrow_mut())
+        self.components
+            .get(&(eid, cid))
+            .and_then(|c| c.try_borrow_mut().ok())
     }
 
     pub fn get_mut<C>(&mut self, eid: Id) -> Option<RefMut<'_, C>>
