@@ -203,7 +203,8 @@ impl Context {
                 &mut rm,
                 em.clone(),
                 cm.clone(),
-                (elwt, Control::new(event), &mut recreate_swapchain),
+                Control::new(event),
+                (elwt, &mut recreate_swapchain),
             ) {
                 eprintln!("{}", e);
             }
