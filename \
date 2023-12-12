@@ -13,14 +13,14 @@ use glium::{
     Depth, Display, DrawParameters, Surface,
 };
 
-pub const LAYERS: &[CubeLayer] = &[
-    CubeLayer::PositiveX,
-    CubeLayer::NegativeX,
-    CubeLayer::PositiveY,
-    CubeLayer::NegativeY,
-    CubeLayer::PositiveZ,
-    CubeLayer::NegativeZ,
-];
+pub const LAYERS: &[]= [
+                        CubeLayer::PositiveX,
+                        CubeLayer::NegativeX,
+                        CubeLayer::PositiveY,
+                        CubeLayer::NegativeY,
+                        CubeLayer::PositiveZ,
+                        CubeLayer::NegativeZ,
+                    ];
 
 pub struct LightRenderer {
     pub lighting_draw_parameters: DrawParameters<'static>,
@@ -134,7 +134,7 @@ impl System for LightRenderer {
                     for l in LAYERS {
                         let mut shadow_target = SimpleFrameBuffer::depth_only(
                             &scene.display,
-                            shadow_buffer.main_level().image(*l),
+                            shadow_buffer.main_level().image(l),
                         )?;
 
                         shadow_target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
