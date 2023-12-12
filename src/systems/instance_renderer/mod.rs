@@ -85,7 +85,6 @@ impl System for InstanceRenderer {
                             acc
                         })
                         .into_values()
-                        .map(Rc::new)
                         .filter_map(|d| {
                             Some((
                                 d.iter()
