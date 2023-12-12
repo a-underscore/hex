@@ -85,7 +85,7 @@ impl System for InstanceRenderer {
                             acc
                         })
                         .into_values()
-                        .map(|d| Rc::new(d))
+                        .map(Rc::new)
                         .filter_map(|d| {
                             Some((
                                 d.iter()
@@ -121,7 +121,7 @@ impl System for InstanceRenderer {
                     let instance_buffer = {
                         let i: Vec<_> = instances.iter().map(|(_, i, _)| *i).collect();
 
-                        VertexBuffer::dynamic(&scene.display, &*i)?
+                        VertexBuffer::dynamic(&scene.display, &i)?
                     };
                     let ib = instance_buffer
                         .per_instance()

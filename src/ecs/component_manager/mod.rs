@@ -53,22 +53,22 @@ impl ComponentManager {
         self.rm_gen(eid, TypeId::of::<C>(), em);
     }
 
-    pub fn get_gen<'a>(&'a self, eid: Id, cid: TypeId) -> Option<Ref<'a, Box<dyn AsAny>>> {
+    pub fn get_gen(&self, eid: Id, cid: TypeId) -> Option<Ref<'_, Box<dyn AsAny>>> {
         self.components.get(&(eid, cid)).map(|c| c.borrow())
     }
 
-    pub fn get<'a, C>(&'a self, eid: Id) -> Option<Ref<'a, C>>
+    pub fn get<C>(&self, eid: Id) -> Option<Ref<'_, C>>
     where
         C: Component,
     {
         self.get_gen(eid, TypeId::of::<C>()).and_then(Self::cast)
     }
 
-    pub fn get_gen_mut<'a>(&'a self, eid: Id, cid: TypeId) -> Option<RefMut<'a, Box<dyn AsAny>>> {
+    pub fn get_gen_mut(&self, eid: Id, cid: TypeId) -> Option<RefMut<'_, Box<dyn AsAny>>> {
         self.components.get(&(eid, cid)).map(|c| c.borrow_mut())
     }
 
-    pub fn get_mut<'a, C>(&'a mut self, eid: Id) -> Option<RefMut<'a, C>>
+    pub fn get_mut<C>(&mut self, eid: Id) -> Option<RefMut<'_, C>>
     where
         C: Component,
     {
@@ -76,14 +76,14 @@ impl ComponentManager {
             .and_then(Self::cast_mut)
     }
 
-    pub fn cast<'a, C>(a: Ref<'a, Box<dyn AsAny>>) -> Option<Ref<'a, C>>
+    pub fn cast<C>(a: Ref<'_, Box<dyn AsAny>>) -> Option<Ref<'_, C>>
     where
         C: Component,
     {
         Ref::filter_map(a, |a| a.as_any().downcast_ref()).ok()
     }
 
-    pub fn cast_mut<'a, C>(a: RefMut<'a, Box<dyn AsAny>>) -> Option<RefMut<'a, C>>
+    pub fn cast_mut<C>(a: RefMut<'_, Box<dyn AsAny>>) -> Option<RefMut<'_, C>>
     where
         C: Component,
     {
