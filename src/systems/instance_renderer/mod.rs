@@ -14,7 +14,7 @@ use glium::{
     uniforms::Sampler,
     Depth, Display, DrawParameters, Surface, VertexBuffer,
 };
-use std::{collections::BTreeMap, rc::Rc};
+use std::{collections::HashMap, rc::Rc};
 
 pub struct InstanceRenderer {
     pub draw_parameters: DrawParameters<'static>,
@@ -70,12 +70,13 @@ impl System for InstanceRenderer {
                     let mut models: Vec<_> = em
                         .entities()
                         .filter_map(|e| {
-                            Some((
+                            Some(Rc::new((
                                 cm.get::<Model>(e).and_then(|s| s.active.then_some(s))?,
                                 cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
-                            ))
+                            )))
                         })
-                        .fold(BTreeMap::new(), |mut acc, d @ (i, t)| {
+                        .fold(HashMap::new(), |mut acc, d| {
+                            let (i, t) = &*d;
                             let entry = acc.entry(Rc::as_ptr(&i.data)).or_insert(Vec::new());
                             let (_, m, _) = &*i.data;
 
@@ -84,21 +85,28 @@ impl System for InstanceRenderer {
                             acc
                         })
                         .into_values()
+                        .map(|d| Rc::new(d))
                         .filter_map(|d| {
                             Some((
-                                d.clone().into_iter().min_by(
-                                    |(_, _, (_, t1)), (_, _, (_, t2))| {
+                                d.iter()
+                                    .min_by(|(_, _, r1), (_, _, r2)| {
+                                        let (_, t1) = &**r1;
+                                        let (_, t2) = &**r2;
+
                                         (ct.position() - t1.position())
                                             .magnitude()
                                             .total_cmp(&(ct.position() - t2.position()).magnitude())
-                                    },
-                                )?,
+                                    })
+                                    .cloned()?,
                                 d,
                             ))
                         })
                         .collect();
 
-                    models.sort_by(|((_, _, (_, t1)), _), ((_, _, (_, t2)), _)| {
+                    models.sort_by(|((_, _, r1), _), ((_, _, r2), _)| {
+                        let (_, t1) = &**r1;
+                        let (_, t2) = &**r2;
+
                         (ct.position() - t1.position())
                             .magnitude()
                             .total_cmp(&(ct.position() - t2.position()).magnitude())
@@ -111,9 +119,9 @@ impl System for InstanceRenderer {
                     let (m, _, t) = &*instance;
                     let (v, i) = &*m.buffer;
                     let instance_buffer = {
-                        let i: Vec<_> = instances.into_iter().map(|(_, i, _)| i).collect();
+                        let i: Vec<_> = instances.iter().map(|(_, i, _)| *i).collect();
 
-                        VertexBuffer::dynamic(&scene.display, &i)?
+                        VertexBuffer::dynamic(&scene.display, &*i)?
                     };
                     let ib = instance_buffer
                         .per_instance()
