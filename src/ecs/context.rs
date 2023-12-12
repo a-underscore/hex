@@ -218,11 +218,8 @@ impl Context {
         rm: &mut RendererManager,
         em: Arc<RwLock<EntityManager>>,
         cm: Arc<RwLock<ComponentManager>>,
-        (elwt, control, recreate_swapchain): (
-            &EventLoopWindowTarget<()>,
-            Arc<RwLock<Control>>,
-            &mut bool,
-        ),
+        control: Arc<RwLock<Control>>,
+        (elwt, recreate_swapchain): (&EventLoopWindowTarget<()>, &mut bool),
     ) -> anyhow::Result<()> {
         sm.update(control.clone(), context.clone(), (em.clone(), cm.clone()))?;
 
