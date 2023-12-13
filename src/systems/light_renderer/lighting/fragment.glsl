@@ -5,7 +5,7 @@ in vec3 v_normal;
 in vec4 v_shadow;
 
 uniform sampler2D buffer;
-uniform sampler2D shadow_buffer;
+uniform samplerCube shadow_buffer;
 uniform vec3 camera_position;
 uniform vec3 light_color;
 uniform vec3 light_position;
@@ -51,11 +51,9 @@ vec3 specular(vec3 light_dir) {
 }
 
 float shadow(void) {
-	vec3 proj_coords = v_shadow.xyz / v_shadow.w;
+    	float SampledDistance = texture(gShadowMap, LightDirection).r;
 
-	proj_coords = proj_coords * 0.5 + 0.5;
+    	float Distance = length(LightDirection);
 
-	float depth = texture(shadow_buffer, proj_coords.xy).r;
-
-	return proj_coords.z > depth ? 0.0 : 1.0;
+    	return Distance < SampledDistance + EPSILON ? 1.0 : 0.5;
 }
