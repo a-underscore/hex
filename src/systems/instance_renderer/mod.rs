@@ -7,7 +7,7 @@ use crate::{
     components::{Camera, Model, Transform},
     ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
-use cgmath::{prelude::*, Matrix4};
+use cgmath::prelude::*;
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     uniform,
@@ -146,9 +146,11 @@ impl System for InstanceRenderer {
                             )?;
                         }
                         None => {
+                            let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
+                            let camera_proj: [[f32; 4]; 4] = c.matrix().into();
                             let u = uniform! {
-                                camera_transform: <Matrix4<f32> as Into<[[f32; 4] ;4]>>::into(ct.matrix()),
-                                camera_proj: <Matrix4<f32> as Into<[[f32; 4]; 4]>>::into(c.matrix()),
+                                camera_transform: camera_transform,
+                                camera_proj: camera_proj,
                             };
 
                             target.draw(

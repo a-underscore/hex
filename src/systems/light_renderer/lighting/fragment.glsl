@@ -1,5 +1,7 @@
 #version 330
 
+#define EPSILON 0.0001
+
 in vec3 v_pos;
 in vec3 v_normal;
 in vec4 v_shadow;
@@ -20,7 +22,7 @@ uniform float bias;
 vec3 ambient(void);
 vec3 diffuse(vec3);
 vec3 specular(vec3);
-float shadow(void);
+float shadow(vec3);
 
 void main(void) {
 	vec4 t = texture(buffer, gl_FragCoord.xy / screen_dims);
@@ -28,7 +30,7 @@ void main(void) {
 	vec3 light_dir = normalize(light_position - v_pos);
 	vec3 d = diffuse(light_dir);
 	vec3 s = specular(light_dir);
-	vec3 lum = light_strength * t.xyz * (shadow() * (s + d) + a);
+	vec3 lum = light_strength * t.xyz * (shadow(light_dir) * (s + d) + a);
 
 	gl_FragColor = vec4(vec3(lum), t.w);
 }
@@ -50,10 +52,10 @@ vec3 specular(vec3 light_dir) {
 	return specular_strength * spec * light_color;
 }
 
-float shadow(void) {
-    	float SampledDistance = texture(gShadowMap, LightDirection).r;
+float shadow(vec3 light_dir) {
+    	float sample_distance = texture(shadow_buffer, light_dir).r;
 
-    	float Distance = length(LightDirection);
+    	float distance = length(light_dir);
 
-    	return Distance < SampledDistance + EPSILON ? 1.0 : 0.5;
+    	return distance < sample_distance + EPSILON ? 1.0 : 0.5;
 }

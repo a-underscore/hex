@@ -99,6 +99,7 @@ impl System for Renderer {
                                 buffer: Sampler(buffer, texture.sampler_behaviour),
                                 color: color,
                             };
+                            println!("here");
 
                             target.draw(
                                 (v, uv),
