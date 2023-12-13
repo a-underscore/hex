@@ -13,7 +13,7 @@ use std::{
 
 #[derive(Default)]
 pub struct ComponentManager {
-    pub(super) components: HashMap<(Id, TypeId), Arc<dyn AsAny>>,
+    pub(super) components: HashMap<(Id, TypeId), Box<dyn AsAny>>,
 }
 
 impl ComponentManager {
@@ -25,7 +25,7 @@ impl ComponentManager {
         &mut self,
         eid: Id,
         cid: TypeId,
-        component: Arc<dyn AsAny>,
+        component: Box<dyn AsAny>,
         em: &mut EntityManager,
     ) {
         if let Some(entity) = em.entities.get_mut(&eid) {
@@ -39,7 +39,7 @@ impl ComponentManager {
     where
         C: Component,
     {
-        self.add_gen(eid, TypeId::of::<C>(), Arc::new(RwLock::new(component)), em);
+        self.add_gen(eid, TypeId::of::<C>(), Box::new(RwLock::new(component)), em);
     }
 
     pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
