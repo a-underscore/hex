@@ -25,14 +25,11 @@ impl Camera {
         }
     }
 
-    pub fn perspective(
-        fov: Rad<f32>,
-        aspect: f32,
-        clip: Vector2<f32>,
-        main: bool,
-        active: bool,
-    ) -> Self {
-        Self::new(Proj::Perspective((fov, aspect, clip)), main, active)
+    pub fn perspective<I>(fov: I, aspect: f32, clip: Vector2<f32>, main: bool, active: bool) -> Self
+    where
+        I: Into<Rad<f32>>,
+    {
+        Self::new(Proj::Perspective((fov.into(), aspect, clip)), main, active)
     }
 
     pub fn ortho(dims: Vector3<f32>, main: bool, active: bool) -> Self {
