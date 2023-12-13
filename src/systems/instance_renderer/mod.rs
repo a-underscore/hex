@@ -125,12 +125,12 @@ impl System for InstanceRenderer {
                     let ib = instance_buffer
                         .per_instance()
                         .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?;
+                    let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
+                    let camera_proj: [[f32; 4]; 4] = c.matrix().into();
 
                     match t {
                         Some(texture) => {
                             let (uv, buffer) = &*texture.buffer;
-                            let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
-                            let camera_proj: [[f32; 4]; 4] = c.matrix().into();
                             let u = uniform! {
                                 camera_transform: camera_transform,
                                 camera_proj: camera_proj,
@@ -146,8 +146,6 @@ impl System for InstanceRenderer {
                             )?;
                         }
                         None => {
-                            let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
-                            let camera_proj: [[f32; 4]; 4] = c.matrix().into();
                             let u = uniform! {
                                 camera_transform: camera_transform,
                                 camera_proj: camera_proj,

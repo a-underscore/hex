@@ -7,6 +7,8 @@ uniform mat4 transform;
 uniform mat4 camera_transform;
 uniform mat4 camera_proj;
 
+out vec3 v_pos;
+
 void main(void) {
 	mat4 view =  transform * inverse(camera_transform);
 
