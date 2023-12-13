@@ -3,7 +3,7 @@ pub mod proj;
 pub use proj::Proj;
 
 use crate::ecs::component_manager::Component;
-use cgmath::{Matrix4, Vector2, Vector3};
+use cgmath::{Matrix4, Rad, Vector2, Vector3};
 
 #[derive(Clone)]
 pub struct Camera {
@@ -26,7 +26,7 @@ impl Camera {
     }
 
     pub fn perspective(
-        fov: f32,
+        fov: Rad<f32>,
         aspect: f32,
         clip: Vector2<f32>,
         main: bool,
