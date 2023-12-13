@@ -1,9 +1,9 @@
 use super::AsAny;
-use std::any::Any;
+use std::{any::Any, cell::RefCell, rc::Rc};
 
 pub trait Component: 'static {}
 
-impl<C> AsAny for C
+impl<C> AsAny for Rc<RefCell<C>>
 where
     C: Component,
 {

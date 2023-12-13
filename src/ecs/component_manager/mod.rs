@@ -9,11 +9,12 @@ use std::{
     any::TypeId,
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,
+    rc::Rc,
 };
 
 #[derive(Default)]
 pub struct ComponentManager {
-    pub(super) components: HashMap<(Id, TypeId), RefCell<Box<dyn AsAny>>>,
+    pub(super) components: HashMap<(Id, TypeId), Box<dyn AsAny>>,
 }
 
 impl ComponentManager {
@@ -27,7 +28,7 @@ impl ComponentManager {
         if let Some(entity) = em.entities.get_mut(&eid) {
             entity.insert(cid);
 
-            self.components.insert((eid, cid), RefCell::new(component));
+            self.components.insert((eid, cid), component);
         }
     }
 
@@ -35,7 +36,12 @@ impl ComponentManager {
     where
         C: Component,
     {
-        self.add_gen(eid, TypeId::of::<C>(), Box::new(component), em);
+        self.add_gen(
+            eid,
+            TypeId::of::<C>(),
+            Box::new(Rc::new(RefCell::new(component))),
+            em,
+        );
     }
 
     pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
@@ -53,44 +59,32 @@ impl ComponentManager {
         self.rm_gen(eid, TypeId::of::<C>(), em);
     }
 
-    pub fn get_gen(&self, eid: Id, cid: TypeId) -> Option<Ref<'_, Box<dyn AsAny>>> {
-        self.components
-            .get(&(eid, cid))
-            .and_then(|c| c.try_borrow().ok())
+    pub fn get_gen(&self, eid: Id, cid: TypeId) -> Option<&dyn AsAny> {
+        self.components.get(&(eid, cid)).map(|a| a.as_ref())
     }
 
     pub fn get<C>(&self, eid: Id) -> Option<Ref<'_, C>>
     where
         C: Component,
     {
-        self.get_gen(eid, TypeId::of::<C>()).and_then(Self::cast)
-    }
-
-    pub fn get_gen_mut(&self, eid: Id, cid: TypeId) -> Option<RefMut<'_, Box<dyn AsAny>>> {
-        self.components
-            .get(&(eid, cid))
-            .and_then(|c| c.try_borrow_mut().ok())
+        self.get_gen(eid, TypeId::of::<C>())
+            .and_then(Self::cast)
+            .and_then(|c| c.try_borrow().ok())
     }
 
     pub fn get_mut<C>(&self, eid: Id) -> Option<RefMut<'_, C>>
     where
         C: Component,
     {
-        self.get_gen_mut(eid, TypeId::of::<C>())
-            .and_then(Self::cast_mut)
+        self.get_gen(eid, TypeId::of::<C>())
+            .and_then(Self::cast)
+            .and_then(|c| c.try_borrow_mut().ok())
     }
 
-    pub fn cast<C>(a: Ref<'_, Box<dyn AsAny>>) -> Option<Ref<'_, C>>
+    pub fn cast<C>(a: &dyn AsAny) -> Option<&Rc<RefCell<C>>>
     where
         C: Component,
     {
-        Ref::filter_map(a, |a| a.as_any().downcast_ref()).ok()
-    }
-
-    pub fn cast_mut<C>(a: RefMut<'_, Box<dyn AsAny>>) -> Option<RefMut<'_, C>>
-    where
-        C: Component,
-    {
-        RefMut::filter_map(a, |a| a.as_any_mut().downcast_mut()).ok()
+        a.as_any().downcast_ref()
     }
 }
