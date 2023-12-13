@@ -3,7 +3,7 @@ pub mod proj;
 pub use proj::Proj;
 
 use crate::ecs::component_manager::Component;
-use cgmath::{Matrix4, Rad, Vector2, Vector3};
+use cgmath::{Matrix4, Vector2, Vector3};
 
 #[derive(Clone)]
 pub struct Camera {
@@ -25,11 +25,14 @@ impl Camera {
         }
     }
 
-    pub fn perspective<I>(fov: I, aspect: f32, clip: Vector2<f32>, main: bool, active: bool) -> Self
-    where
-        I: Into<Rad<f32>>,
-    {
-        Self::new(Proj::Perspective((fov.into(), aspect, clip)), main, active)
+    pub fn perspective(
+        fov: f32,
+        aspect: f32,
+        clip: Vector2<f32>,
+        main: bool,
+        active: bool,
+    ) -> Self {
+        Self::new(Proj::Perspective((fov, aspect, clip)), main, active)
     }
 
     pub fn ortho(dims: Vector3<f32>, main: bool, active: bool) -> Self {

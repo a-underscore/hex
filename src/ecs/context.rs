@@ -1,4 +1,5 @@
 use super::{ev::Control, ComponentManager, EntityManager, Ev, SystemManager};
+use cgmath::Vector4;
 use glium::{
     glutin::{
         event::Event,
@@ -10,19 +11,19 @@ use glium::{
 #[derive(Clone)]
 pub struct Context {
     pub display: Display,
-    pub bg: [f32; 4],
+    pub bg: Vector4<f32>,
 }
 
 impl Context {
-    pub fn new(display: Display, bg: [f32; 4]) -> Self {
+    pub fn new(display: Display, bg: Vector4<f32>) -> Self {
         Self { display, bg }
     }
 
     pub fn init(
         mut self,
         event_loop: EventLoop<()>,
-        (mut em, mut cm): (EntityManager, ComponentManager),
         mut sm: SystemManager,
+        (mut em, mut cm): (EntityManager, ComponentManager),
     ) -> anyhow::Result<()> {
         sm.init(&mut self, (&mut em, &mut cm))?;
 
@@ -48,7 +49,7 @@ impl Context {
 
                 target.clear_color_and_depth(
                     {
-                        let [r, g, b, a] = self.bg;
+                        let [r, g, b, a]: [f32; 4] = self.bg.into();
 
                         (r, g, b, a)
                     },
