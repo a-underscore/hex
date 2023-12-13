@@ -7,12 +7,10 @@ uniform mat4 transform;
 uniform mat4 camera_transform;
 uniform mat4 camera_proj;
 
-out vec3 v_pos;
-
 void main(void) {
-	mat4 view =  transform * inverse(camera_transform);
+	mat4 view =  inverse(camera_transform) * transform;
 
-        vec4 pos = vec4(position, 1.0) * view;
+        vec4 pos = view * vec4(position, 1.0);
 
-        gl_Position = pos * camera_proj;
+        gl_Position = camera_proj * pos;
 }
