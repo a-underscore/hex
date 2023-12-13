@@ -39,7 +39,12 @@ impl ComponentManager {
     where
         C: Component,
     {
-        self.add_gen(eid, TypeId::of::<C>(), Box::new(RwLock::new(component)), em);
+        self.add_gen(
+            eid,
+            TypeId::of::<C>(),
+            Box::new(Arc::new(RwLock::new(component))),
+            em,
+        );
     }
 
     pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
@@ -61,7 +66,7 @@ impl ComponentManager {
         self.components.get(&(eid, cid)).map(|c| c.as_ref())
     }
 
-    pub fn get<C>(&self, eid: Id) -> Option<&RwLock<C>>
+    pub fn get<C>(&self, eid: Id) -> Option<&Arc<RwLock<C>>>
     where
         C: Component,
     {
@@ -82,7 +87,7 @@ impl ComponentManager {
         self.get::<C>(eid).map(|c| c.write().unwrap())
     }
 
-    pub fn cast<C>(a: &dyn AsAny) -> Option<&RwLock<C>>
+    pub fn cast<C>(a: &dyn AsAny) -> Option<&Arc<RwLock<C>>>
     where
         C: Component,
     {

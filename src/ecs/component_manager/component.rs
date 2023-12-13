@@ -1,9 +1,12 @@
 use super::AsAny;
-use std::{any::Any, sync::RwLock};
+use std::{
+    any::Any,
+    sync::{Arc, RwLock},
+};
 
 pub trait Component: Send + Sync + 'static {}
 
-impl<C> AsAny for RwLock<C>
+impl<C> AsAny for Arc<RwLock<C>>
 where
     C: Component,
 {
