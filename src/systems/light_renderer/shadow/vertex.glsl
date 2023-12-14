@@ -7,11 +7,10 @@ out vec3 out_world_pos;
 out vec3 out_normal;
 
 uniform mat4 transform;
-uniform mat4 camera_transform;
-uniform mat4 camera_proj;
+uniform mat4 light_transform;
 
 void main(void) {
-	mat4 view =  inverse(camera_transform) * transform;
+	mat4 view =  inverse(light_transform) * transform;
 
         vec4 pos = view * vec4(position, 1.0);
 

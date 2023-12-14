@@ -3,9 +3,6 @@
 in vec3 position;
 in vec3 normal;
 
-out vec3 out_world_pos;
-out vec3 out_normal;
-
 uniform mat4 transform;
 uniform mat4 camera_transform;
 uniform mat4 camera_proj;
@@ -15,9 +12,5 @@ void main(void) {
 
         vec4 pos = view * vec4(position, 1.0);
 
-	out_normal = vec3(view * vec4(normal, 1.0));
-
-	out_world_pos = vec3(pos);
-
-    	gl_Position = view * vec4(position, 1.0);
-} 
+        gl_Position = camera_proj * pos;
+}

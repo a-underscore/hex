@@ -119,12 +119,18 @@ impl System for LightRenderer {
                 };
                 let (surface_width, surface_height) = target.get_dimensions();
                 let shadow_buffer = DepthCubemap::empty(&scene.display, self.shadow_dimension)?;
+                let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
+
+                target.fill(&buffer.as_surface(), self.filter);
+
+                let camera_proj: [[f32; 4]; 4] = c.matrix().into();
+                let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
+                let camera_position: [f32; 3] = ct.position().into();
 
                 for l in em
                     .entities()
                     .filter_map(|e| cm.get::<Light>(e).and_then(|l| l.active.then_some(l)))
                 {
-                    let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
                     let light_transform: [[f32; 4]; 4] =
                         Matrix4::from_translation(l.position).into();
 
@@ -155,16 +161,11 @@ impl System for LightRenderer {
                         }
                     }
 
-                    let camera_proj: [[f32; 4]; 4] = c.matrix().into();
-                    let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
                     let light_proj: [[f32; 4]; 4] = l.proj.matrix().into();
-                    let camera_position: [f32; 3] = ct.position().into();
                     let light_color: [f32; 3] = l.color.into();
                     let light_position: [f32; 3] = l.position.into();
 
                     for (m, t) in &models {
-                        target.fill(&buffer.as_surface(), self.filter);
-
                         let (mesh, ma, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let transform: [[f32; 4]; 4] = t.matrix().into();
