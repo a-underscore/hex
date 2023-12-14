@@ -122,7 +122,7 @@ impl System for LightRenderer {
 
                 for l in em
                     .entities()
-                    .filter_map(|e| Some(cm.get::<Light>(e).and_then(|l| l.active.then_some(l))?))
+                    .filter_map(|e| cm.get::<Light>(e).and_then(|l| l.active.then_some(l)))
                 {
                     let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
                     let light_transform: [[f32; 4]; 4] =
