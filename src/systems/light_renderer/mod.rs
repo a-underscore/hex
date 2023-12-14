@@ -120,16 +120,13 @@ impl System for LightRenderer {
                 let (surface_width, surface_height) = target.get_dimensions();
                 let shadow_buffer = DepthCubemap::empty(&scene.display, self.shadow_dimension)?;
 
-                for (l, lc) in em.entities().filter_map(|e| {
-                    Some((
-                        cm.get::<Light>(e).and_then(|l| l.active.then_some(l))?,
-                        cm.get::<Camera>(e).and_then(|l| l.active.then_some(l))?,
-                    ))
-                }) {
+                for l in em
+                    .entities()
+                    .filter_map(|e| Some(cm.get::<Light>(e).and_then(|l| l.active.then_some(l))?))
+                {
                     let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
-                    let view = Matrix4::from_translation(l.position);
-                    let light_proj: [[f32; 4]; 4] = lc.matrix().into();
-                    let light_transform: [[f32; 4]; 4] = view.into();
+                    let light_transform: [[f32; 4]; 4] =
+                        Matrix4::from_translation(l.position).into();
 
                     for l in LAYERS {
                         let mut shadow_target = SimpleFrameBuffer::depth_only(
@@ -145,7 +142,6 @@ impl System for LightRenderer {
                             let transform: [[f32; 4]; 4] = t.matrix().into();
                             let u = uniform! {
                                 transform: transform,
-                                light_proj: light_proj,
                                 light_transform: light_transform,
                             };
 
@@ -161,7 +157,6 @@ impl System for LightRenderer {
 
                     let camera_proj: [[f32; 4]; 4] = c.matrix().into();
                     let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
-                    let light_transform: [[f32; 4]; 4] = view.into();
                     let light_proj: [[f32; 4]; 4] = l.proj.matrix().into();
                     let camera_position: [f32; 3] = ct.position().into();
                     let light_color: [f32; 3] = l.color.into();
