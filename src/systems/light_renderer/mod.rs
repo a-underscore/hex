@@ -93,8 +93,7 @@ impl System for LightRenderer {
         if let Ev::Draw((_, target)) = event {
             if let Some((c, ct)) = em.entities().find_map(|e| {
                 Some((
-                    cm.get::<Camera>(e)
-                        .and_then(|c| (c.active && c.main).then_some(c))?,
+                    cm.get::<Camera>(e).and_then(|c| c.active.then_some(c))?,
                     cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
                 ))
             }) {

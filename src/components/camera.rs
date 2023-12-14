@@ -5,34 +5,26 @@ use cgmath::{Matrix4, Vector2, Vector3};
 pub struct Camera {
     proj: Proj,
     matrix: Matrix4<f32>,
-    pub main: bool,
     pub active: bool,
 }
 
 impl Camera {
-    pub fn new(proj: Proj, main: bool, active: bool) -> Self {
+    pub fn new(proj: Proj, active: bool) -> Self {
         let matrix = proj.matrix();
 
         Self {
             proj,
             matrix,
-            main,
             active,
         }
     }
 
-    pub fn perspective(
-        fov: f32,
-        aspect: f32,
-        clip: Vector2<f32>,
-        main: bool,
-        active: bool,
-    ) -> Self {
-        Self::new(Proj::Perspective((fov, aspect, clip)), main, active)
+    pub fn perspective(fov: f32, aspect: f32, clip: Vector2<f32>, active: bool) -> Self {
+        Self::new(Proj::Perspective((fov, aspect, clip)), active)
     }
 
-    pub fn ortho(dims: Vector3<f32>, main: bool, active: bool) -> Self {
-        Self::new(Proj::Ortho(dims), main, active)
+    pub fn ortho(dims: Vector3<f32>, active: bool) -> Self {
+        Self::new(Proj::Ortho(dims), active)
     }
 
     pub fn set_proj(&mut self, proj: Proj) {
