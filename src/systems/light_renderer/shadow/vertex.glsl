@@ -1,19 +1,23 @@
 #version 330
 
 in vec3 position;
-in vec2 tex_coord;
 in vec3 normal;
 
-uniform mat4 wvp;
-uniform mat4 world;
+out vec3 out_world_pos;
+out vec3 out_normal;
 
-out vec3 world_pos;
+uniform mat4 transform;
+uniform mat4 camera_transform;
+uniform mat4 camera_proj;
 
 void main(void) {
-	vec4 pos = vec4(position, 1.0);
+	mat4 view =  inverse(camera_transform) * transform;
 
-	gl_Position = wvp * pos;
+        vec4 pos = view * vec4(position, 1.0);
 
-    	world_pos = (world * pos).xyz;
+	out_normal = vec3(view * vec4(normal, 1.0));
 
-}
+	out_world_pos = vec3(pos);
+
+    	gl_Position = view * vec4(position, 1.0);
+} 

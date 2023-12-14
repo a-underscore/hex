@@ -4,7 +4,6 @@
 
 in vec3 v_pos;
 in vec3 v_normal;
-in vec4 v_shadow;
 
 uniform sampler2D buffer;
 uniform samplerCube shadow_buffer;
