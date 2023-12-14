@@ -118,10 +118,6 @@ impl System for LightRenderer {
                 };
                 let (surface_width, surface_height) = target.get_dimensions();
                 let shadow_buffer = DepthCubemap::empty(&scene.display, self.shadow_dimension)?;
-                let buffer = Texture2d::empty(&scene.display, surface_width, surface_height)?;
-
-                target.fill(&buffer.as_surface(), self.filter);
-
                 let camera_proj: [[f32; 4]; 4] = c.matrix().into();
                 let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
                 let camera_position: [f32; 3] = ct.position().into();
@@ -165,6 +161,11 @@ impl System for LightRenderer {
                     let light_position: [f32; 3] = l.position.into();
 
                     for (m, t) in &models {
+                        let buffer =
+                            Texture2d::empty(&scene.display, surface_width, surface_height)?;
+
+                        target.fill(&buffer.as_surface(), self.filter);
+
                         let (mesh, ma, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let transform: [[f32; 4]; 4] = t.matrix().into();
