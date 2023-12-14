@@ -81,12 +81,13 @@ impl System for Renderer {
                     models
                 };
 
+                let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
+                let camera_proj: [[f32; 4]; 4] = c.matrix().into();
+
                 for (m, t) in models {
                     let (mesh, ma, texture) = &*m.data;
                     let (v, i) = &*mesh.buffer;
                     let transform: [[f32; 4]; 4] = t.matrix().into();
-                    let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
-                    let camera_proj: [[f32; 4]; 4] = c.matrix().into();
                     let color: [f32; 4] = ma.color.into();
 
                     match texture {

@@ -114,6 +114,9 @@ impl System for InstanceRenderer {
                     models
                 };
 
+                let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
+                let camera_proj: [[f32; 4]; 4] = c.matrix().into();
+
                 for ((instance, _, _), instances) in models {
                     let (m, _, t) = &*instance;
                     let (v, i) = &*m.buffer;
@@ -125,8 +128,6 @@ impl System for InstanceRenderer {
                     let ib = instance_buffer
                         .per_instance()
                         .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?;
-                    let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
-                    let camera_proj: [[f32; 4]; 4] = c.matrix().into();
 
                     match t {
                         Some(texture) => {

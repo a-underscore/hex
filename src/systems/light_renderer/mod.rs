@@ -159,19 +159,20 @@ impl System for LightRenderer {
                         }
                     }
 
+                    let camera_proj: [[f32; 4]; 4] = c.matrix().into();
+                    let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
+                    let light_transform: [[f32; 4]; 4] = view.into();
+                    let light_proj: [[f32; 4]; 4] = l.proj.matrix().into();
+                    let camera_position: [f32; 3] = ct.position().into();
+                    let light_color: [f32; 3] = l.color.into();
+                    let light_position: [f32; 3] = l.position.into();
+
                     for (m, t) in &models {
                         target.fill(&buffer.as_surface(), self.filter);
 
                         let (mesh, ma, _) = &*m.data;
                         let (v, i) = &*mesh.buffer;
                         let transform: [[f32; 4]; 4] = t.matrix().into();
-                        let camera_proj: [[f32; 4]; 4] = c.matrix().into();
-                        let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
-                        let light_transform: [[f32; 4]; 4] = view.into();
-                        let light_proj: [[f32; 4]; 4] = lc.matrix().into();
-                        let camera_position: [f32; 3] = ct.position().into();
-                        let light_color: [f32; 3] = l.color.into();
-                        let light_position: [f32; 3] = l.position.into();
                         let u = uniform! {
                             transform: transform,
                             camera_transform: camera_transform,
