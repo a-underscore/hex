@@ -18,5 +18,5 @@ void main(void) {
         gl_Position = camera_proj * vec4(pos, 1.0);
 
 	v_pos = pos;
-	v_normal = normalize(mat3(transpose(inverse(view))) * normal);
+	v_normal = normalize(mat3(transpose(inverse(transform))) * normal);
 }
