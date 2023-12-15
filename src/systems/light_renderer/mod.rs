@@ -149,7 +149,6 @@ impl System for LightRenderer {
                 let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
                 let camera_position: [f32; 3] = ct.position().into();
 
-
                 for (l, lt) in em.entities().filter_map(|e| {
                     Some((
                         cm.get::<Light>(e).and_then(|l| l.active.then_some(l))?,
@@ -166,7 +165,6 @@ impl System for LightRenderer {
                             &scene.display,
                             shadow_buffer.main_level().image(*layer),
                         )?;
-
                         let light_proj: [[f32; 4]; 4] = (self.proj.matrix()
                             * Matrix4::look_at_rh(
                                 Point3::from_vec(lt.position()),

@@ -1,6 +1,6 @@
 #version 330
 
-#define EPSILON 0.0001
+#define EPSILON 0.00001
 
 in vec3 v_pos;
 in vec3 v_normal;
