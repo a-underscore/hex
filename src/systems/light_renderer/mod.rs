@@ -1,9 +1,9 @@
 use crate::{
-    assets::Shader,
+    assets::{Proj, Shader},
     components::{Camera, Light, Model, Transform},
     ecs::{system_manager::System, ComponentManager, Context, EntityManager, Ev},
 };
-use cgmath::{prelude::*, Matrix4};
+use cgmath::{prelude::*, Matrix4, Point3, Vector3};
 use glium::{
     draw_parameters::{BackfaceCullingMode, Blend, DepthTest},
     framebuffer::SimpleFrameBuffer,
@@ -13,13 +13,37 @@ use glium::{
     Depth, Display, DrawParameters, Surface,
 };
 
-pub const LAYERS: &[CubeLayer] = &[
-    CubeLayer::PositiveX,
-    CubeLayer::NegativeX,
-    CubeLayer::PositiveY,
-    CubeLayer::NegativeY,
-    CubeLayer::PositiveZ,
-    CubeLayer::NegativeZ,
+pub const LAYERS: &[(CubeLayer, Vector3<f32>, Vector3<f32>)] = &[
+    (
+        CubeLayer::PositiveX,
+        Vector3::new(1.0, 0.0, 0.0),
+        Vector3::new(0.0, -1.0, 0.0),
+    ),
+    (
+        CubeLayer::NegativeX,
+        Vector3::new(-1.0, 0.0, 0.0),
+        Vector3::new(0.0, -1.0, 0.0),
+    ),
+    (
+        CubeLayer::PositiveY,
+        Vector3::new(0.0, 1.0, 0.0),
+        Vector3::new(0.0, 0.0, -1.0),
+    ),
+    (
+        CubeLayer::NegativeY,
+        Vector3::new(0.0, -1.0, 0.0),
+        Vector3::new(0.0, 0.0, 1.0),
+    ),
+    (
+        CubeLayer::PositiveZ,
+        Vector3::new(0.0, 0.0, 1.0),
+        Vector3::new(0.0, -1.0, 0.0),
+    ),
+    (
+        CubeLayer::NegativeZ,
+        Vector3::new(0.0, 0.0, -1.0),
+        Vector3::new(0.0, -1.0, 0.0),
+    ),
 ];
 
 pub struct LightRenderer {
@@ -31,6 +55,7 @@ pub struct LightRenderer {
     pub shadow_sampler_behavior: SamplerBehavior,
     pub shadow_dimension: u32,
     pub filter: MagnifySamplerFilter,
+    pub proj: Proj,
 }
 
 impl LightRenderer {
@@ -39,6 +64,7 @@ impl LightRenderer {
         lighting_sampler_behavior: SamplerBehavior,
         shadow_dimension: u32,
         filter: MagnifySamplerFilter,
+        proj: Proj,
     ) -> anyhow::Result<Self> {
         Ok(Self {
             lighting_draw_parameters: DrawParameters {
@@ -79,6 +105,7 @@ impl LightRenderer {
             },
             filter,
             shadow_dimension,
+            proj,
         })
     }
 }
@@ -128,14 +155,24 @@ impl System for LightRenderer {
                 {
                     let light_transform: [[f32; 4]; 4] =
                         Matrix4::from_translation(l.position).into();
+                    let light_color: [f32; 3] = l.color.into();
+                    let light_position: [f32; 3] = l.position.into();
 
-                    for l in LAYERS {
+                    for (layer, t, u) in LAYERS {
                         let mut shadow_target = SimpleFrameBuffer::depth_only(
                             &scene.display,
-                            shadow_buffer.main_level().image(*l),
+                            shadow_buffer.main_level().image(*layer),
                         )?;
 
-                        shadow_target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
+                        shadow_target.clear_depth(1.0);
+
+                        let light_proj: [[f32; 4]; 4] = (self.proj.matrix()
+                            * Matrix4::look_at_rh(
+                                Point3::from_vec(l.position),
+                                Point3::from_vec(l.position + t),
+                                *u,
+                            ))
+                        .into();
 
                         for (m, t) in &models {
                             let (mesh, _, _) = &*m.data;
@@ -144,6 +181,7 @@ impl System for LightRenderer {
                             let u = uniform! {
                                 transform: transform,
                                 light_transform: light_transform,
+                                light_proj: light_proj,
                             };
 
                             shadow_target.draw(
@@ -155,10 +193,6 @@ impl System for LightRenderer {
                             )?;
                         }
                     }
-
-                    let light_proj: [[f32; 4]; 4] = l.proj.matrix().into();
-                    let light_color: [f32; 3] = l.color.into();
-                    let light_position: [f32; 3] = l.position.into();
 
                     for (m, t) in &models {
                         let buffer =
@@ -173,8 +207,6 @@ impl System for LightRenderer {
                             transform: transform,
                             camera_transform: camera_transform,
                             camera_proj: camera_proj,
-                            light_transform: light_transform,
-                            light_proj: light_proj,
                             buffer: Sampler(&buffer, self.lighting_sampler_behavior),
                             shadow_buffer: Sampler(&shadow_buffer, self.shadow_sampler_behavior),
                             camera_position: camera_position,

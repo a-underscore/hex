@@ -13,11 +13,11 @@ uniform mat4 camera_transform;
 uniform mat4 camera_proj;
 
 void main(void) {
-	mat4 view =  inverse(camera_transform) * transform;
+	mat4 view = camera_transform * transform;
 
-        vec4 pos = view * vec4(position, 1.0);
+        vec3 pos = vec3(view * vec4(position, 1.0));
 
-        gl_Position = camera_proj * pos;
+        gl_Position = camera_proj * vec4(pos, 1.0);
 
 	v_color = color;
 	v_uv = uv;
