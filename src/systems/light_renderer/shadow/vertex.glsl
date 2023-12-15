@@ -16,5 +16,5 @@ void main(void) {
 
     	gl_Position = light_proj * vec4(pos, 1.0);
 
-	out_world_pos = vec3(pos);
+	out_world_pos = pos;
 } 

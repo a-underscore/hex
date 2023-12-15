@@ -26,12 +26,13 @@ float shadow(vec3);
 void main(void) {
 	vec4 t = texture(buffer, gl_FragCoord.xy / screen_dims);
 	vec3 a = ambient();
-	vec3 light_dir = normalize(light_position - v_pos);
+	vec3 light_dir = normalize(v_pos - light_position);
 	vec3 d = diffuse(light_dir);
 	vec3 s = specular(light_dir);
-	vec3 lum = light_strength * t.xyz * (shadow(light_dir) * (s + d) + a);
+	//vec3 lum = light_strength * t.xyz * (shadow(light_dir) * (s + d) + a);
+	vec3 lum = vec3(shadow(light_dir));
 
-	gl_FragColor = vec4(vec3(lum), t.w);
+	gl_FragColor = vec4(lum, t.w);
 }
 
 vec3 ambient(void) {
@@ -56,5 +57,5 @@ float shadow(vec3 light_dir) {
 
     	float distance = length(light_dir);
 
-    	return distance < sample_distance + EPSILON ? 1.0 : 0.5;
+    	return distance < sample_distance + EPSILON ? 1.0 : 0.0;
 }
