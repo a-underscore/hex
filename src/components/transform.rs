@@ -69,11 +69,11 @@ impl Transform {
         rotation: Vector3<f32>,
         scale: Vector3<f32>,
     ) -> Matrix4<f32> {
-        Matrix4::from_translation(position)
-            * Matrix4::from_angle_x(Rad(rotation.x))
-            * Matrix4::from_angle_y(Rad(rotation.y))
+        Matrix4::from_nonuniform_scale(scale.x, scale.y, scale.z)
             * Matrix4::from_angle_z(Rad(rotation.z))
-            * Matrix4::from_nonuniform_scale(scale.x, scale.y, scale.z)
+            * Matrix4::from_angle_y(Rad(rotation.y))
+            * Matrix4::from_angle_x(Rad(rotation.x))
+            * Matrix4::from_translation(position)
     }
 }
 
