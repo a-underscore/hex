@@ -149,14 +149,16 @@ impl System for LightRenderer {
                 let camera_transform: [[f32; 4]; 4] = ct.matrix().into();
                 let camera_position: [f32; 3] = ct.position().into();
 
-                for l in em
-                    .entities()
-                    .filter_map(|e| cm.get::<Light>(e).and_then(|l| l.active.then_some(l)))
-                {
+                for (l, lt) in em.entities().filter_map(|e| {
+                    Some((
+                        cm.get::<Light>(e).and_then(|l| l.active.then_some(l))?,
+                        cm.get::<Transform>(e).and_then(|t| t.active.then_some(t))?,
+                    ))
+                }) {
                     let light_transform: [[f32; 4]; 4] =
-                        Matrix4::from_translation(l.position).into();
+                        Matrix4::from_translation(lt.position()).into();
                     let light_color: [f32; 3] = l.color.into();
-                    let light_position: [f32; 3] = l.position.into();
+                    let light_position: [f32; 3] = lt.position().into();
 
                     for (layer, t, u) in LAYERS {
                         let mut shadow_target = SimpleFrameBuffer::depth_only(
@@ -168,8 +170,8 @@ impl System for LightRenderer {
 
                         let light_proj: [[f32; 4]; 4] = (self.proj.matrix()
                             * Matrix4::look_at_rh(
-                                Point3::from_vec(l.position),
-                                Point3::from_vec(l.position + t),
+                                Point3::from_vec(lt.position()),
+                                Point3::from_vec(lt.position() + t),
                                 *u,
                             ))
                         .into();
