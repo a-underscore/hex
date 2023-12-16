@@ -179,6 +179,7 @@ impl System for LightRenderer {
                                 transform: transform,
                                 light_transform: light_transform,
                                 light_proj: light_proj,
+                                light_position: light_position,
                             };
 
                             shadow_target.draw(
