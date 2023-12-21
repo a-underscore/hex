@@ -34,7 +34,7 @@ void main(void) {
 
 	vec3 d = diffuse(light_dir);
 	vec3 s = specular(light_dir);
-	vec3 lum = light_strength * t.xyz * (sh * (s + d) + a);
+	vec3 lum = light_strength * t.xyz * (/*sh * */(s + d) + a);
 
 	gl_FragColor = vec4(lum, t.w);
 }
