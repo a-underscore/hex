@@ -62,6 +62,7 @@ impl LightRenderer {
     pub fn new(
         display: &Display,
         lighting_sampler_behavior: SamplerBehavior,
+        shadow_sampler_behavior: SamplerBehavior,
         shadow_dimension: u32,
         filter: MagnifySamplerFilter,
         proj: Proj,
@@ -101,7 +102,7 @@ impl LightRenderer {
             )?,
             shadow_sampler_behavior: SamplerBehavior {
                 depth_texture_comparison: Some(DepthTextureComparison::LessOrEqual),
-                ..lighting_sampler_behavior
+                ..shadow_sampler_behavior
             },
             filter,
             shadow_dimension,
