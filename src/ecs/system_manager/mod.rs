@@ -6,19 +6,15 @@ use super::{ComponentManager, Context, EntityManager, Ev};
 
 #[derive(Default)]
 pub struct SystemManager {
-    systems: Vec<Box<dyn System>>,
+    pub systems: Vec<Box<dyn System>>,
 }
 
 impl SystemManager {
-    pub fn add_gen(&mut self, s: Box<dyn System>) {
-        self.systems.push(s);
-    }
-
     pub fn add<S>(&mut self, s: S)
     where
         S: System,
     {
-        self.add_gen(Box::new(s));
+        self.systems.push(Box::new(s));
     }
 
     pub fn rm(&mut self) {
@@ -27,11 +23,11 @@ impl SystemManager {
 
     pub fn init(
         &mut self,
-        context: &mut Context,
+        scene: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.init(context, (em, cm))?;
+            s.init(scene, (em, cm))?;
         }
 
         Ok(())
@@ -40,11 +36,11 @@ impl SystemManager {
     pub fn update(
         &mut self,
         ev: &mut Ev,
-        context: &mut Context,
+        scene: &mut Context,
         (em, cm): (&mut EntityManager, &mut ComponentManager),
     ) -> anyhow::Result<()> {
         for s in &mut self.systems {
-            s.update(ev, context, (em, cm))?;
+            s.update(ev, scene, (em, cm))?;
         }
 
         Ok(())
