@@ -67,7 +67,7 @@ impl ComponentManager {
             .and_then(|c| Self::cast(c.try_borrow().ok()?))
     }
 
-    pub fn get_mut<C>(&mut self, eid: Id) -> Option<RefMut<'_, C>>
+    pub fn get_mut<C>(&self, eid: Id) -> Option<RefMut<'_, C>>
     where
         C: Component,
     {
