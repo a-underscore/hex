@@ -32,11 +32,16 @@ impl ComponentManager {
         }
     }
 
-    pub fn add<C>(&mut self, eid: Id, component: Rc<RefCell<C>>, em: &mut EntityManager)
+    pub fn add<C>(&mut self, eid: Id, component: C, em: &mut EntityManager)
     where
         C: Component,
     {
-        self.add_gen(eid, TypeId::of::<C>(), Box::new(component), em);
+        self.add_gen(
+            eid,
+            TypeId::of::<C>(),
+            Box::new(Rc::new(RefCell::new(component))),
+            em,
+        );
     }
 
     pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
