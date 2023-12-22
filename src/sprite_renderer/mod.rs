@@ -136,7 +136,7 @@ impl Renderer for SpriteRenderer {
         let em = em.read().unwrap();
         let cm = cm.read().unwrap();
 
-        if let Some((c, ct)) = em.entities().find_map(|e| {
+        if let Some((c, ct)) = em.entities().keys().cloned().find_map(|e| {
             Some((
                 cm.get_ref::<Camera>(e)
                     .and_then(|c| c.active.then_some(c))?,
@@ -147,6 +147,8 @@ impl Renderer for SpriteRenderer {
             let sprites = {
                 let mut sprites: Vec<_> = em
                     .entities()
+                    .keys()
+                    .cloned()
                     .filter_map(|e| {
                         Some((
                             cm.get_ref::<Sprite>(e)

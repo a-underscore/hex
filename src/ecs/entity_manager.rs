@@ -1,8 +1,7 @@
 use super::{ComponentManager, Id};
 use std::{
     any::TypeId,
-    collections::{hash_map::Keys, HashMap, HashSet},
-    iter::Cloned,
+    collections::{HashMap, HashSet},
     sync::{Arc, RwLock},
 };
 
@@ -43,7 +42,7 @@ impl EntityManager {
         self.entities.get(&eid)
     }
 
-    pub fn entities(&self) -> Cloned<Keys<Id, HashSet<TypeId>>> {
-        self.entities.keys().cloned()
+    pub fn entities(&self) -> &HashMap<u32, HashSet<TypeId>> {
+        &self.entities
     }
 }
