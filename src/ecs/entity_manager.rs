@@ -42,7 +42,7 @@ impl EntityManager {
         self.entities.get(&eid)
     }
 
-    pub fn entities(&self) -> &HashMap<u32, HashSet<TypeId>> {
+    pub fn entities(&self) -> &HashMap<Id, HashSet<TypeId>> {
         &self.entities
     }
 }
