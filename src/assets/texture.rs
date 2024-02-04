@@ -17,7 +17,7 @@ pub struct Texture {
 
 impl Texture {
     pub fn new(
-        context: &mut Context,
+        context: &Context,
         sampler: Arc<Sampler>,
         source: &[u8],
         width: u32,
@@ -56,19 +56,11 @@ impl Texture {
         upload.copy_buffer_to_image(CopyBufferToImageInfo::buffer_image(buffer, image.clone()))?;
 
         let command_buffer = upload.build()?;
+        let future = sync::now(context.device.clone())
+            .then_execute(context.queue.clone(), command_buffer)?
+            .then_signal_fence_and_flush()?;
 
-        context.previous_frame_end = Some(
-            context
-                .previous_frame_end
-                .take()
-                .unwrap()
-                .join(
-                    sync::now(context.device.clone())
-                        .then_execute(context.queue.clone(), command_buffer)?
-                        .then_signal_fence_and_flush()?,
-                )
-                .boxed_send_sync(),
-        );
+        future.wait(None)?;
 
         Ok(Self {
             image: ImageView::new_default(image)?,
