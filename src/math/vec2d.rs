@@ -8,6 +8,22 @@ impl Vec2d {
         Self([x, y])
     }
 
+    pub fn up() -> Self {
+        Vec2d::new(0.0, 1.0)
+    }
+
+    pub fn down() -> Self {
+        Vec2d::new(0.0, -1.0)
+    }
+
+    pub fn left() -> Self {
+        Vec2d::new(-1.0, 0.0)
+    }
+
+    pub fn right() -> Self {
+        Vec2d::new(1.0, 0.0)
+    }
+
     pub fn x(self) -> f32 {
         self.0[0]
     }
