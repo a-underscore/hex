@@ -45,4 +45,10 @@ impl EntityManager {
     pub fn entities(&self) -> &HashMap<Id, HashSet<TypeId>> {
         &self.entities
     }
+
+    pub fn check(&self, cm: &ComponentManager) {
+        for (e, _) in cm.components.keys() {
+            println!("{}", e);
+        }
+    }
 }

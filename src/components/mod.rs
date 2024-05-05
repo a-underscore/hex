@@ -1,7 +1,7 @@
 pub mod camera;
 pub mod sprite;
-pub mod transform;
+pub mod trans;
 
 pub use camera::Camera;
 pub use sprite::Sprite;
-pub use transform::Transform;
+pub use trans::Trans;

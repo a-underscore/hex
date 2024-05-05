@@ -2,8 +2,8 @@ pub mod fragment;
 pub mod vertex;
 
 use crate::{
-    assets::shape::Vertex2d,
-    components::{Camera, Sprite, Transform},
+    assets::shape::Vertex2,
+    components::{Camera, Sprite, Trans},
     ecs::{
         renderer_manager::Draw, renderer_manager::Renderer, ComponentManager, Context,
         EntityManager,
@@ -66,7 +66,7 @@ impl SpriteRenderer {
         fragment: EntryPoint,
     ) -> anyhow::Result<Arc<GraphicsPipeline>> {
         let vertex_input_state =
-            Vertex2d::per_vertex().definition(&vertex.info().input_interface)?;
+            Vertex2::per_vertex().definition(&vertex.info().input_interface)?;
         let stages = [
             PipelineShaderStageCreateInfo::new(vertex),
             PipelineShaderStageCreateInfo::new(fragment),
@@ -140,7 +140,7 @@ impl Renderer for SpriteRenderer {
             Some((
                 cm.get_ref::<Camera>(e)
                     .and_then(|c| c.active.then_some(c))?,
-                cm.get_ref::<Transform>(e)
+                cm.get_ref::<Trans>(e)
                     .and_then(|t| t.active.then_some(t))?,
             ))
         }) {
@@ -153,7 +153,7 @@ impl Renderer for SpriteRenderer {
                         Some((
                             cm.get_ref::<Sprite>(e)
                                 .and_then(|s| s.active.then_some(s))?,
-                            cm.get_ref::<Transform>(e)
+                            cm.get_ref::<Trans>(e)
                                 .and_then(|t| t.active.then_some(t))?,
                         ))
                     })
@@ -182,9 +182,9 @@ impl Renderer for SpriteRenderer {
 
                     *subbuffer.write()? = vertex::View {
                         z: Padded(s.z),
-                        transform: t.matrix().0.map(Padded),
-                        camera_transform: ct.matrix().0.map(Padded),
-                        camera_proj: c.proj().0,
+                        transform: <[[f32; 3]; 3]>::from(t.matrix()).map(Padded),
+                        camera_transform: <[[f32; 3]; 3]>::from(ct.matrix()).map(Padded),
+                        camera_proj: <[[f32; 4]; 4]>::from(c.proj()),
                     };
 
                     PersistentDescriptorSet::new(
