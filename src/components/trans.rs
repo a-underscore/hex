@@ -64,9 +64,9 @@ impl Trans {
         rotation: f32,
         scale: Vector2<f32>,
     ) -> Matrix3<f32> {
-            Matrix3::new_translation(&position)
+        Matrix3::new_translation(&position)
             * Matrix3::new_rotation(rotation)
-            *Matrix3::new_nonuniform_scaling(&scale)
+            * Matrix3::new_nonuniform_scaling(&scale)
     }
 }
 
