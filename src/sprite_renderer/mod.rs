@@ -182,7 +182,7 @@ impl Renderer for SpriteRenderer {
                         z: Padded(s.z),
                         transform: <[[f32; 3]; 3]>::from(t.matrix()).map(Padded),
                         camera_transform: <[[f32; 3]; 3]>::from(ct.matrix()).map(Padded),
-                        camera_proj: <[[f32; 4]; 4]>::from(c.proj()),
+                        camera_proj: c.proj().into(),
                     };
 
                     PersistentDescriptorSet::new(
