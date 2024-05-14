@@ -24,7 +24,7 @@ impl SystemManager {
     pub fn add_gen(&mut self, pid: Id, s: Box<dyn System>) {
         self.pipelines
             .entry(pid)
-            .or_insert(Default::default())
+            .or_default()
             .write()
             .unwrap()
             .push(s);

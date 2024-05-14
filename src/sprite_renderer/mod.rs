@@ -157,7 +157,7 @@ impl Renderer for SpriteRenderer {
                     })
                     .collect();
 
-                sprites.sort_by(|((z1, _), _), ((z2, _), _)| z1.total_cmp(&(z2)));
+                sprites.sort_by(|((z1, _), _), ((z2, _), _)| z1.total_cmp(z2));
 
                 sprites
             };
@@ -166,7 +166,7 @@ impl Renderer for SpriteRenderer {
 
             for ((z, s), t) in sprites {
                 let view = {
-                    let layout = self.pipeline.layout().set_layouts().get(0).unwrap();
+                    let layout = self.pipeline.layout().set_layouts().first().unwrap();
                     let subbuffer_allocator = SubbufferAllocator::new(
                         context.memory_allocator.clone(),
                         SubbufferAllocatorCreateInfo {
