@@ -93,7 +93,7 @@ impl SpriteRenderer {
                     viewports: [Viewport {
                         offset: [0.0, 0.0],
                         extent: [extent[0] as f32, extent[1] as f32],
-                        depth_range: 0.0..=1.0,
+                        depth_range: -1.0..=1.0,
                     }]
                     .into_iter()
                     .collect(),
@@ -157,7 +157,7 @@ impl Renderer for SpriteRenderer {
                     })
                     .collect();
 
-                sprites.sort_by(|(s1, _), (s2, _)| s1.z.total_cmp(&s2.z));
+                sprites.sort_by(|(s1, _), (s2, _)| (-s1.z).total_cmp(&(-s2.z)));
 
                 sprites
             };
@@ -179,7 +179,7 @@ impl Renderer for SpriteRenderer {
                     let subbuffer = subbuffer_allocator.allocate_sized()?;
 
                     *subbuffer.write()? = vertex::View {
-                        z: Padded(s.z),
+                        z: Padded(-s.z),
                         transform: <[[f32; 3]; 3]>::from(t.matrix()).map(Padded),
                         camera_transform: <[[f32; 3]; 3]>::from(ct.matrix()).map(Padded),
                         camera_proj: c.proj().into(),

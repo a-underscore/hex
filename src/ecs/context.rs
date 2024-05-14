@@ -66,6 +66,7 @@ impl Context {
         let surface = Surface::from_window(instance.clone(), window.clone())?;
         let device_extensions = DeviceExtensions {
             khr_swapchain: true,
+            ext_depth_range_unrestricted: true,
             ..DeviceExtensions::empty()
         };
         let (physical_device, queue_family_index) = instance
