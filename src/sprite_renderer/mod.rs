@@ -151,20 +151,20 @@ impl Renderer for SpriteRenderer {
                     .filter_map(|e| {
                         Some((
                             cm.get_ref::<Sprite>(e)
-                                .and_then(|s| s.active.then_some((-s.z, s)))?,
+                                .and_then(|s| s.active.then_some(s))?,
                             cm.get_ref::<Trans>(e).and_then(|t| t.active.then_some(t))?,
                         ))
                     })
                     .collect();
 
-                sprites.sort_by(|((z1, _), _), ((z2, _), _)| z1.total_cmp(z2));
+                sprites.sort_by(|(s1, _), (s2, _)| s1.z.total_cmp(&s2.z));
 
                 sprites
             };
 
             builder.bind_pipeline_graphics(self.pipeline.clone())?;
 
-            for ((z, s), t) in sprites {
+            for (s, t) in sprites {
                 let view = {
                     let layout = self.pipeline.layout().set_layouts().first().unwrap();
                     let subbuffer_allocator = SubbufferAllocator::new(
@@ -179,7 +179,7 @@ impl Renderer for SpriteRenderer {
                     let subbuffer = subbuffer_allocator.allocate_sized()?;
 
                     *subbuffer.write()? = vertex::View {
-                        z: Padded(z),
+                        z: Padded(s.z),
                         transform: <[[f32; 3]; 3]>::from(t.matrix()).map(Padded),
                         camera_transform: <[[f32; 3]; 3]>::from(ct.matrix()).map(Padded),
                         camera_proj: c.proj().into(),
