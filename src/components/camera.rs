@@ -39,7 +39,7 @@ impl Camera {
         let z = v.z;
         let v = v / 2.0;
 
-        Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).to_homogeneous()
+        Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, 0.0).to_homogeneous()
     }
 }
 
