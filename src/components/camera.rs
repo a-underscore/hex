@@ -36,9 +36,10 @@ impl Camera {
     }
 
     pub fn calculate_proj(v: Vector3<f32>) -> Matrix4<f32> {
+        let z = v.z;
         let v = v / 2.0;
 
-        Orthographic3::new(-v.x, v.x, -v.y, v.y, -v.z, v.z).to_homogeneous()
+        Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).to_homogeneous()
     }
 }
 

@@ -157,7 +157,7 @@ impl Renderer for SpriteRenderer {
                     })
                     .collect();
 
-                sprites.sort_by(|(s1, _), (s2, _)| s2.z.total_cmp(&s1.z));
+                sprites.sort_by(|(s1, _), (s2, _)| s2.layer.cmp(&s1.layer));
 
                 sprites
             };
@@ -179,7 +179,7 @@ impl Renderer for SpriteRenderer {
                     let subbuffer = subbuffer_allocator.allocate_sized()?;
 
                     *subbuffer.write()? = vertex::View {
-                        z: Padded(s.z),
+                        z: Padded(-(s.layer as f32)),
                         transform: <[[f32; 3]; 3]>::from(t.matrix()).map(Padded),
                         camera_transform: <[[f32; 3]; 3]>::from(ct.matrix()).map(Padded),
                         camera_proj: c.proj().into(),
