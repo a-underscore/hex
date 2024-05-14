@@ -157,7 +157,7 @@ impl Renderer for SpriteRenderer {
                     })
                     .collect();
 
-                sprites.sort_by(|((z1, _), _), ((z2, _), _)| z1.total_cmp(&(z2 )));
+                sprites.sort_by(|((z1, _), _), ((z2, _), _)| z1.total_cmp(&(z2)));
 
                 sprites
             };
