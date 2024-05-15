@@ -5,16 +5,16 @@ use crate::nalgebra::{Matrix4, Orthographic3, Vector2};
 pub struct Camera {
     pub active: bool,
     dimensions: Vector2<f32>,
-    max_layer: u32,
+    end: u32,
     proj: Matrix4<f32>,
 }
 
 impl Camera {
-    pub fn new(dimensions: Vector2<f32>, max_layer: u32, active: bool) -> Self {
+    pub fn new(dimensions: Vector2<f32>, end: u32, active: bool) -> Self {
         Self {
             dimensions,
-            max_layer,
-            proj: Self::calculate_proj(dimensions, max_layer),
+            end,
+            proj: Self::calculate_proj(dimensions, end),
             active,
         }
     }
@@ -29,12 +29,12 @@ impl Camera {
         self.update_proj();
     }
 
-    pub fn max_layer(&self) -> u32 {
-        self.max_layer
+    pub fn end(&self) -> u32 {
+        self.end
     }
 
-    pub fn set_max_layer(&mut self, max_layer: u32) {
-        self.max_layer = max_layer;
+    pub fn set_end(&mut self, end: u32) {
+        self.end = end;
 
         self.update_proj();
     }
@@ -44,11 +44,11 @@ impl Camera {
     }
 
     pub fn update_proj(&mut self) {
-        self.proj = Self::calculate_proj(self.dimensions, self.max_layer);
+        self.proj = Self::calculate_proj(self.dimensions, self.end);
     }
 
-    pub fn calculate_proj(v: Vector2<f32>, max_layer: u32) -> Matrix4<f32> {
-        let z = max_layer as f32;
+    pub fn calculate_proj(v: Vector2<f32>, end: u32) -> Matrix4<f32> {
+        let z = end as f32 + 1.0;
         let v = v / 2.0;
 
         Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).to_homogeneous()
