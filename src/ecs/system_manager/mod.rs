@@ -46,7 +46,8 @@ impl SystemManager {
     pub fn init(
         &self,
         context: Arc<RwLock<Context>>,
-        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
+        em: Arc<RwLock<EntityManager>>,
+        cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         let res: anyhow::Result<Vec<_>> = self
             .pipelines
@@ -69,7 +70,8 @@ impl SystemManager {
         &self,
         control: Arc<RwLock<Control>>,
         context: Arc<RwLock<Context>>,
-        (em, cm): (Arc<RwLock<EntityManager>>, Arc<RwLock<ComponentManager>>),
+        em: Arc<RwLock<EntityManager>>,
+        cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         let res: anyhow::Result<Vec<_>> = self
             .pipelines

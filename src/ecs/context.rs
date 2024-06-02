@@ -192,7 +192,7 @@ impl Context {
         em: Arc<RwLock<EntityManager>>,
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
-        sm.init(context.clone(), (em.clone(), cm.clone()))?;
+        sm.init(context.clone(), em.clone(), cm.clone())?;
 
         let mut recreate_swapchain = false;
 
@@ -222,7 +222,7 @@ impl Context {
         control: Arc<RwLock<Control>>,
         (elwt, recreate_swapchain): (&EventLoopWindowTarget<()>, &mut bool),
     ) -> anyhow::Result<()> {
-        sm.update(control.clone(), context.clone(), (em.clone(), cm.clone()))?;
+        sm.update(control.clone(), context.clone(), em.clone(), cm.clone())?;
 
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
