@@ -49,19 +49,13 @@ impl SystemManager {
         em: Arc<RwLock<EntityManager>>,
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
-        let res: anyhow::Result<Vec<_>> = self
-            .pipelines
-            .par_iter()
-            .map(|(_, p)| {
-                for s in &mut *p.write().unwrap() {
-                    s.init(context.clone(), em.clone(), cm.clone())?;
-                }
+        self.par(|(_, p)| {
+            for s in &mut *p.write().unwrap() {
+                s.init(context.clone(), em.clone(), cm.clone())?;
+            }
 
-                Ok(())
-            })
-            .collect();
-
-        res?;
+            Ok(())
+        })?;
 
         Ok(())
     }
@@ -73,17 +67,22 @@ impl SystemManager {
         em: Arc<RwLock<EntityManager>>,
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
-        let res: anyhow::Result<Vec<_>> = self
-            .pipelines
-            .par_iter()
-            .map(|(_, p)| {
-                for s in &mut *p.write().unwrap() {
-                    s.update(control.clone(), context.clone(), em.clone(), cm.clone())?;
-                }
+        self.par(|(_, p)| {
+            for s in &mut *p.write().unwrap() {
+                s.update(control.clone(), context.clone(), em.clone(), cm.clone())?;
+            }
 
-                Ok(())
-            })
-            .collect();
+            Ok(())
+        })?;
+
+        Ok(())
+    }
+
+    pub fn par<F>(&self, f: F) -> anyhow::Result<()>
+    where
+        F: Fn((&u32, &Arc<RwLock<Vec<Box<(dyn System)>>>>)) -> anyhow::Result<()> + Send + Sync,
+    {
+        let res: anyhow::Result<Vec<_>> = self.pipelines.par_iter().map(f).collect();
 
         res?;
 
