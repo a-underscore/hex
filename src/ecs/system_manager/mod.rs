@@ -78,7 +78,7 @@ impl SystemManager {
         Ok(())
     }
 
-    pub fn par<F>(&self, f: F) -> anyhow::Result<()>
+    fn par<F>(&self, f: F) -> anyhow::Result<()>
     where
         F: Fn((&u32, &Arc<RwLock<Vec<Box<(dyn System)>>>>)) -> anyhow::Result<()> + Send + Sync,
     {

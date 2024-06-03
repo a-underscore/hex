@@ -87,7 +87,7 @@ impl ComponentManager {
         self.get::<C>(eid).map(|c| c.write().unwrap())
     }
 
-    pub fn cast<C>(a: &dyn AsAny) -> Option<&Arc<RwLock<C>>>
+    fn cast<C>(a: &dyn AsAny) -> Option<&Arc<RwLock<C>>>
     where
         C: Component,
     {

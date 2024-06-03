@@ -55,11 +55,11 @@ impl Trans {
         self.matrix
     }
 
-    pub fn update_matrix(&mut self) {
+    fn update_matrix(&mut self) {
         self.matrix = Self::calculate_matrix(self.position, self.rotation, self.scale);
     }
 
-    pub fn calculate_matrix(
+    fn calculate_matrix(
         position: Vector2<f32>,
         rotation: f32,
         scale: Vector2<f32>,
