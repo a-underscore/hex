@@ -2,6 +2,7 @@ use super::{
     renderer_manager::Draw, ComponentManager, Control, EntityManager, RendererManager,
     SystemManager,
 };
+use nalgebra::Vector4;
 use std::sync::{Arc, RwLock};
 use vulkano::{
     command_buffer::{
@@ -44,14 +45,14 @@ pub struct Context {
     pub window: Arc<Window>,
     pub viewport: Viewport,
     pub previous_frame_end: Option<Box<dyn GpuFuture + Send + Sync>>,
-    pub bg: [f32; 4],
+    pub bg: Vector4<f32>,
 }
 
 impl Context {
     pub fn new(
         event_loop: &EventLoop<()>,
         window: Arc<Window>,
-        bg: [f32; 4],
+        bg: Vector4<f32>,
     ) -> anyhow::Result<Arc<RwLock<Self>>> {
         let library = VulkanLibrary::new()?;
         let required_extensions = Surface::required_extensions(&event_loop);
@@ -284,7 +285,10 @@ impl Context {
                 builder
                     .begin_render_pass(
                         RenderPassBeginInfo {
-                            clear_values: vec![Some(context.bg.into()), Some(1f32.into())],
+                            clear_values: vec![
+                                Some(<[f32; 4]>::from(context.bg).into()),
+                                Some(1f32.into()),
+                            ],
                             ..RenderPassBeginInfo::framebuffer(
                                 context.framebuffers[image_index as usize].clone(),
                             )
