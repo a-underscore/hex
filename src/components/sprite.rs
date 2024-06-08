@@ -2,18 +2,25 @@ use crate::{
     assets::{Shape, Texture},
     ecs::component_manager::Component,
 };
+use nalgebra::Vector4;
 
 #[derive(Clone)]
 pub struct Sprite {
     pub shape: Shape,
     pub texture: Texture,
-    pub color: [f32; 4],
+    pub color: Vector4<f32>,
     pub layer: u32,
     pub active: bool,
 }
 
 impl Sprite {
-    pub fn new(shape: Shape, texture: Texture, color: [f32; 4], layer: u32, active: bool) -> Self {
+    pub fn new(
+        shape: Shape,
+        texture: Texture,
+        color: Vector4<f32>,
+        layer: u32,
+        active: bool,
+    ) -> Self {
         Self {
             shape,
             texture,

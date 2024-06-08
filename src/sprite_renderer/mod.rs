@@ -218,7 +218,9 @@ impl Renderer for SpriteRenderer {
                     );
                     let subbuffer = subbuffer_allocator.allocate_sized()?;
 
-                    *subbuffer.write()? = fragment::Color { color: s.color };
+                    *subbuffer.write()? = fragment::Color {
+                        color: s.color.into(),
+                    };
 
                     PersistentDescriptorSet::new(
                         &context.descriptor_set_allocator,
