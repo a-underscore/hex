@@ -5,11 +5,11 @@ use vulkano::command_buffer::{
     auto::{AutoCommandBufferBuilder, PrimaryAutoCommandBuffer},
 };
 
-pub struct Draw<'a>(
-    pub Arc<RwLock<Control>>,
-    pub  &'a mut AutoCommandBufferBuilder<
+pub type Draw<'a> = (
+    Arc<RwLock<Control>>,
+    &'a mut AutoCommandBufferBuilder<
         PrimaryAutoCommandBuffer<Arc<StandardCommandBufferAllocator>>,
         Arc<StandardCommandBufferAllocator>,
     >,
-    pub bool,
+    bool,
 );

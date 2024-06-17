@@ -9,7 +9,7 @@ pub struct Sprite {
     pub shape: Shape,
     pub texture: Texture,
     pub color: Vector4<f32>,
-    pub layer: u32,
+    pub layer: i32,
     pub active: bool,
 }
 
@@ -18,7 +18,7 @@ impl Sprite {
         shape: Shape,
         texture: Texture,
         color: Vector4<f32>,
-        layer: u32,
+        layer: i32,
         active: bool,
     ) -> Self {
         Self {

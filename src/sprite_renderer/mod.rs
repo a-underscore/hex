@@ -117,12 +117,16 @@ impl SpriteRenderer {
             },
         )?)
     }
+
+    pub fn calculate_z(end: f32, layer: f32) -> f32 {
+        -((end - layer) * 2.0 - layer)
+    }
 }
 
 impl Renderer for SpriteRenderer {
     fn draw(
         &mut self,
-        Draw(_, builder, recreate_swapchain): &mut Draw,
+        (_, builder, recreate_swapchain): &mut Draw,
         context: Arc<RwLock<Context>>,
         em: Arc<RwLock<EntityManager>>,
         cm: Arc<RwLock<ComponentManager>>,
@@ -179,7 +183,7 @@ impl Renderer for SpriteRenderer {
                     let subbuffer = subbuffer_allocator.allocate_sized()?;
 
                     *subbuffer.write()? = vertex::View {
-                        z: Padded(-(c.end() as f32 - s.layer as f32)),
+                        z: Padded(Self::calculate_z(c.end() as f32, s.layer as f32)),
                         transform: <[[f32; 3]; 3]>::from(t.matrix()).map(Padded),
                         camera_transform: <[[f32; 3]; 3]>::from(ct.matrix()).map(Padded),
                         camera_proj: c.proj().into(),

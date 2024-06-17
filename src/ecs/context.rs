@@ -1,7 +1,4 @@
-use super::{
-    renderer_manager::Draw, ComponentManager, Control, EntityManager, RendererManager,
-    SystemManager,
-};
+use super::{ComponentManager, Control, EntityManager, RendererManager, SystemManager};
 use nalgebra::Vector4;
 use std::sync::{Arc, RwLock};
 use vulkano::{
@@ -301,7 +298,7 @@ impl Context {
             };
 
             rm.draw(
-                &mut Draw(control.clone(), &mut builder, rs),
+                &mut (control.clone(), &mut builder, rs),
                 context.clone(),
                 em.clone(),
                 cm.clone(),

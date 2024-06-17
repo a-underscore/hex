@@ -5,12 +5,12 @@ use crate::nalgebra::{Matrix4, Orthographic3, Vector2};
 pub struct Camera {
     pub active: bool,
     dimensions: Vector2<f32>,
-    end: u32,
+    end: i32,
     proj: Matrix4<f32>,
 }
 
 impl Camera {
-    pub fn new(dimensions: Vector2<f32>, end: u32, active: bool) -> Self {
+    pub fn new(dimensions: Vector2<f32>, end: i32, active: bool) -> Self {
         Self {
             dimensions,
             end,
@@ -29,11 +29,11 @@ impl Camera {
         self.update_proj();
     }
 
-    pub fn end(&self) -> u32 {
+    pub fn end(&self) -> i32 {
         self.end
     }
 
-    pub fn set_end(&mut self, end: u32) {
+    pub fn set_end(&mut self, end: i32) {
         self.end = end;
 
         self.update_proj();
@@ -47,7 +47,7 @@ impl Camera {
         self.proj = Self::calculate_proj(self.dimensions, self.end);
     }
 
-    fn calculate_proj(v: Vector2<f32>, end: u32) -> Matrix4<f32> {
+    fn calculate_proj(v: Vector2<f32>, end: i32) -> Matrix4<f32> {
         let z = end as f32 + 1.0;
         let v = v / 2.0;
 
