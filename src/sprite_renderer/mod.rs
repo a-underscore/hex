@@ -119,7 +119,7 @@ impl SpriteRenderer {
     }
 
     pub fn calculate_z(end: f32, layer: f32) -> f32 {
-        -((end - layer) * 2.0 - layer)
+        -((end - end / 2.0) - layer)
     }
 }
 
