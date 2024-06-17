@@ -118,7 +118,10 @@ impl SpriteRenderer {
         )?)
     }
 
-    pub fn calculate_z(end: f32, layer: f32) -> f32 {
+    pub fn calculate_z(end: i32, layer: i32) -> f32 {
+        let end = end as f32;
+        let layer = layer as f32;
+
         -((end - end / 2.0) - layer)
     }
 }
@@ -183,7 +186,7 @@ impl Renderer for SpriteRenderer {
                     let subbuffer = subbuffer_allocator.allocate_sized()?;
 
                     *subbuffer.write()? = vertex::View {
-                        z: Padded(Self::calculate_z(c.end() as f32, s.layer as f32)),
+                        z: Padded(Self::calculate_z(c.end(), s.layer)),
                         transform: <[[f32; 3]; 3]>::from(t.matrix()).map(Padded),
                         camera_transform: <[[f32; 3]; 3]>::from(ct.matrix()).map(Padded),
                         camera_proj: c.proj().into(),
