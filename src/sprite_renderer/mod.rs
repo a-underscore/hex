@@ -122,7 +122,7 @@ impl SpriteRenderer {
         let end = end as f32;
         let layer = layer as f32;
 
-        -((end - end / 2.0) - layer)
+        -((end - end / 2.0) - layer / 2.0)
     }
 }
 
