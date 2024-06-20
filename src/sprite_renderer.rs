@@ -20,8 +20,9 @@ impl Renderer for SpriteRenderer {
         let em = em.read().unwrap();
         let cm = cm.read().unwrap();
 
-        if let Some((c, ct)) = em.entities().keys().cloned().find_map(|e| {
+        if let Some((ce, c, ct)) = em.entities().keys().cloned().find_map(|e| {
             Some((
+                e,
                 cm.get::<Camera>(e)
                     .and_then(|c| c.read().unwrap().active.then_some(c))?,
                 cm.get::<Trans>(e)
@@ -35,6 +36,7 @@ impl Renderer for SpriteRenderer {
                     .cloned()
                     .filter_map(|e| {
                         Some((
+                            e,
                             cm.get::<Sprite>(e)
                                 .and_then(|s| s.read().unwrap().active.then_some(s))?,
                             cm.get::<Trans>(e)
@@ -43,14 +45,14 @@ impl Renderer for SpriteRenderer {
                     })
                     .collect();
 
-                sprites.sort_by(|(s1, _), (s2, _)| {
+                sprites.sort_by(|(_, s1, _), (_, s2, _)| {
                     s1.read().unwrap().layer.cmp(&s2.read().unwrap().layer)
                 });
 
                 sprites
             };
 
-            for (s, t) in sprites {
+            for (se, s, t) in sprites {
                 let d = {
                     let s = s.write().unwrap();
 
@@ -58,9 +60,10 @@ impl Renderer for SpriteRenderer {
                 };
 
                 d.draw(
+                    se,
                     s.clone(),
                     t.clone(),
-                    (c.clone(), ct.clone()),
+                    (ce, c.clone(), ct.clone()),
                     &context,
                     draw,
                 )?;

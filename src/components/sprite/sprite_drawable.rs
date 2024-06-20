@@ -2,7 +2,7 @@ use super::{fragment, vertex, Drawable};
 use crate::{
     components::{Camera, Sprite, Trans},
     renderer_manager::Draw,
-    Context,
+    Context, Id,
 };
 use std::sync::{Arc, RwLock};
 use vulkano::{
@@ -27,9 +27,10 @@ impl SpriteDrawable {
 impl Drawable for SpriteDrawable {
     fn draw(
         &self,
+        _: Id,
         s: Arc<RwLock<Sprite>>,
         t: Arc<RwLock<Trans>>,
-        (c, ct): (Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
+        (_, c, ct): (Id, Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
         context: &Context,
         (_, builder, recreate_swapchain): &mut Draw,
     ) -> anyhow::Result<()> {
