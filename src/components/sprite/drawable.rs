@@ -1,5 +1,6 @@
+use super::Sprite;
 use crate::{
-    components::{Camera, Sprite, Trans},
+    components::{Camera, Trans},
     renderer_manager::Draw,
     ComponentManager, Context, EntityManager, Id,
 };
