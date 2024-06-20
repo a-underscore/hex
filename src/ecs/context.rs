@@ -384,7 +384,7 @@ impl Context {
             AllocationCreateInfo::default(),
         )?)?;
 
-        let images = images
+        let images: anyhow::Result<Vec<Arc<Framebuffer>>> = images
             .iter()
             .map(|image| {
                 let view = ImageView::new_default(image.clone())?;
@@ -397,10 +397,9 @@ impl Context {
                     },
                 )?)
             })
-            .collect::<anyhow::Result<Vec<Arc<Framebuffer>>>>()?;
-
+            .collect();
+        let images = images?;
         let extent = images[0].extent();
-
         let viewport = Viewport {
             offset: [0.0, 0.0],
             extent: [extent[0] as f32, extent[1] as f32],
