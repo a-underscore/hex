@@ -46,24 +46,31 @@ pub struct Sprite {
 
 impl Sprite {
     pub fn new(
+        context: &Context,
         shape: Shape,
         texture: Texture,
         color: Vector4<f32>,
         layer: i32,
-        pipeline: Arc<GraphicsPipeline>,
-        shaders: (EntryPoint, EntryPoint),
         active: bool,
-    ) -> Self {
-        Self {
+    ) -> anyhow::Result<Self> {
+        let vertex = vertex::load(context.device.clone())?
+            .entry_point("main")
+            .unwrap();
+        let fragment = fragment::load(context.device.clone())?
+            .entry_point("main")
+            .unwrap();
+        let pipeline = Self::pipeline(context, vertex.clone(), fragment.clone())?;
+
+        Ok(Self {
             shape,
             texture,
             color,
             layer,
+            shaders: (vertex, fragment),
             pipeline,
-            shaders,
             drawable: SpriteDrawable::new(),
             active,
-        }
+        })
     }
 
     pub fn pipeline(

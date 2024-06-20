@@ -37,7 +37,6 @@ impl Drawable for SpriteDrawable {
         let t = t.read().unwrap();
         let c = c.read().unwrap();
         let ct = ct.read().unwrap();
-
         let (vertex, fragment) = s.shaders.clone();
 
         if *recreate_swapchain {
