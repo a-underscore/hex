@@ -20,13 +20,13 @@ impl Renderer for SpriteRenderer {
         let em = em.read().unwrap();
         let cm = cm.read().unwrap();
 
-        if let Some((ce, c, ct)) = em.entities().keys().cloned().find_map(|e| {
+        if let Some((ce, ct, c)) = em.entities().keys().cloned().find_map(|e| {
             Some((
                 e,
-                cm.get::<Camera>(e)
-                    .and_then(|c| c.read().unwrap().active.then_some(c))?,
                 cm.get::<Trans>(e)
                     .and_then(|t| t.read().unwrap().active.then_some(t))?,
+                cm.get::<Camera>(e)
+                    .and_then(|c| c.read().unwrap().active.then_some(c))?,
             ))
         }) {
             let sprites = {
@@ -37,27 +37,27 @@ impl Renderer for SpriteRenderer {
                     .filter_map(|e| {
                         Some((
                             e,
-                            cm.get::<Sprite>(e)
-                                .and_then(|s| s.read().unwrap().active.then_some(s))?,
                             cm.get::<Trans>(e)
                                 .and_then(|t| t.read().unwrap().active.then_some(t))?,
+                            cm.get::<Sprite>(e)
+                                .and_then(|s| s.read().unwrap().active.then_some(s))?,
                         ))
                     })
                     .collect();
 
-                sprites.sort_by(|(_, s1, _), (_, s2, _)| {
+                sprites.sort_by(|(_, _, s1), (_, _, s2)| {
                     s1.read().unwrap().layer.cmp(&s2.read().unwrap().layer)
                 });
 
                 sprites
             };
 
-            for (se, s, t) in sprites {
+            for (se, t, s) in sprites {
                 let d = s.read().unwrap().drawable.clone();
 
                 d.draw(
                     (se, t.clone(), s.clone()),
-                    (ce, c.clone(), ct.clone()),
+                    (ce, ct.clone(), c.clone()),
                     &context,
                     draw,
                     &em,

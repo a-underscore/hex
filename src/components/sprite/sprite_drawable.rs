@@ -28,7 +28,7 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
     fn draw(
         &self,
         (_, t, s): SpriteEntity,
-        (_, c, ct): (Id, Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
+        (_, ct, c): (Id, Arc<RwLock<Trans>>, Arc<RwLock<Camera>>),
         context: &Context,
         (_, builder, recreate_swapchain): &mut Draw,
         _: &EntityManager,
