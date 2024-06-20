@@ -1,18 +1,17 @@
-pub mod drawable;
 pub mod fragment;
 pub mod sprite_drawable;
 pub mod vertex;
 
-pub use drawable::Drawable;
 pub use sprite_drawable::SpriteDrawable;
 
 use crate::{
     assets::{shape::Vertex2, Shape, Texture},
     component_manager::Component,
-    Context,
+    components::Trans,
+    Context, Drawable, Id,
 };
 use nalgebra::Vector4;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use vulkano::{
     pipeline::{
         graphics::{
@@ -38,7 +37,7 @@ pub struct Sprite {
     pub texture: Texture,
     pub color: Vector4<f32>,
     pub layer: i32,
-    pub drawable: Arc<dyn Drawable>,
+    pub drawable: Arc<dyn Drawable<(Id, Arc<RwLock<Trans>>, Arc<RwLock<Self>>)>>,
     pub pipeline: Arc<GraphicsPipeline>,
     pub shaders: (EntryPoint, EntryPoint),
     pub active: bool,

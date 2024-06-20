@@ -24,7 +24,7 @@ impl SpriteDrawable {
     }
 }
 
-impl Drawable for SpriteDrawable {
+impl Drawable<(Id, Arc<RwLock<Trans>>, Arc<RwLock<Sprite>>)> for SpriteDrawable {
     fn draw(
         &self,
         (_, t, s): (Id, Arc<RwLock<Trans>>, Arc<RwLock<Sprite>>),

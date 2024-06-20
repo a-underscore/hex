@@ -1,4 +1,3 @@
-use super::Sprite;
 use crate::{
     components::{Camera, Trans},
     renderer_manager::Draw,
@@ -6,10 +5,10 @@ use crate::{
 };
 use std::sync::{Arc, RwLock};
 
-pub trait Drawable: Send + Sync {
+pub trait Drawable<E>: Send + Sync {
     fn draw(
         &self,
-        entity: (Id, Arc<RwLock<Trans>>, Arc<RwLock<Sprite>>),
+        entity: E,
         camera: (Id, Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
         context: &Context,
         draw: &mut Draw,
