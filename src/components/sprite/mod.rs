@@ -31,13 +31,15 @@ use vulkano::{
     shader::EntryPoint,
 };
 
+pub type SpriteEntity = (Id, Arc<RwLock<Trans>>, Arc<RwLock<Sprite>>);
+
 #[derive(Clone)]
 pub struct Sprite {
     pub shape: Shape,
     pub texture: Texture,
     pub color: Vector4<f32>,
     pub layer: i32,
-    pub drawable: Arc<dyn Drawable<(Id, Arc<RwLock<Trans>>, Arc<RwLock<Self>>)>>,
+    pub drawable: Arc<dyn Drawable<SpriteEntity>>,
     pub pipeline: Arc<GraphicsPipeline>,
     pub shaders: (EntryPoint, EntryPoint),
     pub active: bool,
