@@ -13,12 +13,12 @@ impl Renderer for SpriteRenderer {
         &mut self,
         draw: &mut Draw,
         context: Arc<RwLock<Context>>,
-        em: Arc<RwLock<EntityManager>>,
-        cm: Arc<RwLock<ComponentManager>>,
+        entity_manager: Arc<RwLock<EntityManager>>,
+        component_manager: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         let context = context.read().unwrap();
-        let em = em.read().unwrap();
-        let cm = cm.read().unwrap();
+        let em = entity_manager.read().unwrap();
+        let cm = component_manager.read().unwrap();
 
         if let Some((ce, c, ct)) = em.entities().keys().cloned().find_map(|e| {
             Some((
@@ -60,12 +60,12 @@ impl Renderer for SpriteRenderer {
                 };
 
                 d.draw(
-                    se,
-                    s.clone(),
-                    t.clone(),
+                    (se, t.clone(), s.clone()),
                     (ce, c.clone(), ct.clone()),
                     &context,
                     draw,
+                    entity_manager.clone(),
+                    component_manager.clone(),
                 )?;
             }
         }
