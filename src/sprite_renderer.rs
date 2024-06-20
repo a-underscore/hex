@@ -53,11 +53,7 @@ impl Renderer for SpriteRenderer {
             };
 
             for (se, s, t) in sprites {
-                let d = {
-                    let s = s.write().unwrap();
-
-                    s.drawable.clone()
-                };
+                let d = s.read().unwrap().drawable.clone();
 
                 d.draw(
                     (se, t.clone(), s.clone()),
