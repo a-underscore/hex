@@ -53,6 +53,13 @@ impl Camera {
 
         Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).to_homogeneous()
     }
+
+    pub fn calculate_z(&self, layer: i32) -> f32 {
+        let end = self.end() as f32;
+        let layer = layer as f32;
+
+        -((end - end / 2.0) - layer / 2.0)
+    }
 }
 
 impl Component for Camera {}
