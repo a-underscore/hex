@@ -1,4 +1,4 @@
-use super::{fragment, vertex, Drawable};
+use super::{fragment, vertex, Drawable, SpriteEntity};
 use crate::{
     components::{Camera, Sprite, Trans},
     renderer_manager::Draw,
@@ -24,15 +24,15 @@ impl SpriteDrawable {
     }
 }
 
-impl Drawable<(Id, Arc<RwLock<Trans>>, Arc<RwLock<Sprite>>)> for SpriteDrawable {
+impl Drawable<SpriteEntity> for SpriteDrawable {
     fn draw(
         &self,
-        (_, t, s): (Id, Arc<RwLock<Trans>>, Arc<RwLock<Sprite>>),
+        (_, t, s): SpriteEntity,
         (_, c, ct): (Id, Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
         context: &Context,
         (_, builder, recreate_swapchain): &mut Draw,
-        _: Arc<RwLock<EntityManager>>,
-        _: Arc<RwLock<ComponentManager>>,
+        _: &EntityManager,
+        _: &ComponentManager,
     ) -> anyhow::Result<()> {
         let mut s = s.write().unwrap();
         let t = t.read().unwrap();

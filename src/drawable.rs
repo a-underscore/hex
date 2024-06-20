@@ -12,7 +12,7 @@ pub trait Drawable<E>: Send + Sync {
         camera: (Id, Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
         context: &Context,
         draw: &mut Draw,
-        em: Arc<RwLock<EntityManager>>,
-        cm: Arc<RwLock<ComponentManager>>,
+        em: &EntityManager,
+        cm: &ComponentManager,
     ) -> anyhow::Result<()>;
 }
