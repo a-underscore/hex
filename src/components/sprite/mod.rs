@@ -1,23 +1,19 @@
 pub mod drawable;
+pub mod fragment;
 pub mod sprite_drawable;
+pub mod vertex;
 
 pub use drawable::Drawable;
 pub use sprite_drawable::SpriteDrawable;
 
 use crate::{
     assets::{shape::Vertex2, Shape, Texture},
-    ecs::{component_manager::Component, Context},
+    component_manager::Component,
+    Context,
 };
 use nalgebra::Vector4;
 use std::sync::Arc;
 use vulkano::{
-    buffer::{
-        allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
-        BufferUsage,
-    },
-    descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet},
-    memory::allocator::MemoryTypeFilter,
-    padded::Padded,
     pipeline::{
         graphics::{
             color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
@@ -30,8 +26,7 @@ use vulkano::{
             GraphicsPipelineCreateInfo,
         },
         layout::PipelineDescriptorSetLayoutCreateInfo,
-        GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
-        PipelineShaderStageCreateInfo,
+        GraphicsPipeline, PipelineLayout, PipelineShaderStageCreateInfo,
     },
     render_pass::Subpass,
     shader::EntryPoint,
@@ -45,8 +40,7 @@ pub struct Sprite {
     pub layer: i32,
     pub drawable: Arc<dyn Drawable>,
     pub pipeline: Arc<GraphicsPipeline>,
-    pub vertex: EntryPoint,
-    pub fragment: EntryPoint,
+    pub shaders: (EntryPoint, EntryPoint),
     pub active: bool,
 }
 
@@ -57,8 +51,7 @@ impl Sprite {
         color: Vector4<f32>,
         layer: i32,
         pipeline: Arc<GraphicsPipeline>,
-        vertex: EntryPoint,
-        fragment: EntryPoint,
+        shaders: (EntryPoint, EntryPoint),
         active: bool,
     ) -> Self {
         Self {
@@ -67,8 +60,7 @@ impl Sprite {
             color,
             layer,
             pipeline,
-            vertex,
-            fragment,
+            shaders,
             drawable: SpriteDrawable::new(),
             active,
         }

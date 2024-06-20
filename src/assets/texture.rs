@@ -1,4 +1,4 @@
-use crate::ecs::Context;
+use crate::Context;
 use std::sync::Arc;
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage},

@@ -1,8 +1,8 @@
-use super::Drawable;
+use super::{fragment, vertex, Drawable};
 use crate::{
     components::{Camera, Sprite, Trans},
-    ecs::{renderer_manager::Draw, Context},
-    sprite_renderer::{fragment, vertex},
+    renderer_manager::Draw,
+    Context,
 };
 use std::sync::{Arc, RwLock};
 use vulkano::{
@@ -13,23 +13,7 @@ use vulkano::{
     descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet},
     memory::allocator::MemoryTypeFilter,
     padded::Padded,
-    pipeline::{
-        graphics::{
-            color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
-            depth_stencil::{DepthState, DepthStencilState},
-            input_assembly::{InputAssemblyState, PrimitiveTopology},
-            multisample::MultisampleState,
-            rasterization::RasterizationState,
-            vertex_input::{Vertex, VertexDefinition},
-            viewport::ViewportState,
-            GraphicsPipelineCreateInfo,
-        },
-        layout::PipelineDescriptorSetLayoutCreateInfo,
-        GraphicsPipeline, Pipeline, PipelineBindPoint, PipelineLayout,
-        PipelineShaderStageCreateInfo,
-    },
-    render_pass::Subpass,
-    shader::EntryPoint,
+    pipeline::{Pipeline, PipelineBindPoint},
 };
 
 pub struct SpriteDrawable;
@@ -54,8 +38,10 @@ impl Drawable for SpriteDrawable {
         let c = c.read().unwrap();
         let ct = ct.read().unwrap();
 
+        let (vertex, fragment) = s.shaders.clone();
+
         if *recreate_swapchain {
-            s.pipeline = Sprite::pipeline(&context, s.vertex.clone(), s.fragment.clone())?;
+            s.pipeline = Sprite::pipeline(context, vertex.clone(), fragment.clone())?;
         }
 
         builder.bind_pipeline_graphics(s.pipeline.clone())?;

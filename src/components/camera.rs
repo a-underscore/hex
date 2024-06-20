@@ -1,4 +1,4 @@
-use crate::ecs::component_manager::Component;
+use crate::component_manager::Component;
 use crate::nalgebra::{Matrix4, Orthographic3, Vector2};
 
 #[derive(Clone)]

@@ -2,7 +2,7 @@ pub mod vertex2;
 
 pub use vertex2::Vertex2;
 
-use crate::ecs::Context;
+use crate::Context;
 use nalgebra::Vector2;
 use vulkano::{
     buffer::{subbuffer::Subbuffer, Buffer, BufferCreateInfo, BufferUsage},
