@@ -155,18 +155,14 @@ impl Context {
             device.clone(),
             Default::default(),
         ));
-        let viewport = Viewport {
-            offset: [0.0, 0.0],
-            extent: [0.0, 0.0],
-            depth_range: 0.0..=1.0,
-        };
+        let (framebuffers, viewport) = Self::window_size_dependent_setup(
+            memory_allocator.clone(),
+            &images,
+            render_pass.clone(),
+        )?;
 
         Ok(Arc::new(RwLock::new(Self {
-            framebuffers: Self::window_size_dependent_setup(
-                memory_allocator.clone(),
-                &images,
-                render_pass.clone(),
-            )?,
+            framebuffers,
             images,
             previous_frame_end: Some(sync::now(device.clone()).boxed_send_sync()),
             render_pass,
@@ -257,11 +253,15 @@ impl Context {
                         })?;
                     context.swapchain = new_swapchain;
                     context.images = new_images;
-                    context.framebuffers = Self::window_size_dependent_setup(
+
+                    let (framebuffers, viewport) = Self::window_size_dependent_setup(
                         context.memory_allocator.clone(),
                         &context.images,
                         context.render_pass.clone(),
                     )?;
+
+                    context.framebuffers = framebuffers;
+                    context.viewport = viewport;
 
                     *recreate_swapchain = false;
                 }
@@ -371,7 +371,7 @@ impl Context {
         memory_allocator: Arc<StandardMemoryAllocator>,
         images: &[Arc<Image>],
         render_pass: Arc<RenderPass>,
-    ) -> anyhow::Result<Vec<Arc<Framebuffer>>> {
+    ) -> anyhow::Result<(Vec<Arc<Framebuffer>>, Viewport)> {
         let depth_buffer = ImageView::new_default(Image::new(
             memory_allocator,
             ImageCreateInfo {
@@ -384,7 +384,7 @@ impl Context {
             AllocationCreateInfo::default(),
         )?)?;
 
-        images
+        let images = images
             .iter()
             .map(|image| {
                 let view = ImageView::new_default(image.clone())?;
@@ -397,6 +397,16 @@ impl Context {
                     },
                 )?)
             })
-            .collect()
+            .collect::<anyhow::Result<Vec<Arc<Framebuffer>>>>()?;
+
+        let extent = images[0].extent();
+
+        let viewport = Viewport {
+            offset: [0.0, 0.0],
+            extent: [extent[0] as f32, extent[1] as f32],
+            depth_range: 0.0..=1.0,
+        };
+
+        Ok((images, viewport))
     }
 }
