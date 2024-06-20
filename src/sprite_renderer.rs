@@ -64,8 +64,8 @@ impl Renderer for SpriteRenderer {
                     (ce, c.clone(), ct.clone()),
                     &context,
                     draw,
-                    &*em,
-                    &*cm,
+                    &em,
+                    &cm,
                 )?;
             }
         }
