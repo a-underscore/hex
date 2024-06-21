@@ -16,7 +16,7 @@ use vulkano::{
     pipeline::{
         graphics::{
             color_blend::{AttachmentBlend, ColorBlendAttachmentState, ColorBlendState},
-            depth_stencil::{DepthState, DepthStencilState},
+            depth_stencil::{CompareOp, DepthState, DepthStencilState},
             input_assembly::{InputAssemblyState, PrimitiveTopology},
             multisample::MultisampleState,
             rasterization::RasterizationState,
@@ -108,7 +108,10 @@ impl Sprite {
                 }),
                 rasterization_state: Some(RasterizationState::default()),
                 depth_stencil_state: Some(DepthStencilState {
-                    depth: Some(DepthState::simple()),
+                    depth: Some(DepthState {
+                        write_enable: true,
+                        compare_op: CompareOp::LessOrEqual,
+                    }),
                     ..Default::default()
                 }),
                 multisample_state: Some(MultisampleState::default()),
