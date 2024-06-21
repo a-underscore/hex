@@ -1,6 +1,6 @@
 use super::{fragment, vertex, Drawable, SpriteEntity};
 use crate::{
-    components::{Camera, Sprite, Trans},
+    components::{Camera, Trans},
     renderer_manager::Draw,
     ComponentManager, Context, EntityManager, Id,
 };
@@ -34,15 +34,17 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         _: &EntityManager,
         _: &ComponentManager,
     ) -> anyhow::Result<()> {
-        let mut s = s.write().unwrap();
         let t = t.read().unwrap();
         let c = c.read().unwrap();
         let ct = ct.read().unwrap();
-        let (vertex, fragment) = s.shaders.clone();
 
         if *recreate_swapchain {
-            s.pipeline = Sprite::pipeline(context, vertex.clone(), fragment.clone())?;
+            let mut s = s.write().unwrap();
+
+            s.recreate_pipeline(context)?;
         }
+
+        let s = s.read().unwrap();
 
         builder.bind_pipeline_graphics(s.pipeline.clone())?;
 

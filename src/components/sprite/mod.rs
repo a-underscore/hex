@@ -74,6 +74,14 @@ impl Sprite {
         })
     }
 
+    pub fn recreate_pipeline(&mut self, context: &Context) -> anyhow::Result<()> {
+        let (ref vertex, ref fragment) = self.shaders;
+
+        self.pipeline = Self::pipeline(context, vertex.clone(), fragment.clone())?;
+
+        Ok(())
+    }
+
     pub fn pipeline(
         context: &Context,
         vertex: EntryPoint,
