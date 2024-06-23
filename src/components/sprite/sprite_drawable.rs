@@ -45,11 +45,12 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         }
 
         let s = s.read().unwrap();
+        let (_, _, pipeline) = &s.pipeline;
 
-        builder.bind_pipeline_graphics(s.pipeline.clone())?;
+        builder.bind_pipeline_graphics(pipeline.clone())?;
 
         let view = {
-            let layout = s.pipeline.layout().set_layouts().first().unwrap();
+            let layout = pipeline.layout().set_layouts().first().unwrap();
             let subbuffer_allocator = SubbufferAllocator::new(
                 context.memory_allocator.clone(),
                 SubbufferAllocatorCreateInfo {
@@ -76,7 +77,7 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
             )?
         };
         let texture = {
-            let layout = s.pipeline.layout().set_layouts().get(1).unwrap();
+            let layout = pipeline.layout().set_layouts().get(1).unwrap();
 
             PersistentDescriptorSet::new(
                 &context.descriptor_set_allocator,
@@ -89,7 +90,7 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
             )?
         };
         let color = {
-            let layout = s.pipeline.layout().set_layouts().get(2).unwrap();
+            let layout = pipeline.layout().set_layouts().get(2).unwrap();
             let subbuffer_allocator = SubbufferAllocator::new(
                 context.memory_allocator.clone(),
                 SubbufferAllocatorCreateInfo {
@@ -116,19 +117,19 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         builder
             .bind_descriptor_sets(
                 PipelineBindPoint::Graphics,
-                s.pipeline.layout().clone(),
+                pipeline.layout().clone(),
                 0,
                 view.clone(),
             )?
             .bind_descriptor_sets(
                 PipelineBindPoint::Graphics,
-                s.pipeline.layout().clone(),
+                pipeline.layout().clone(),
                 1,
                 texture.clone(),
             )?
             .bind_descriptor_sets(
                 PipelineBindPoint::Graphics,
-                s.pipeline.layout().clone(),
+                pipeline.layout().clone(),
                 2,
                 color.clone(),
             )?

@@ -32,6 +32,7 @@ use vulkano::{
 };
 
 pub type SpriteEntity = (Id, Arc<RwLock<Trans>>, Arc<RwLock<Sprite>>);
+pub type SpritePipeline = (EntryPoint, EntryPoint, Arc<GraphicsPipeline>);
 
 #[derive(Clone)]
 pub struct Sprite {
@@ -40,8 +41,7 @@ pub struct Sprite {
     pub color: Vector4<f32>,
     pub layer: i32,
     pub drawable: Arc<dyn Drawable<SpriteEntity>>,
-    pub pipeline: Arc<GraphicsPipeline>,
-    pub shaders: (EntryPoint, EntryPoint),
+    pub pipeline: SpritePipeline,
 }
 
 impl Sprite {
@@ -65,16 +65,15 @@ impl Sprite {
             texture,
             color,
             layer,
-            shaders: (vertex, fragment),
-            pipeline,
+            pipeline: (vertex, fragment, pipeline),
             drawable: SpriteDrawable::new(),
         })
     }
 
     pub fn recreate_pipeline(&mut self, context: &Context) -> anyhow::Result<()> {
-        let (ref vertex, ref fragment) = self.shaders;
+        let (ref vertex, ref fragment, ref mut pipeline) = self.pipeline;
 
-        self.pipeline = Self::pipeline(context, vertex.clone(), fragment.clone())?;
+        *pipeline = Self::pipeline(context, vertex.clone(), fragment.clone())?;
 
         Ok(())
     }
