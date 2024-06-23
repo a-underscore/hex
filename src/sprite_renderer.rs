@@ -1,7 +1,6 @@
 use crate::{
     components::{Camera, Sprite, Trans},
-    renderer_manager::Draw,
-    renderer_manager::Renderer,
+    renderer_manager::{Draw, Renderer},
     ComponentManager, Context, EntityManager,
 };
 use std::sync::{Arc, RwLock};
