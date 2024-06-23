@@ -80,7 +80,7 @@ impl SystemManager {
 
     fn par<F>(&self, f: F) -> anyhow::Result<()>
     where
-        F: Fn((&u32, &Arc<RwLock<Vec<Box<(dyn System)>>>>)) -> anyhow::Result<()> + Send + Sync,
+        F: Fn((&u32, &Pipeline)) -> anyhow::Result<()> + Send + Sync,
     {
         let res: anyhow::Result<Vec<_>> = self.pipelines.par_iter().map(f).collect();
 
