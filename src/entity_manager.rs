@@ -67,6 +67,12 @@ impl EntityManager {
             .and_then(|(a, e)| a.then_some(e))
     }
 
+    pub fn active(&mut self, eid: Id) -> Option<bool> {
+        let (a, _) = self.entities.get_mut(&eid)?;
+
+        Some(*a)
+    }
+
     pub fn set_active(&mut self, eid: Id, active: bool) {
         if let Some((a, _)) = self.entities.get_mut(&eid) {
             *a = active;
