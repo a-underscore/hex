@@ -22,15 +22,11 @@ impl Renderer for SpriteRenderer {
 
         if let Some((ce, ct, c)) = em
             .entities()
-            .keys()
-            .cloned()
             .find_map(|e| Some((e, cm.get::<Trans>(e)?, cm.get::<Camera>(e)?)))
         {
             let sprites = {
                 let mut sprites: Vec<_> = em
                     .entities()
-                    .keys()
-                    .cloned()
                     .filter_map(|e| Some((e, cm.get::<Trans>(e)?, cm.get::<Sprite>(e)?)))
                     .collect();
 

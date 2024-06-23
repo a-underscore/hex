@@ -28,7 +28,7 @@ impl ComponentManager {
         component: Box<dyn AsAny>,
         em: &mut EntityManager,
     ) {
-        if let Some(entity) = em.entities.get_mut(&eid) {
+        if let Some(entity) = em.get_mut(eid) {
             entity.insert(cid);
 
             self.components.insert((eid, cid), component);
@@ -48,7 +48,7 @@ impl ComponentManager {
     }
 
     pub fn rm_gen(&mut self, eid: Id, cid: TypeId, em: &mut EntityManager) {
-        if let Some(components) = em.entities.get_mut(&eid) {
+        if let Some(components) = em.get_mut(eid) {
             components.remove(&cid);
 
             self.components.remove(&(eid, cid));
