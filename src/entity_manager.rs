@@ -14,7 +14,7 @@ pub type FilteredEntities<'a> = FilterMap<
 #[derive(Default)]
 pub struct EntityManager {
     free: Vec<Id>,
-    entities: HashMap<Id, (bool, HashSet<TypeId>)>,
+    pub(crate) entities: HashMap<Id, (bool, HashSet<TypeId>)>,
 }
 
 impl EntityManager {
@@ -46,12 +46,6 @@ impl EntityManager {
 
     pub fn get(&self, eid: Id) -> Option<&HashSet<TypeId>> {
         self.entities.get(&eid).and_then(|(a, e)| a.then_some(e))
-    }
-
-    pub fn get_mut(&mut self, eid: Id) -> Option<&mut HashSet<TypeId>> {
-        self.entities
-            .get_mut(&eid)
-            .and_then(|(a, e)| a.then_some(e))
     }
 
     pub fn active(&mut self, eid: Id) -> Option<bool> {
