@@ -42,7 +42,6 @@ pub struct Sprite {
     pub drawable: Arc<dyn Drawable<SpriteEntity>>,
     pub pipeline: Arc<GraphicsPipeline>,
     pub shaders: (EntryPoint, EntryPoint),
-    pub active: bool,
 }
 
 impl Sprite {
@@ -52,7 +51,6 @@ impl Sprite {
         texture: Texture,
         color: Vector4<f32>,
         layer: i32,
-        active: bool,
     ) -> anyhow::Result<Self> {
         let vertex = vertex::load(context.device.clone())?
             .entry_point("main")
@@ -70,7 +68,6 @@ impl Sprite {
             shaders: (vertex, fragment),
             pipeline,
             drawable: SpriteDrawable::new(),
-            active,
         })
     }
 

@@ -3,7 +3,6 @@ use nalgebra::{Matrix3, Vector2};
 
 #[derive(Clone)]
 pub struct Trans {
-    pub active: bool,
     position: Vector2<f32>,
     rotation: f32,
     scale: Vector2<f32>,
@@ -11,13 +10,12 @@ pub struct Trans {
 }
 
 impl Trans {
-    pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>, active: bool) -> Self {
+    pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Self {
         Self {
             position,
             rotation,
             scale,
             matrix: Self::calculate_matrix(position, rotation, scale),
-            active,
         }
     }
 

@@ -3,19 +3,17 @@ use crate::nalgebra::{Matrix4, Orthographic3, Vector2};
 
 #[derive(Clone)]
 pub struct Camera {
-    pub active: bool,
     dimensions: Vector2<f32>,
     end: i32,
     proj: Matrix4<f32>,
 }
 
 impl Camera {
-    pub fn new(dimensions: Vector2<f32>, end: i32, active: bool) -> Self {
+    pub fn new(dimensions: Vector2<f32>, end: i32) -> Self {
         Self {
             dimensions,
             end,
             proj: Self::calculate_proj(dimensions, end),
-            active,
         }
     }
 
