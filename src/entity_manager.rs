@@ -1,10 +1,7 @@
 use super::{ComponentManager, Id};
 use std::{
     any::TypeId,
-    collections::{
-        hash_map::{Entry, Iter},
-        HashMap, HashSet,
-    },
+    collections::{hash_map::Iter, HashMap, HashSet},
     iter::FilterMap,
     sync::{Arc, RwLock},
 };
@@ -38,21 +35,11 @@ impl EntityManager {
     }
 
     pub fn rm(&mut self, eid: Id, cm: &mut ComponentManager) {
-        if let Entry::Occupied(e) = self.entities.entry(eid) {
-            let a = {
-                let (a, _) = e.get();
+        if let Some((_, e)) = self.entities.remove(&eid) {
+            self.free.push(eid);
 
-                *a
-            };
-
-            if a {
-                let (_, e) = e.remove();
-
-                self.free.push(eid);
-
-                for cid in e {
-                    cm.components.remove(&(eid, cid));
-                }
+            for cid in e {
+                cm.components.remove(&(eid, cid));
             }
         }
     }
