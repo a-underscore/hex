@@ -9,6 +9,11 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+pub type FilteredEntities<'a> = FilterMap<
+    Iter<'a, Id, (bool, HashSet<TypeId>)>,
+    for<'b> fn((&'b Id, &'b (bool, HashSet<TypeId>))) -> Option<Id>,
+>;
+
 #[derive(Default)]
 pub struct EntityManager {
     free: Vec<Id>,
@@ -76,12 +81,7 @@ impl EntityManager {
         self.set_active(eid, false);
     }
 
-    pub fn entities(
-        &self,
-    ) -> FilterMap<
-        Iter<'_, Id, (bool, HashSet<TypeId>)>,
-        for<'a> fn((&'a Id, &'a (bool, HashSet<TypeId>))) -> Option<Id>,
-    > {
+    pub fn entities(&self) -> FilteredEntities<'_> {
         self.entities
             .iter()
             .filter_map(|(e, (a, _))| a.then_some(*e))
