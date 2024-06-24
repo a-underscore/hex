@@ -15,7 +15,7 @@ impl Renderer for SpriteRenderer {
         em: Arc<RwLock<EntityManager>>,
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
-        if let Some(((ce, ct, c), sprites)) = {
+        let res = {
             let em = em.read().unwrap();
             let cm = cm.read().unwrap();
 
@@ -37,11 +37,14 @@ impl Renderer for SpriteRenderer {
 
                     sprites
                 };
+
                 Some((c, sprites))
             } else {
                 None
             }
-        } {
+        };
+
+        if let Some(((ce, ct, c), sprites)) = res {
             for (se, t, s) in sprites {
                 let d = s.read().unwrap().drawable.clone();
 
