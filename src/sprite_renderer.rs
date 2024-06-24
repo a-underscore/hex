@@ -15,37 +15,43 @@ impl Renderer for SpriteRenderer {
         em: Arc<RwLock<EntityManager>>,
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
-        let context = context.read().unwrap();
-        let em = em.read().unwrap();
-        let cm = cm.read().unwrap();
+        if let Some(((ce, ct, c), sprites)) = {
+            let em = em.read().unwrap();
+            let cm = cm.read().unwrap();
 
-        if let Some((ce, ct, c)) = em
-            .entities()
-            .find_map(|e| Some((e, cm.get::<Trans>(e)?, cm.get::<Camera>(e)?)))
-        {
-            let sprites = {
-                let mut sprites: Vec<_> = em
-                    .entities()
-                    .filter_map(|e| Some((e, cm.get::<Trans>(e)?, cm.get::<Sprite>(e)?)))
-                    .collect();
+            if let Some(c) = em
+                .entities()
+                .find_map(|e| Some((e, cm.get::<Trans>(e)?.clone(), cm.get::<Camera>(e)?.clone())))
+            {
+                let sprites = {
+                    let mut sprites: Vec<_> = em
+                        .entities()
+                        .filter_map(|e| {
+                            Some((e, cm.get::<Trans>(e)?.clone(), cm.get::<Sprite>(e)?.clone()))
+                        })
+                        .collect();
 
-                sprites.sort_by(|(_, _, s1), (_, _, s2)| {
-                    s1.read().unwrap().layer.cmp(&s2.read().unwrap().layer)
-                });
+                    sprites.sort_by(|(_, _, s1), (_, _, s2)| {
+                        s1.read().unwrap().layer.cmp(&s2.read().unwrap().layer)
+                    });
 
-                sprites
-            };
-
+                    sprites
+                };
+                Some((c, sprites))
+            } else {
+                None
+            }
+        } {
             for (se, t, s) in sprites {
                 let d = s.read().unwrap().drawable.clone();
 
-                d.draw(
+                d.write().unwrap().draw(
                     (se, t.clone(), s.clone()),
                     (ce, ct.clone(), c.clone()),
-                    &context,
                     draw,
-                    &em,
-                    &cm,
+                    context.clone(),
+                    em.clone(),
+                    cm.clone(),
                 )?;
             }
         }

@@ -19,21 +19,22 @@ use vulkano::{
 pub struct SpriteDrawable;
 
 impl SpriteDrawable {
-    pub fn new() -> Arc<Self> {
-        Arc::new(Self)
+    pub fn new() -> Arc<RwLock<Self>> {
+        Arc::new(RwLock::new(Self))
     }
 }
 
 impl Drawable<SpriteEntity> for SpriteDrawable {
     fn draw(
-        &self,
+        &mut self,
         (_, t, s): SpriteEntity,
         (_, ct, c): (Id, Arc<RwLock<Trans>>, Arc<RwLock<Camera>>),
-        context: &Context,
         (_, builder, recreate_swapchain): &mut Draw,
-        _: &EntityManager,
-        _: &ComponentManager,
+        context: Arc<RwLock<Context>>,
+        _: Arc<RwLock<EntityManager>>,
+        _: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
+        let context = context.read().unwrap();
         let t = t.read().unwrap();
         let c = c.read().unwrap();
         let ct = ct.read().unwrap();
@@ -41,7 +42,7 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         if *recreate_swapchain {
             let mut s = s.write().unwrap();
 
-            s.recreate_pipeline(context)?;
+            s.recreate_pipeline(&context)?;
         }
 
         let s = s.read().unwrap();
