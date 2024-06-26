@@ -23,5 +23,4 @@ pub use renderer_manager::RendererManager;
 pub use sprite_renderer::SpriteRenderer;
 pub use system_manager::SystemManager;
 pub use vulkano;
-pub use vulkano_shaders;
 pub use winit;
