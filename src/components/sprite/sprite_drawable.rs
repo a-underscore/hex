@@ -46,7 +46,7 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         }
 
         let s = s.read().unwrap();
-        let (_, _, pipeline) = &s.pipeline;
+        let (pipeline, _, _) = &s.pipeline;
 
         builder.bind_pipeline_graphics(pipeline.clone())?;
 
