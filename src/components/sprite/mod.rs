@@ -65,8 +65,10 @@ impl Sprite {
             color,
             layer,
             pipeline: (
-            Self::pipeline(context, vertex.clone(), fragment.clone())?;
-                , vertex, fragment),
+                Self::pipeline(context, vertex.clone(), fragment.clone())?,
+                vertex,
+                fragment,
+            ),
             drawable: SpriteDrawable::new(),
         })
     }
