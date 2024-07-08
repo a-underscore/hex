@@ -8,7 +8,7 @@ use std::{
 
 pub type FilteredEntities<'a> = FilterMap<
     Iter<'a, Id, (bool, HashSet<TypeId>)>,
-    for<'b> fn((&'b Id, &'b (bool, HashSet<TypeId>))) -> Option<Id>,
+    for<'b, 'c> fn((&'b Id, &'c (bool, HashSet<TypeId>))) -> Option<Id>,
 >;
 
 #[derive(Default)]
