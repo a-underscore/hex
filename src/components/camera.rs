@@ -49,7 +49,7 @@ impl Camera {
         let z = end as f32;
         let v = v / 2.0;
 
-        *Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).as_matrix()
+        *Orthographic3::new(-v.x, v.x, -v.y, v.y, -1.0, z).as_matrix()
     }
 
     pub fn calculate_z(&self, layer: i32) -> f32 {

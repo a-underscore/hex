@@ -19,29 +19,24 @@ impl Renderer for SpriteRenderer {
             let em = em.read().unwrap();
             let cm = cm.read().unwrap();
 
-            if let Some(c) = em
-                .entities()
+            em.entities()
                 .find_map(|e| Some((e, cm.get::<Trans>(e)?.clone(), cm.get::<Camera>(e)?.clone())))
-            {
-                let sprites = {
-                    let mut sprites: Vec<_> = em
-                        .entities()
-                        .filter_map(|e| {
-                            Some((e, cm.get::<Trans>(e)?.clone(), cm.get::<Sprite>(e)?.clone()))
-                        })
-                        .collect();
+                .map(|c| {
+                    let sprites = {
+                        let mut sprites: Vec<_> = em
+                            .entities()
+                            .filter_map(|e| {
+                                Some((e, cm.get::<Trans>(e)?.clone(), cm.get::<Sprite>(e)?.clone()))
+                            })
+                            .collect();
 
-                    sprites.sort_by(|(_, _, s1), (_, _, s2)| {
-                        s1.read().unwrap().layer.cmp(&s2.read().unwrap().layer)
-                    });
+                        sprites.sort_by_key(|(_, _, s)| s.read().unwrap().layer);
 
-                    sprites
-                };
+                        sprites
+                    };
 
-                Some((c, sprites))
-            } else {
-                None
-            }
+                    (c, sprites)
+                })
         };
 
         if let Some(((ce, ct, c), sprites)) = res {
