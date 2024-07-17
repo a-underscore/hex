@@ -46,10 +46,10 @@ impl Camera {
     }
 
     fn calculate_proj(v: Vector2<f32>, end: i32) -> Matrix4<f32> {
-        let z = end as f32 + 1.0;
+        let z = end as f32;
         let v = v / 2.0;
 
-        Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).to_homogeneous()
+        *Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).as_matrix()
     }
 
     pub fn calculate_z(&self, layer: i32) -> f32 {
