@@ -49,14 +49,14 @@ impl Camera {
         let z = end as f32;
         let v = v / 2.0;
 
-        Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).to_homogeneous()
+        *Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).as_matrix()
     }
 
     pub fn calculate_z(&self, layer: i32) -> f32 {
         let end = self.end() as f32;
         let layer = layer as f32;
 
-        -((end - end / 2.0) - layer / 2.0)
+        -(end - end / 2.0 - layer / 2.0)
     }
 }
 
