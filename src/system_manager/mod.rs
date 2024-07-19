@@ -3,11 +3,9 @@ pub mod system;
 pub use system::System;
 
 use super::{ComponentManager, Context, Control, EntityManager, Id};
+use parking_lot::RwLock;
 use rayon::prelude::*;
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
+use std::{collections::HashMap, sync::Arc};
 
 type Pipeline = Arc<RwLock<Vec<Box<dyn System>>>>;
 
@@ -22,12 +20,7 @@ impl SystemManager {
     }
 
     pub fn add_gen(&mut self, pid: Id, s: Box<dyn System>) {
-        self.pipelines
-            .entry(pid)
-            .or_default()
-            .write()
-            .unwrap()
-            .push(s);
+        self.pipelines.entry(pid).or_default().write().push(s);
     }
 
     pub fn add<S>(&mut self, pid: Id, s: S)
@@ -39,7 +32,7 @@ impl SystemManager {
 
     pub fn rm(&mut self, pid: Id) {
         if let Some(p) = self.pipelines.get_mut(&pid) {
-            p.write().unwrap().pop();
+            p.write().pop();
         }
     }
 
@@ -50,7 +43,7 @@ impl SystemManager {
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         self.par(|(_, p)| {
-            for s in &mut *p.write().unwrap() {
+            for s in &mut *p.write() {
                 s.init(context.clone(), em.clone(), cm.clone())?;
             }
 
@@ -68,7 +61,7 @@ impl SystemManager {
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         self.par(|(_, p)| {
-            for s in &mut *p.write().unwrap() {
+            for s in &mut *p.write() {
                 s.update(control.clone(), context.clone(), em.clone(), cm.clone())?;
             }
 

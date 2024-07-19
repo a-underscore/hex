@@ -3,7 +3,8 @@ use crate::{
     renderer_manager::Draw,
     ComponentManager, Context, EntityManager, Id,
 };
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 pub trait Drawable<E>: Send + Sync {
     fn draw(

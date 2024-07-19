@@ -1,6 +1,7 @@
 use super::{ComponentManager, Control, EntityManager, RendererManager, SystemManager};
 use nalgebra::Vector4;
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 use vulkano::{
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
@@ -221,10 +222,10 @@ impl Context {
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
             ..
-        } = control.read().unwrap().event
+        } = control.read().event
         {
             let (mut builder, rs, suboptimal, acquire_future, image_index) = {
-                let mut context = context.write().unwrap();
+                let mut context = context.write();
                 let image_extent: [u32; 2] = context.window.inner_size().into();
 
                 if image_extent.contains(&0) {
@@ -307,7 +308,7 @@ impl Context {
             builder.end_render_pass(Default::default())?;
 
             let command_buffer = builder.build()?;
-            let mut context = context.write().unwrap();
+            let mut context = context.write();
 
             if suboptimal {
                 *recreate_swapchain = true;
@@ -347,7 +348,7 @@ impl Context {
             }
         }
 
-        let control = control.read().unwrap();
+        let control = control.read();
 
         if control.exit {
             elwt.exit();
@@ -360,7 +361,7 @@ impl Context {
             } => {
                 *recreate_swapchain = true;
             }
-            Event::AboutToWait => context.read().unwrap().window.request_redraw(),
+            Event::AboutToWait => context.read().window.request_redraw(),
             _ => {}
         }
 

@@ -5,11 +5,8 @@ pub use as_any::AsAny;
 pub use component::Component;
 
 use super::{EntityManager, Id};
-use std::{
-    any::TypeId,
-    collections::HashMap,
-    sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard},
-};
+use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::{any::TypeId, collections::HashMap, sync::Arc};
 
 #[derive(Default)]
 pub struct ComponentManager {
@@ -77,14 +74,14 @@ impl ComponentManager {
     where
         C: Component,
     {
-        self.get::<C>(eid).map(|c| c.read().unwrap())
+        self.get::<C>(eid).map(|c| c.read())
     }
 
     pub fn get_mut<C>(&self, eid: Id) -> Option<RwLockWriteGuard<C>>
     where
         C: Component,
     {
-        self.get::<C>(eid).map(|c| c.write().unwrap())
+        self.get::<C>(eid).map(|c| c.write())
     }
 
     fn cast<C>(a: &dyn AsAny) -> Option<&Arc<RwLock<C>>>

@@ -1,5 +1,6 @@
 use super::{ComponentManager, Context, Draw, EntityManager};
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 pub trait Renderer: Send + Sync + 'static {
     fn draw(

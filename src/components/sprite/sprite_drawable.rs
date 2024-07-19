@@ -4,7 +4,8 @@ use crate::{
     renderer_manager::Draw,
     ComponentManager, Context, EntityManager, Id,
 };
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 use vulkano::{
     buffer::{
         allocator::{SubbufferAllocator, SubbufferAllocatorCreateInfo},
@@ -34,18 +35,18 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         _: Arc<RwLock<EntityManager>>,
         _: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
-        let context = context.read().unwrap();
-        let t = t.read().unwrap();
-        let c = c.read().unwrap();
-        let ct = ct.read().unwrap();
+        let context = context.read();
+        let t = t.read();
+        let c = c.read();
+        let ct = ct.read();
 
         if *recreate_swapchain {
-            let mut s = s.write().unwrap();
+            let mut s = s.write();
 
             s.recreate_pipeline(&context)?;
         }
 
-        let s = s.read().unwrap();
+        let s = s.read();
         let (pipeline, _, _) = &s.pipeline;
 
         builder.bind_pipeline_graphics(pipeline.clone())?;

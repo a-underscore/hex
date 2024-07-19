@@ -1,6 +1,7 @@
 use super::{ComponentManager, Context, EntityManager};
 use crate::Control;
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 pub trait System: Send + Sync + 'static {
     fn init(

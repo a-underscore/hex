@@ -3,7 +3,8 @@ use crate::{
     renderer_manager::{Draw, Renderer},
     ComponentManager, Context, EntityManager,
 };
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 pub struct SpriteRenderer;
 
@@ -16,8 +17,8 @@ impl Renderer for SpriteRenderer {
         cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         let res = {
-            let em = em.read().unwrap();
-            let cm = cm.read().unwrap();
+            let em = em.read();
+            let cm = cm.read();
 
             em.entities()
                 .find_map(|e| Some((e, cm.get::<Trans>(e)?.clone(), cm.get::<Camera>(e)?.clone())))
@@ -30,7 +31,7 @@ impl Renderer for SpriteRenderer {
                             })
                             .collect();
 
-                        sprites.sort_by_key(|(_, _, s)| s.read().unwrap().layer);
+                        sprites.sort_by_key(|(_, _, s)| s.read().layer);
 
                         sprites
                     };
@@ -41,9 +42,9 @@ impl Renderer for SpriteRenderer {
 
         if let Some(((ce, ct, c), sprites)) = res {
             for (se, t, s) in sprites {
-                let d = s.read().unwrap().drawable.clone();
+                let d = s.read().drawable.clone();
 
-                d.write().unwrap().draw(
+                d.write().draw(
                     (se, t.clone(), s.clone()),
                     (ce, ct.clone(), c.clone()),
                     draw,

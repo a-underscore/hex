@@ -1,8 +1,6 @@
 use super::AsAny;
-use std::{
-    any::Any,
-    sync::{Arc, RwLock},
-};
+use parking_lot::RwLock;
+use std::{any::Any, sync::Arc};
 
 pub trait Component: Send + Sync + 'static {}
 

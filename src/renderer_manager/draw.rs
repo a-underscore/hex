@@ -1,5 +1,6 @@
 use crate::Control;
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 use vulkano::command_buffer::{
     allocator::StandardCommandBufferAllocator,
     auto::{AutoCommandBufferBuilder, PrimaryAutoCommandBuffer},

@@ -6,7 +6,8 @@ pub use renderer::Renderer;
 
 use super::{ComponentManager, Context, EntityManager};
 
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 #[derive(Default)]
 pub struct RendererManager {

@@ -18,6 +18,7 @@ pub use drawable::Drawable;
 pub use entity_manager::EntityManager;
 pub use id::Id;
 pub use nalgebra;
+pub use parking_lot;
 pub use rayon;
 pub use renderer_manager::RendererManager;
 pub use sprite_renderer::SpriteRenderer;

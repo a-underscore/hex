@@ -11,7 +11,8 @@ use crate::{
     Context, Drawable, Id,
 };
 use nalgebra::Vector4;
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 use vulkano::{
     pipeline::{
         graphics::{

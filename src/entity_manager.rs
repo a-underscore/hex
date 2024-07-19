@@ -1,9 +1,10 @@
 use super::{ComponentManager, Id};
+use parking_lot::RwLock;
 use std::{
     any::TypeId,
     collections::{hash_map::Iter, HashMap, HashSet},
     iter::FilterMap,
-    sync::{Arc, RwLock},
+    sync::Arc,
 };
 
 pub type FilteredEntities<'a> = FilterMap<
