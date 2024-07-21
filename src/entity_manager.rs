@@ -50,7 +50,7 @@ impl EntityManager {
     }
 
     pub fn active(&mut self, eid: Id) -> Option<bool> {
-        let (a, _) = self.entities.get_mut(&eid)?;
+        let (a, _) = self.entities.get(&eid)?;
 
         Some(*a)
     }
