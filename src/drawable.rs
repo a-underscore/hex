@@ -10,7 +10,7 @@ pub trait Drawable<E>: Send + Sync {
     fn draw(
         &mut self,
         entity: E,
-        camera: (Id, Arc<RwLock<Trans>>, Arc<RwLock<Camera>>),
+        camera: (Id, Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
         draw: &mut Draw,
         context: Arc<RwLock<Context>>,
         em: Arc<RwLock<EntityManager>>,

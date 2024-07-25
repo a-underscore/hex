@@ -32,7 +32,7 @@ use vulkano::{
     shader::EntryPoint,
 };
 
-pub type SpriteEntity = (Id, Arc<RwLock<Trans>>, Arc<RwLock<Sprite>>);
+pub type SpriteEntity = (Id, Arc<RwLock<Sprite>>, Arc<RwLock<Trans>>);
 pub type SpritePipeline = (Arc<GraphicsPipeline>, EntryPoint, EntryPoint);
 
 #[derive(Clone)]

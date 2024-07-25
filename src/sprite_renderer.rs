@@ -21,17 +21,17 @@ impl Renderer for SpriteRenderer {
             let cm = cm.read();
 
             em.entities()
-                .find_map(|e| Some((e, cm.get::<Trans>(e)?.clone(), cm.get::<Camera>(e)?.clone())))
+                .find_map(|e| Some((e, cm.get::<Camera>(e)?.clone(), cm.get::<Trans>(e)?.clone())))
                 .map(|c| {
                     let sprites = {
                         let mut sprites: Vec<_> = em
                             .entities()
                             .filter_map(|e| {
-                                Some((e, cm.get::<Trans>(e)?.clone(), cm.get::<Sprite>(e)?.clone()))
+                                Some((e, cm.get::<Sprite>(e)?.clone(), cm.get::<Trans>(e)?.clone()))
                             })
                             .collect();
 
-                        sprites.sort_by_key(|(_, _, s)| s.read().layer);
+                        sprites.sort_by_key(|(_, s, _)| s.read().layer);
 
                         sprites
                     };
@@ -40,13 +40,13 @@ impl Renderer for SpriteRenderer {
                 })
         };
 
-        if let Some(((ce, ct, c), sprites)) = res {
-            for (se, t, s) in sprites {
+        if let Some(((ce, c, ct), sprites)) = res {
+            for (se, s, t) in sprites {
                 let d = s.read().drawable.clone();
 
                 d.write().draw(
-                    (se, t.clone(), s.clone()),
-                    (ce, ct.clone(), c.clone()),
+                    (se, s.clone(), t.clone()),
+                    (ce, c.clone(), ct.clone()),
                     draw,
                     context.clone(),
                     em.clone(),
