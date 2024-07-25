@@ -36,7 +36,6 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         _: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         let context = context.read();
-        let t = t.read();
         let c = c.read();
         let ct = ct.read();
 
@@ -47,6 +46,7 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         }
 
         let s = s.read();
+        let t = t.read();
         let (pipeline, _, _) = &s.pipeline;
 
         builder.bind_pipeline_graphics(pipeline.clone())?;
