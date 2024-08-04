@@ -32,10 +32,7 @@ impl ComponentManager {
         }
     }
 
-    pub fn add<C>(&mut self, eid: Id, component: C, em: &mut EntityManager)
-    where
-        C: Component,
-    {
+    pub fn add<C: Component>(&mut self, eid: Id, component: C, em: &mut EntityManager) {
         self.add_gen(
             eid,
             TypeId::of::<C>(),
@@ -52,10 +49,7 @@ impl ComponentManager {
         }
     }
 
-    pub fn rm<C>(&mut self, eid: Id, em: &mut EntityManager)
-    where
-        C: Component,
-    {
+    pub fn rm<C: Component>(&mut self, eid: Id, em: &mut EntityManager) {
         self.rm_gen(eid, TypeId::of::<C>(), em);
     }
 
@@ -63,31 +57,19 @@ impl ComponentManager {
         self.components.get(&(eid, cid)).map(|c| c.as_ref())
     }
 
-    pub fn get<C>(&self, eid: Id) -> Option<&Arc<RwLock<C>>>
-    where
-        C: Component,
-    {
+    pub fn get<C: Component>(&self, eid: Id) -> Option<&Arc<RwLock<C>>> {
         self.get_gen(eid, TypeId::of::<C>()).and_then(Self::cast)
     }
 
-    pub fn get_ref<C>(&self, eid: Id) -> Option<RwLockReadGuard<C>>
-    where
-        C: Component,
-    {
+    pub fn get_ref<C: Component>(&self, eid: Id) -> Option<RwLockReadGuard<C>> {
         self.get::<C>(eid).map(|c| c.read())
     }
 
-    pub fn get_mut<C>(&self, eid: Id) -> Option<RwLockWriteGuard<C>>
-    where
-        C: Component,
-    {
+    pub fn get_mut<C: Component>(&self, eid: Id) -> Option<RwLockWriteGuard<C>> {
         self.get::<C>(eid).map(|c| c.write())
     }
 
-    fn cast<C>(a: &dyn AsAny) -> Option<&Arc<RwLock<C>>>
-    where
-        C: Component,
-    {
+    fn cast<C: Component>(a: &dyn AsAny) -> Option<&Arc<RwLock<C>>> {
         a.as_any().downcast_ref()
     }
 }

@@ -23,10 +23,7 @@ impl RendererManager {
         self.renderers.push(r);
     }
 
-    pub fn add<R>(&mut self, r: R)
-    where
-        R: Renderer,
-    {
+    pub fn add<R: Renderer>(&mut self, r: R) {
         self.add_gen(Box::new(r));
     }
 

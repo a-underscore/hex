@@ -23,10 +23,7 @@ impl SystemManager {
         self.pipelines.entry(pid).or_default().write().push(s);
     }
 
-    pub fn add<S>(&mut self, pid: Id, s: S)
-    where
-        S: System,
-    {
+    pub fn add<S: System>(&mut self, pid: Id, s: S) {
         self.add_gen(pid, Box::new(s));
     }
 
@@ -71,10 +68,10 @@ impl SystemManager {
         Ok(())
     }
 
-    fn par<F>(&self, f: F) -> anyhow::Result<()>
-    where
-        F: Fn((&u32, &Pipeline)) -> anyhow::Result<()> + Send + Sync,
-    {
+    fn par<F: Fn((&u32, &Pipeline)) -> anyhow::Result<()> + Send + Sync>(
+        &self,
+        f: F,
+    ) -> anyhow::Result<()> {
         let res: anyhow::Result<Vec<_>> = self.pipelines.par_iter().map(f).collect();
 
         res?;
