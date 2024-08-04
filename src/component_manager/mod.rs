@@ -4,13 +4,13 @@ pub mod component;
 pub use as_any::AsAny;
 pub use component::Component;
 
-use super::{EntityManager, Id};
+use crate::{EntityManager, Id};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, collections::HashMap, sync::Arc};
 
 #[derive(Default)]
 pub struct ComponentManager {
-    pub(super) components: HashMap<(Id, TypeId), Box<dyn AsAny>>,
+    pub(crate) components: HashMap<(Id, TypeId), Box<dyn AsAny>>,
 }
 
 impl ComponentManager {

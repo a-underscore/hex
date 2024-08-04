@@ -2,7 +2,7 @@ pub mod system;
 
 pub use system::System;
 
-use super::{ComponentManager, Context, Control, EntityManager, Id};
+use crate::{ComponentManager, Context, Control, EntityManager, Id};
 use parking_lot::RwLock;
 use rayon::prelude::*;
 use std::{collections::HashMap, sync::Arc};

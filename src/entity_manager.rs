@@ -1,4 +1,4 @@
-use super::{ComponentManager, Id};
+use crate::{ComponentManager, Id};
 use parking_lot::RwLock;
 use std::{
     any::TypeId,

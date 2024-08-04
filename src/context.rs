@@ -1,4 +1,4 @@
-use super::{ComponentManager, Control, EntityManager, RendererManager, SystemManager};
+use crate::{ComponentManager, Control, EntityManager, RendererManager, SystemManager};
 use nalgebra::Vector4;
 use parking_lot::RwLock;
 use std::sync::Arc;

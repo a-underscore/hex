@@ -4,7 +4,7 @@ pub mod renderer;
 pub use draw::Draw;
 pub use renderer::Renderer;
 
-use super::{ComponentManager, Context, EntityManager};
+use crate::{ComponentManager, Context, EntityManager};
 
 use parking_lot::RwLock;
 use std::sync::Arc;
