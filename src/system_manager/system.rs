@@ -1,4 +1,4 @@
-use crate::{Control, ComponentManager, Context, EntityManager};
+use crate::{ComponentManager, Context, Control, EntityManager};
 use parking_lot::RwLock;
 use std::sync::Arc;
 
