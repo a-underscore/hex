@@ -1,7 +1,7 @@
 use crate::{
     components::{Camera, Sprite, Trans},
     renderer_manager::{Draw, Renderer},
-    ComponentManager, Context, EntityManager,
+    Context, EntityManager,
 };
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -14,20 +14,28 @@ impl Renderer for SpriteRenderer {
         draw: &mut Draw,
         context: Arc<RwLock<Context>>,
         em: Arc<RwLock<EntityManager>>,
-        cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         let res = {
             let em = em.read();
-            let cm = cm.read();
 
             em.entities()
-                .find_map(|e| Some((e, cm.get::<Camera>(e)?.clone(), cm.get::<Trans>(e)?.clone())))
+                .find_map(|e| {
+                    Some((
+                        e,
+                        em.get_component::<Camera>(e)?.clone(),
+                        em.get_component::<Trans>(e)?.clone(),
+                    ))
+                })
                 .map(|c| {
                     let sprites = {
                         let mut sprites: Vec<_> = em
                             .entities()
                             .filter_map(|e| {
-                                Some((e, cm.get::<Sprite>(e)?.clone(), cm.get::<Trans>(e)?.clone()))
+                                Some((
+                                    e,
+                                    em.get_component::<Sprite>(e)?.clone(),
+                                    em.get_component::<Trans>(e)?.clone(),
+                                ))
                             })
                             .collect();
 
@@ -50,7 +58,6 @@ impl Renderer for SpriteRenderer {
                     draw,
                     context.clone(),
                     em.clone(),
-                    cm.clone(),
                 )?;
             }
         }

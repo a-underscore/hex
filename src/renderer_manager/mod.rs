@@ -4,7 +4,7 @@ pub mod renderer;
 pub use draw::Draw;
 pub use renderer::Renderer;
 
-use crate::{ComponentManager, Context, EntityManager};
+use crate::{Context, EntityManager};
 
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -36,10 +36,9 @@ impl RendererManager {
         draw: &mut Draw,
         context: Arc<RwLock<Context>>,
         em: Arc<RwLock<EntityManager>>,
-        cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         for r in &mut self.renderers {
-            r.draw(draw, context.clone(), em.clone(), cm.clone())?;
+            r.draw(draw, context.clone(), em.clone())?;
         }
 
         Ok(())

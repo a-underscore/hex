@@ -1,4 +1,4 @@
-use crate::{ComponentManager, Context, Control, EntityManager};
+use crate::{Context, Control, EntityManager};
 use parking_lot::RwLock;
 use std::sync::Arc;
 
@@ -7,7 +7,6 @@ pub trait System: Send + Sync + 'static {
         &mut self,
         _: Arc<RwLock<Context>>,
         _: Arc<RwLock<EntityManager>>,
-        _: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         Ok(())
     }
@@ -17,7 +16,6 @@ pub trait System: Send + Sync + 'static {
         _: Arc<RwLock<Control>>,
         _: Arc<RwLock<Context>>,
         _: Arc<RwLock<EntityManager>>,
-        _: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         Ok(())
     }

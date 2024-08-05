@@ -1,4 +1,3 @@
-use crate::component_manager::Component;
 use crate::nalgebra::{Matrix4, Orthographic3, Vector2};
 
 #[derive(Clone)]
@@ -59,5 +58,3 @@ impl Camera {
         -(end - end / 2.0 - layer / 2.0)
     }
 }
-
-impl Component for Camera {}

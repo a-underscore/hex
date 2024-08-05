@@ -2,7 +2,7 @@ use super::{fragment, vertex, Drawable, SpriteEntity};
 use crate::{
     components::{Camera, Trans},
     renderer_manager::Draw,
-    ComponentManager, Context, EntityManager, Id,
+    Context, EntityManager, Id,
 };
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -33,7 +33,6 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
         (_, builder, recreate_swapchain): &mut Draw,
         context: Arc<RwLock<Context>>,
         _: Arc<RwLock<EntityManager>>,
-        _: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         let context = context.read();
         let c = c.read();

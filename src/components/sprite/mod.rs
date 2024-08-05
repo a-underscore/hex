@@ -6,7 +6,6 @@ pub use sprite_drawable::SpriteDrawable;
 
 use crate::{
     assets::{shape::Vertex2, Shape, Texture},
-    component_manager::Component,
     components::Trans,
     Context, Drawable, Id,
 };
@@ -136,5 +135,3 @@ impl Sprite {
         )?)
     }
 }
-
-impl Component for Sprite {}

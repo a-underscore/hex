@@ -1,4 +1,4 @@
-use crate::{ComponentManager, Control, EntityManager, RendererManager, SystemManager};
+use crate::{Control, EntityManager, RendererManager, SystemManager};
 use nalgebra::Vector4;
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -185,9 +185,8 @@ impl Context {
         mut sm: SystemManager,
         mut rm: RendererManager,
         em: Arc<RwLock<EntityManager>>,
-        cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
-        sm.init(context.clone(), em.clone(), cm.clone())?;
+        sm.init(context.clone(), em.clone())?;
 
         let mut recreate_swapchain = false;
 
@@ -197,7 +196,6 @@ impl Context {
                 &mut sm,
                 &mut rm,
                 em.clone(),
-                cm.clone(),
                 Control::new(event),
                 (elwt, &mut recreate_swapchain),
             ) {
@@ -213,11 +211,10 @@ impl Context {
         sm: &mut SystemManager,
         rm: &mut RendererManager,
         em: Arc<RwLock<EntityManager>>,
-        cm: Arc<RwLock<ComponentManager>>,
         control: Arc<RwLock<Control>>,
         (elwt, recreate_swapchain): (&EventLoopWindowTarget<()>, &mut bool),
     ) -> anyhow::Result<()> {
-        sm.update(control.clone(), context.clone(), em.clone(), cm.clone())?;
+        sm.update(control.clone(), context.clone(), em.clone())?;
 
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
@@ -302,7 +299,6 @@ impl Context {
                 &mut (control.clone(), &mut builder, rs),
                 context.clone(),
                 em.clone(),
-                cm.clone(),
             )?;
 
             builder.end_render_pass(Default::default())?;

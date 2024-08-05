@@ -1,4 +1,3 @@
-use crate::component_manager::Component;
 use nalgebra::{Matrix3, Vector2};
 
 #[derive(Clone)]
@@ -67,5 +66,3 @@ impl Trans {
             * Matrix3::new_rotation(rotation)
     }
 }
-
-impl Component for Trans {}

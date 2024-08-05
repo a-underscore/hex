@@ -2,7 +2,7 @@ pub mod system;
 
 pub use system::System;
 
-use crate::{ComponentManager, Context, Control, EntityManager, Id};
+use crate::{Context, Control, EntityManager, Id};
 use parking_lot::RwLock;
 use rayon::prelude::*;
 use std::{collections::HashMap, sync::Arc};
@@ -37,11 +37,10 @@ impl SystemManager {
         &self,
         context: Arc<RwLock<Context>>,
         em: Arc<RwLock<EntityManager>>,
-        cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         self.par(|(_, p)| {
             for s in &mut *p.write() {
-                s.init(context.clone(), em.clone(), cm.clone())?;
+                s.init(context.clone(), em.clone())?;
             }
 
             Ok(())
@@ -55,11 +54,10 @@ impl SystemManager {
         control: Arc<RwLock<Control>>,
         context: Arc<RwLock<Context>>,
         em: Arc<RwLock<EntityManager>>,
-        cm: Arc<RwLock<ComponentManager>>,
     ) -> anyhow::Result<()> {
         self.par(|(_, p)| {
             for s in &mut *p.write() {
-                s.update(control.clone(), context.clone(), em.clone(), cm.clone())?;
+                s.update(control.clone(), context.clone(), em.clone())?;
             }
 
             Ok(())
