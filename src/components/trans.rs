@@ -1,4 +1,6 @@
 use nalgebra::{Matrix3, Vector2};
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Trans {
@@ -9,13 +11,13 @@ pub struct Trans {
 }
 
 impl Trans {
-    pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Self {
-        Self {
+    pub fn new(position: Vector2<f32>, rotation: f32, scale: Vector2<f32>) -> Arc<RwLock<Self>> {
+        Arc::new(RwLock::new(Self {
             position,
             rotation,
             scale,
             matrix: Self::calculate_matrix(position, rotation, scale),
-        }
+        }))
     }
 
     pub fn position(&self) -> Vector2<f32> {

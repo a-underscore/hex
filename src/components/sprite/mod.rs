@@ -51,7 +51,7 @@ impl Sprite {
         texture: Texture,
         color: Vector4<f32>,
         layer: i32,
-    ) -> anyhow::Result<Self> {
+    ) -> anyhow::Result<Arc<RwLock<Self>>> {
         let vertex = vertex::load(context.device.clone())?
             .entry_point("main")
             .unwrap();
@@ -59,7 +59,7 @@ impl Sprite {
             .entry_point("main")
             .unwrap();
 
-        Ok(Self {
+        Ok(Arc::new(RwLock::new(Self {
             shape,
             texture,
             color,
@@ -70,7 +70,7 @@ impl Sprite {
                 fragment,
             ),
             drawable: SpriteDrawable::new(),
-        })
+        })))
     }
 
     pub fn recreate_pipeline(&mut self, context: &Context) -> anyhow::Result<()> {

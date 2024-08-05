@@ -1,4 +1,6 @@
 use crate::nalgebra::{Matrix4, Orthographic3, Vector2};
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Camera {
@@ -8,12 +10,12 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(dimensions: Vector2<f32>, end: i32) -> Self {
-        Self {
+    pub fn new(dimensions: Vector2<f32>, end: i32) -> Arc<RwLock<Self>> {
+        Arc::new(RwLock::new(Self {
             dimensions,
             end,
             proj: Self::calculate_proj(dimensions, end),
-        }
+        }))
     }
 
     pub fn dimensions(&self) -> Vector2<f32> {
