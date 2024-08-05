@@ -22,8 +22,8 @@ impl Renderer for SpriteRenderer {
                 .find_map(|e| {
                     Some((
                         e,
-                        em.get_component::<Camera>(e)?.clone(),
-                        em.get_component::<Trans>(e)?.clone(),
+                        em.get_component::<Camera>(e)?,
+                        em.get_component::<Trans>(e)?,
                     ))
                 })
                 .map(|c| {
