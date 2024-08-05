@@ -49,17 +49,21 @@ impl EntityManager {
         }
     }
 
+    pub fn get(&self, eid: Id) -> Option<&HashSet<TypeId>> {
+        self.entities.get(&eid)
+    }
+
     pub fn add_component<C: Send + Sync + 'static>(&mut self, eid: Id, component: Arc<RwLock<C>>) {
         let entry = self
             .components
             .entry(TypeId::of::<C>())
-            .or_insert(Box::new(ComponentManager::<C>::new()));
+            .or_insert(ComponentManager::<C>::new());
 
-        if let Some(manager) = entry
-            .as_any()
-            .downcast_ref::<Arc<RwLock<ComponentManager<C>>>>()
-        {
-            manager.write().components.insert(eid, component);
+        if let Some(manager) = entry.as_any_mut().downcast_mut::<ComponentManager<C>>() {
+            if let Some(e) = self.entities.get_mut(&eid) {
+                e.insert(TypeId::of::<C>());
+                manager.components.insert(eid, component);
+            }
         }
     }
 
@@ -72,13 +76,13 @@ impl EntityManager {
             .get(&eid)
             .filter(|e| e.contains(&TypeId::of::<C>()))?;
 
-        self.components
+        let c = self
+            .components
             .get(&TypeId::of::<C>())
-            .and_then(|e| {
-                e.as_any()
-                    .downcast_ref::<Arc<RwLock<ComponentManager<C>>>>()
-            })
-            .and_then(|m| m.read().components.get(&eid).cloned())
+            .and_then(|e| e.as_any().downcast_ref::<ComponentManager<C>>())
+            .and_then(|m| m.components.get(&eid).cloned());
+
+        c
     }
 
     pub fn entities(&self) -> Cloned<Keys<'_, Id, HashSet<TypeId>>> {
@@ -88,8 +92,8 @@ impl EntityManager {
     fn remove_component_generic(&mut self, eid: Id, cid: TypeId) {
         let entry = self.components.entry(cid);
 
-        if let Entry::Occupied(manager) = entry {
-            if manager.get().remove(eid) {
+        if let Entry::Occupied(mut manager) = entry {
+            if manager.get_mut().remove(eid) {
                 manager.remove();
             }
         }

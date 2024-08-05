@@ -11,21 +11,25 @@ pub struct ComponentManager<C: Send + Sync + 'static> {
 }
 
 impl<C: Send + Sync + 'static> ComponentManager<C> {
-    pub fn new() -> Arc<RwLock<Self>> {
-        Arc::new(RwLock::new(Self {
+    pub fn new() -> Box<Self> {
+        Box::new(Self {
             components: HashMap::new(),
-        }))
+        })
     }
 }
 
-impl<C: Send + Sync + 'static> AsAny for Arc<RwLock<ComponentManager<C>>> {
+impl<C: Send + Sync + 'static> AsAny for ComponentManager<C> {
     fn as_any(&self) -> &(dyn Any + Send + Sync + 'static) {
         self
     }
 
-    fn remove(&self, eid: Id) -> bool {
-        self.write().components.remove(&eid);
+    fn as_any_mut(&mut self) -> &mut (dyn Any + Send + Sync + 'static) {
+        self
+    }
 
-        self.read().components.is_empty()
+    fn remove(&mut self, eid: Id) -> bool {
+        self.components.remove(&eid);
+
+        self.components.is_empty()
     }
 }
