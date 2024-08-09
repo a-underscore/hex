@@ -1,4 +1,4 @@
-use crate::{Control, EntityManager, RendererManager, SystemManager};
+use crate::{Control, World};
 use nalgebra::Vector4;
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -182,20 +182,20 @@ impl Context {
     pub fn init(
         context: Arc<RwLock<Self>>,
         event_loop: EventLoop<()>,
-        mut sm: SystemManager,
-        mut rm: RendererManager,
-        em: Arc<RwLock<EntityManager>>,
+        world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
-        sm.init(context.clone(), em.clone())?;
+        {
+            let sm = world.read().sm.clone();
+
+            sm.init(context.clone(), world.clone())?;
+        }
 
         let mut recreate_swapchain = false;
 
         event_loop.run(move |event, elwt| {
             if let Err(e) = Self::update(
                 context.clone(),
-                &mut sm,
-                &mut rm,
-                em.clone(),
+                world.clone(),
                 Control::new(event),
                 (elwt, &mut recreate_swapchain),
             ) {
@@ -208,13 +208,15 @@ impl Context {
 
     pub fn update(
         context: Arc<RwLock<Self>>,
-        sm: &mut SystemManager,
-        rm: &mut RendererManager,
-        em: Arc<RwLock<EntityManager>>,
+        world: Arc<RwLock<World>>,
         control: Arc<RwLock<Control>>,
         (elwt, recreate_swapchain): (&EventLoopWindowTarget<()>, &mut bool),
     ) -> anyhow::Result<()> {
-        sm.update(control.clone(), context.clone(), em.clone())?;
+        {
+            let sm = world.read().sm.clone();
+
+            sm.init(context.clone(), world.clone())?;
+        }
 
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
@@ -295,10 +297,12 @@ impl Context {
                 (builder, rs, suboptimal, acquire_future, image_index)
             };
 
+            let rm = world.read().rm.clone();
+
             rm.draw(
                 &mut (control.clone(), &mut builder, rs),
                 context.clone(),
-                em.clone(),
+                world.clone(),
             )?;
 
             builder.end_render_pass(Default::default())?;

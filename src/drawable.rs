@@ -1,7 +1,7 @@
 use crate::{
     components::{Camera, Trans},
-    renderer_manager::Draw,
-    Context, EntityManager, Id,
+    world::renderer_manager::Draw,
+    Context, Id, World,
 };
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -13,6 +13,6 @@ pub trait Drawable<E>: Send + Sync {
         camera: (Id, Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
         draw: &mut Draw,
         context: Arc<RwLock<Context>>,
-        em: Arc<RwLock<EntityManager>>,
+        world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()>;
 }

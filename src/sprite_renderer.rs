@@ -1,7 +1,7 @@
 use crate::{
     components::{Camera, Sprite, Trans},
-    renderer_manager::{Draw, Renderer},
-    Context, EntityManager,
+    world::renderer_manager::{Draw, Renderer},
+    Context, World,
 };
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -10,12 +10,13 @@ pub struct SpriteRenderer;
 
 impl Renderer for SpriteRenderer {
     fn draw(
-        &mut self,
+        &self,
         draw: &mut Draw,
         context: Arc<RwLock<Context>>,
-        em: Arc<RwLock<EntityManager>>,
+        world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
         let res = {
+            let em = world.read().em.clone();
             let em = em.read();
 
             em.entities()
@@ -57,7 +58,7 @@ impl Renderer for SpriteRenderer {
                     (ce, c.clone(), ct.clone()),
                     draw,
                     context.clone(),
-                    em.clone(),
+                    world.clone(),
                 )?;
             }
         }
