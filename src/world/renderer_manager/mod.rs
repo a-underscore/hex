@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 #[derive(Default)]
 pub struct RendererManager {
-    renderers: Vec<Box<dyn Renderer>>,
+    renderers: Arc<RwLock<Vec<Box<dyn Renderer>>>>,
 }
 
 impl RendererManager {
@@ -20,7 +20,7 @@ impl RendererManager {
     }
 
     pub fn add_gen(&mut self, r: Box<dyn Renderer>) {
-        self.renderers.push(r);
+        self.renderers.write().push(r);
     }
 
     pub fn add<R: Renderer>(&mut self, r: R) {
@@ -28,7 +28,7 @@ impl RendererManager {
     }
 
     pub fn rm(&mut self) {
-        self.renderers.pop();
+        self.renderers.write().pop();
     }
 
     pub fn draw(
@@ -37,7 +37,7 @@ impl RendererManager {
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
-        for r in &self.renderers {
+        for r in &mut *self.renderers.write() {
             r.draw(draw, context.clone(), world.clone())?;
         }
 

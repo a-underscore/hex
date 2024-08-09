@@ -10,7 +10,7 @@ pub struct SpriteRenderer;
 
 impl Renderer for SpriteRenderer {
     fn draw(
-        &self,
+        &mut self,
         draw: &mut Draw,
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
