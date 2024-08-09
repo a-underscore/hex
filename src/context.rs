@@ -215,7 +215,7 @@ impl Context {
         {
             let sm = world.read().sm.clone();
 
-            sm.init(context.clone(), world.clone())?;
+            sm.update(control.clone(), context.clone(), world.clone())?;
         }
 
         if let Event::WindowEvent {
