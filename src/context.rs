@@ -212,11 +212,9 @@ impl Context {
         control: Arc<RwLock<Control>>,
         (elwt, recreate_swapchain): (&EventLoopWindowTarget<()>, &mut bool),
     ) -> anyhow::Result<()> {
-        {
-            let sm = world.read().sm.clone();
+        let sm = world.read().sm.clone();
 
-            sm.update(control.clone(), context.clone(), world.clone())?;
-        }
+        sm.update(control.clone(), context.clone(), world.clone())?;
 
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
