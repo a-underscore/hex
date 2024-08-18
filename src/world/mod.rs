@@ -11,8 +11,8 @@ use std::sync::Arc;
 
 pub struct World {
     pub em: Arc<RwLock<EntityManager>>,
-    pub(crate) sm: Arc<SystemManager>,
-    pub(crate) rm: Arc<RendererManager>,
+    pub(crate) sm: Arc<RwLock<SystemManager>>,
+    pub(crate) rm: Arc<RwLock<RendererManager>>,
 }
 
 impl World {
@@ -23,8 +23,8 @@ impl World {
     ) -> Arc<RwLock<Self>> {
         Arc::new(RwLock::new(Self {
             em,
-            sm: Arc::new(sm),
-            rm: Arc::new(rm),
+            sm: Arc::new(RwLock::new(sm)),
+            rm: Arc::new(RwLock::new(rm)),
         }))
     }
 }
