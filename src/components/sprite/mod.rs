@@ -40,7 +40,7 @@ pub struct Sprite {
     pub texture: Texture,
     pub color: Vector4<f32>,
     pub layer: i32,
-    pub drawable: Arc<RwLock<dyn Drawable<SpriteEntity>>>,
+    pub drawable: Arc<dyn Drawable<SpriteEntity>>,
     pub pipeline: SpritePipeline,
 }
 

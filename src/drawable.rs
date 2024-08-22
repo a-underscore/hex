@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 pub trait Drawable<E>: Send + Sync {
     fn draw(
-        &mut self,
+        self: Arc<Self>,
         entity: E,
         camera: (Id, Arc<RwLock<Camera>>, Arc<RwLock<Trans>>),
         draw: &mut Draw,
