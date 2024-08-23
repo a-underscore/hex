@@ -8,17 +8,22 @@ use parking_lot::RwLock;
 use std::{
     any::TypeId,
     collections::{
-        hash_map::{Entry, Keys},
+        hash_map::{Entry, Iter},
         HashMap, HashSet,
     },
-    iter::Cloned,
+    iter::FilterMap,
     sync::Arc,
 };
+
+pub type Entities<'a> = FilterMap<
+    Iter<'a, Id, (bool, HashSet<TypeId>)>,
+    for<'b, 'c> fn((&'b Id, &'c (bool, HashSet<TypeId>))) -> Option<Id>,
+>;
 
 #[derive(Default)]
 pub struct EntityManager {
     free: Vec<Id>,
-    pub(crate) entities: HashMap<Id, HashSet<TypeId>>,
+    pub(crate) entities: HashMap<Id, (bool, HashSet<TypeId>)>,
     pub(crate) components: HashMap<TypeId, Box<dyn AsAny>>,
 }
 
@@ -31,10 +36,10 @@ impl EntityManager {
         }))
     }
 
-    pub fn add(&mut self) -> Id {
+    pub fn add(&mut self, active: bool) -> Id {
         let id = self.free.pop().unwrap_or(self.entities.len() as Id);
 
-        self.entities.insert(id, HashSet::new());
+        self.entities.insert(id, (active, HashSet::new()));
 
         id
     }
@@ -43,13 +48,25 @@ impl EntityManager {
         if let Some(e) = self.entities.remove(&eid) {
             self.free.push(eid);
 
-            for cid in e {
+            let (_, components) = e;
+
+            for cid in components {
                 self.remove_component_generic(eid, cid);
             }
         }
     }
 
-    pub fn get(&self, eid: Id) -> Option<&HashSet<TypeId>> {
+    pub fn is_active(&mut self, eid: Id) -> Option<bool> {
+        self.entities.get(&eid).map(|(a, _)| *a)
+    }
+
+    pub fn set_active(&mut self, eid: Id, active: bool) {
+        if let Some((a, _)) = self.entities.get_mut(&eid) {
+            *a = active;
+        }
+    }
+
+    pub fn get(&self, eid: Id) -> Option<&(bool, HashSet<TypeId>)> {
         self.entities.get(&eid)
     }
 
@@ -60,7 +77,7 @@ impl EntityManager {
             .or_insert(ComponentManager::<C>::new());
 
         if let Some(manager) = entry.as_any_mut().downcast_mut::<ComponentManager<C>>() {
-            if let Some(e) = self.entities.get_mut(&eid) {
+            if let Some(e) = self.entities.get_mut(&eid).map(|(_, e)| e) {
                 e.insert(TypeId::of::<C>());
                 manager.components.insert(eid, component);
             }
@@ -74,7 +91,7 @@ impl EntityManager {
     pub fn get_component<C: Send + Sync + 'static>(&self, eid: Id) -> Option<Arc<RwLock<C>>> {
         self.entities
             .get(&eid)
-            .filter(|e| e.contains(&TypeId::of::<C>()))?;
+            .filter(|(_, e)| e.contains(&TypeId::of::<C>()))?;
 
         let c = self
             .components
@@ -85,8 +102,10 @@ impl EntityManager {
         c
     }
 
-    pub fn entities(&self) -> Cloned<Keys<'_, Id, HashSet<TypeId>>> {
-        self.entities.keys().cloned()
+    pub fn entities(&self) -> Entities {
+        self.entities
+            .iter()
+            .filter_map(|(e, (a, _))| a.then_some(*e))
     }
 
     fn remove_component_generic(&mut self, eid: Id, cid: TypeId) {
