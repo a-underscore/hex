@@ -15,12 +15,11 @@ use std::{
     sync::Arc,
 };
 
-pub type Entities<'a> = FilterMap<
+pub type FilteredEntities<'a> = FilterMap<
     Iter<'a, Id, (bool, HashSet<TypeId>)>,
     for<'b, 'c> fn((&'b Id, &'c (bool, HashSet<TypeId>))) -> Option<Id>,
 >;
 
-#[derive(Default)]
 pub struct EntityManager {
     free: Vec<Id>,
     pub(crate) entities: HashMap<Id, (bool, HashSet<TypeId>)>,
@@ -32,7 +31,7 @@ impl EntityManager {
         Arc::new(RwLock::new(Self {
             free: Default::default(),
             entities: Default::default(),
-            components: HashMap::new(),
+            components: Default::default(),
         }))
     }
 
@@ -92,17 +91,13 @@ impl EntityManager {
         self.entities
             .get(&eid)
             .filter(|(_, e)| e.contains(&TypeId::of::<C>()))?;
-
-        let c = self
-            .components
+        self.components
             .get(&TypeId::of::<C>())
             .and_then(|e| e.as_any().downcast_ref::<ComponentManager<C>>())
-            .and_then(|m| m.components.get(&eid).cloned());
-
-        c
+            .and_then(|m| m.components.get(&eid).cloned())
     }
 
-    pub fn entities(&self) -> Entities {
+    pub fn entities(&self) -> FilteredEntities {
         self.entities
             .iter()
             .filter_map(|(e, (a, _))| a.then_some(*e))
