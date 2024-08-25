@@ -4,7 +4,7 @@ pub mod context;
 pub mod control;
 pub mod drawable;
 pub mod id;
-pub mod sprite_renderer;
+pub mod renderers;
 pub mod world;
 
 pub use anyhow;
@@ -15,7 +15,6 @@ pub use id::Id;
 pub use nalgebra;
 pub use parking_lot;
 pub use rayon;
-pub use sprite_renderer::SpriteRenderer;
 pub use vulkano;
 pub use vulkano_shaders;
 pub use winit;
