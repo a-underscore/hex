@@ -55,12 +55,6 @@ impl EntityManager {
         self.entities.get(&eid).cloned()
     }
 
-    pub fn set_active(&mut self, eid: Id, active: bool) {
-        if let Some(a) = self.entities.get_mut(&eid) {
-            *a = active;
-        }
-    }
-
     pub fn add_component<C: Send + Sync + 'static>(&mut self, eid: Id, component: Arc<RwLock<C>>) {
         let entry = self
             .components
@@ -68,7 +62,7 @@ impl EntityManager {
             .or_insert(ComponentManager::<C>::new());
 
         if let Some(manager) = entry.as_any_mut().downcast_mut::<ComponentManager<C>>() {
-            if self.entities.get(&eid).is_some() {
+            if self.entities.contains_key(&eid) {
                 manager.components.insert(eid, component);
             }
         }
