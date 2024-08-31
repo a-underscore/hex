@@ -20,8 +20,8 @@ pub type FilteredEntities<'a> =
 
 pub struct EntityManager {
     free: Vec<Id>,
-    pub(crate) entities: HashMap<Id, bool>,
-    pub(crate) components: HashMap<TypeId, Box<dyn AsAny>>,
+    entities: HashMap<Id, bool>,
+    components: HashMap<TypeId, Box<dyn AsAny>>,
 }
 
 impl EntityManager {
@@ -51,7 +51,7 @@ impl EntityManager {
         }
     }
 
-    pub fn is_active(&mut self, eid: Id) -> Option<bool> {
+    pub fn is_active(&self, eid: Id) -> Option<bool> {
         self.entities.get(&eid).cloned()
     }
 
@@ -68,7 +68,7 @@ impl EntityManager {
             .or_insert(ComponentManager::<C>::new());
 
         if let Some(manager) = entry.as_any_mut().downcast_mut::<ComponentManager<C>>() {
-            if self.entities.get_mut(&eid).is_some() {
+            if self.entities.get(&eid).is_some() {
                 manager.components.insert(eid, component);
             }
         }
@@ -85,10 +85,6 @@ impl EntityManager {
             .and_then(|m| m.components.get(&eid).cloned())
     }
 
-    pub fn entities(&self) -> FilteredEntities {
-        self.entities.iter().filter_map(|(e, a)| a.then_some(*e))
-    }
-
     fn remove_component_generic(&mut self, eid: Id, cid: TypeId) {
         let entry = self.components.entry(cid);
 
@@ -97,5 +93,9 @@ impl EntityManager {
                 manager.remove();
             }
         }
+    }
+
+    pub fn entities(&self) -> FilteredEntities {
+        self.entities.iter().filter_map(|(e, a)| a.then_some(*e))
     }
 }
