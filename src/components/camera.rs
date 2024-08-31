@@ -53,9 +53,8 @@ impl Camera {
     }
 
     pub fn calculate_z(&self, layer: i32) -> f32 {
-        let end = self.end() as f32;
         let layer = layer as f32;
 
-        -(end - end / 2.0 - layer / 2.0)
+        -(self.end - self.end / 2.0 - layer / 2.0)
     }
 }
