@@ -3,7 +3,7 @@ pub mod component_manager;
 pub use component_manager::ComponentManager;
 
 use crate::Id;
-use component_manager::AsAny;
+use component_manager::ComponentManagerTrait;
 use parking_lot::RwLock;
 use std::{
     any::TypeId,
@@ -21,7 +21,7 @@ pub type FilteredEntities<'a> =
 pub struct EntityManager {
     free: Vec<Id>,
     entities: HashMap<Id, bool>,
-    components: HashMap<TypeId, Box<dyn AsAny>>,
+    components: HashMap<TypeId, Box<dyn ComponentManagerTrait>>,
 }
 
 impl EntityManager {
@@ -91,6 +91,13 @@ impl EntityManager {
             .get(&TypeId::of::<C>())?
             .as_any()
             .downcast_ref::<ComponentManager<C>>()
+    }
+
+    pub fn component_count(&self, eid: Id) -> usize {
+        self.components
+            .iter()
+            .filter(|(_, c)| c.includes(eid))
+            .count()
     }
 
     pub fn entities(&self) -> FilteredEntities {

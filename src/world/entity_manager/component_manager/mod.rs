@@ -1,6 +1,6 @@
-pub mod as_any;
+pub mod component_manager_trait;
 
-pub use as_any::AsAny;
+pub use component_manager_trait::ComponentManagerTrait;
 
 use crate::Id;
 use parking_lot::RwLock;
@@ -24,13 +24,17 @@ impl<C: Send + Sync + 'static> ComponentManager<C> {
     }
 }
 
-impl<C: Send + Sync + 'static> AsAny for ComponentManager<C> {
+impl<C: Send + Sync + 'static> ComponentManagerTrait for ComponentManager<C> {
     fn as_any(&self) -> &(dyn Any + Send + Sync + 'static) {
         self
     }
 
     fn as_any_mut(&mut self) -> &mut (dyn Any + Send + Sync + 'static) {
         self
+    }
+
+    fn includes(&self, eid: Id) -> bool {
+        self.components.contains_key(&eid)
     }
 
     fn remove(&mut self, eid: Id) -> bool {
