@@ -88,7 +88,9 @@ impl EntityManager {
 
     pub fn get_component_manager<C: Send + Sync + 'static>(&self) -> Option<&ComponentManager<C>> {
         self.components
-            .get(&TypeId::of::<C>())?.as_any().downcast_ref::<ComponentManager<C>>()
+            .get(&TypeId::of::<C>())?
+            .as_any()
+            .downcast_ref::<ComponentManager<C>>()
     }
 
     pub fn entities(&self) -> FilteredEntities {
