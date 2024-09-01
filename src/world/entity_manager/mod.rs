@@ -73,10 +73,7 @@ impl EntityManager {
     }
 
     pub fn get_component<C: Send + Sync + 'static>(&self, eid: Id) -> Option<Arc<RwLock<C>>> {
-        self.components
-            .get(&TypeId::of::<C>())
-            .and_then(|e| e.as_any().downcast_ref::<ComponentManager<C>>())
-            .and_then(|m| m.components.get(&eid).cloned())
+        self.get_component_manager::<C>()?.get(eid)
     }
 
     fn remove_component_generic(&mut self, eid: Id, cid: TypeId) {
@@ -87,6 +84,11 @@ impl EntityManager {
                 manager.remove();
             }
         }
+    }
+
+    pub fn get_component_manager<C: Send + Sync + 'static>(&self) -> Option<&ComponentManager<C>> {
+        self.components
+            .get(&TypeId::of::<C>())?.as_any().downcast_ref::<ComponentManager<C>>()
     }
 
     pub fn entities(&self) -> FilteredEntities {

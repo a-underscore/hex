@@ -18,6 +18,12 @@ impl<C: Send + Sync + 'static> ComponentManager<C> {
     }
 }
 
+impl<C: Send + Sync + 'static> ComponentManager<C> {
+    pub fn get(&self, eid: Id) -> Option<Arc<RwLock<C>>> {
+        self.components.get(&eid).cloned()
+    }
+}
+
 impl<C: Send + Sync + 'static> AsAny for ComponentManager<C> {
     fn as_any(&self) -> &(dyn Any + Send + Sync + 'static) {
         self
