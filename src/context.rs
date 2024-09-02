@@ -187,7 +187,7 @@ impl Context {
         {
             let sm = world.read().sm.clone();
 
-            sm.read().init(context.clone(), world.clone())?;
+            sm.write().init(context.clone(), world.clone())?;
         }
 
         let mut recreate_swapchain = false;
@@ -214,7 +214,7 @@ impl Context {
     ) -> anyhow::Result<()> {
         let sm = world.read().sm.clone();
 
-        sm.read()
+        sm.write()
             .update(control.clone(), context.clone(), world.clone())?;
 
         if let Event::WindowEvent {

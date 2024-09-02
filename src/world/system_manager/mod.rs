@@ -7,11 +7,9 @@ use parking_lot::RwLock;
 use rayon::prelude::*;
 use std::{collections::HashMap, sync::Arc};
 
-type Pipeline = Arc<RwLock<Vec<Box<dyn System>>>>;
-
 #[derive(Default)]
 pub struct SystemManager {
-    pipelines: HashMap<Id, Pipeline>,
+    pipelines: HashMap<Id, Vec<Box<dyn System>>>,
 }
 
 impl SystemManager {
@@ -20,7 +18,7 @@ impl SystemManager {
     }
 
     pub fn add_gen(&mut self, pid: Id, s: Box<dyn System>) {
-        self.pipelines.entry(pid).or_default().write().push(s);
+        self.pipelines.entry(pid).or_default().push(s);
     }
 
     pub fn add<S: System>(&mut self, pid: Id, s: S) {
@@ -29,17 +27,17 @@ impl SystemManager {
 
     pub fn rm(&mut self, pid: Id) {
         if let Some(p) = self.pipelines.get_mut(&pid) {
-            p.write().pop();
+            p.pop();
         }
     }
 
     pub fn init(
-        &self,
+        &mut self,
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
         self.par(|(_, p)| {
-            for s in &mut *p.write() {
+            for s in p {
                 s.init(context.clone(), world.clone())?;
             }
 
@@ -50,13 +48,13 @@ impl SystemManager {
     }
 
     pub fn update(
-        &self,
+        &mut self,
         control: Arc<RwLock<Control>>,
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
         self.par(|(_, p)| {
-            for s in &mut *p.write() {
+            for s in p {
                 s.update(control.clone(), context.clone(), world.clone())?;
             }
 
@@ -66,11 +64,11 @@ impl SystemManager {
         Ok(())
     }
 
-    fn par<F: Fn((&u32, &Pipeline)) -> anyhow::Result<()> + Send + Sync>(
-        &self,
+    fn par<F: Fn((&u32, &mut Vec<Box<dyn System>>)) -> anyhow::Result<()> + Send + Sync>(
+        &mut self,
         f: F,
     ) -> anyhow::Result<()> {
-        let res: anyhow::Result<Vec<_>> = self.pipelines.par_iter().map(f).collect();
+        let res: anyhow::Result<Vec<_>> = self.pipelines.par_iter_mut().map(f).collect();
 
         res?;
 
