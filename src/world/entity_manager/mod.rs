@@ -76,16 +76,6 @@ impl EntityManager {
         self.get_component_manager::<C>()?.get(eid)
     }
 
-    fn remove_component_generic(&mut self, eid: Id, cid: TypeId) {
-        let entry = self.components.entry(cid);
-
-        if let Entry::Occupied(mut manager) = entry {
-            if manager.get_mut().remove(eid) {
-                manager.remove();
-            }
-        }
-    }
-
     pub fn get_component_manager<C: Send + Sync + 'static>(&self) -> Option<&ComponentManager<C>> {
         self.components
             .get(&TypeId::of::<C>())?
@@ -102,5 +92,15 @@ impl EntityManager {
 
     pub fn entities(&self) -> FilteredEntities {
         self.entities.iter().filter_map(|(e, a)| a.then_some(*e))
+    }
+
+    fn remove_component_generic(&mut self, eid: Id, cid: TypeId) {
+        let entry = self.components.entry(cid);
+
+        if let Entry::Occupied(mut manager) = entry {
+            if manager.get_mut().remove(eid) {
+                manager.remove();
+            }
+        }
     }
 }
