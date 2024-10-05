@@ -1,14 +1,16 @@
 use crate::{world::EntityManager, Id};
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Tag(pub String);
 
 impl Tag {
-    pub fn new<S>(t: S) -> Self
+    pub fn new<S>(t: S) -> Arc<RwLock<Self>>
     where
         S: Into<String>,
     {
-        Self(t.into())
+        Arc::new(RwLock::new(Self(t.into())))
     }
 
     pub fn find(&self, em: &EntityManager) -> Option<Id> {
