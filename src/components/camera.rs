@@ -5,12 +5,12 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct Camera {
     dimensions: Vector2<f32>,
-    end: i32,
+    end: u32,
     proj: Matrix4<f32>,
 }
 
 impl Camera {
-    pub fn new(dimensions: Vector2<f32>, end: i32) -> Arc<RwLock<Self>> {
+    pub fn new(dimensions: Vector2<f32>, end: u32) -> Arc<RwLock<Self>> {
         Arc::new(RwLock::new(Self {
             dimensions,
             end,
@@ -28,11 +28,11 @@ impl Camera {
         self.update_proj();
     }
 
-    pub fn end(&self) -> i32 {
+    pub fn end(&self) -> u32 {
         self.end
     }
 
-    pub fn set_end(&mut self, end: i32) {
+    pub fn set_end(&mut self, end: u32) {
         self.end = end;
 
         self.update_proj();
@@ -46,17 +46,10 @@ impl Camera {
         self.proj = Self::calculate_proj(self.dimensions, self.end);
     }
 
-    fn calculate_proj(v: Vector2<f32>, end: i32) -> Matrix4<f32> {
+    fn calculate_proj(v: Vector2<f32>, end: u32) -> Matrix4<f32> {
         let z = end as f32;
         let v = v / 2.0;
 
         Orthographic3::new(-v.x, v.x, -v.y, v.y, -z, z).to_homogeneous()
-    }
-
-    pub fn calculate_z(&self, layer: i32) -> f32 {
-        let z = self.end as f32;
-        let layer = layer as f32;
-
-        -(z - z / 2.0 - layer / 2.0)
     }
 }
