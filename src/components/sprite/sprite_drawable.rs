@@ -64,7 +64,7 @@ impl Drawable<SpriteEntity> for SpriteDrawable {
             let subbuffer = subbuffer_allocator.allocate_sized()?;
 
             *subbuffer.write()? = vertex::View {
-                z: Padded(c.calculate_z(s.layer)),
+                z: Padded(-(s.layer as f32)),
                 transform: <[[f32; 3]; 3]>::from(t.matrix()).map(Padded),
                 camera_transform: <[[f32; 3]; 3]>::from(ct.matrix()).map(Padded),
                 camera_proj: c.proj().into(),

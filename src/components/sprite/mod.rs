@@ -39,7 +39,7 @@ pub struct Sprite {
     pub shape: Shape,
     pub texture: Texture,
     pub color: Vector4<f32>,
-    pub layer: i32,
+    pub layer: u32,
     pub drawable: Arc<dyn Drawable<SpriteEntity>>,
     pub pipeline: SpritePipeline,
 }
@@ -50,7 +50,7 @@ impl Sprite {
         shape: Shape,
         texture: Texture,
         color: Vector4<f32>,
-        layer: i32,
+        layer: u32,
     ) -> anyhow::Result<Arc<RwLock<Self>>> {
         let vertex = vertex::load(context.device.clone())?
             .entry_point("main")
