@@ -81,7 +81,7 @@ impl SystemManager {
     ) -> anyhow::Result<()> {
         self.pool.execute(|| {
             for s in p {
-                f(s.clone());
+                f(s.clone()).unwrap();
             }
         });
 
