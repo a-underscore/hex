@@ -4,21 +4,24 @@ pub use system::System;
 
 use crate::{Context, Control, Id, World};
 use parking_lot::RwLock;
-use rayon::prelude::*;
 use std::{collections::HashMap, sync::Arc};
+use threadpool::ThreadPool;
 
-#[derive(Default)]
 pub struct SystemManager {
-    pipelines: HashMap<Id, Vec<Box<dyn System>>>,
+    pipelines: HashMap<Id, Vec<Arc<RwLock<Box<dyn System>>>>>,
+    pool: ThreadPool,
 }
 
 impl SystemManager {
-    pub fn new() -> Self {
-        Default::default()
+    pub fn new(num_threads: usize) -> Self {
+        Self {
+            pipelines: Default::default(),
+            pool: ThreadPool::new(num_threads),
+        }
     }
 
     pub fn add_gen(&mut self, pid: Id, s: Box<dyn System>) {
-        self.pipelines.entry(pid).or_default().push(s);
+        self.pipelines.entry(pid).or_default().push(Arc::new(RwLock::new(s)))
     }
 
     pub fn add<S: System>(&mut self, pid: Id, s: S) {
@@ -36,13 +39,16 @@ impl SystemManager {
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
-        self.par(|(_, p)| {
-            for s in p {
-                s.init(context.clone(), world.clone())?;
-            }
+        let context = context.clone();
+        let world = world.clone();
 
-            Ok(())
-        })?;
+        for (id, p) in &self.pipelines {
+            self.queue((*id, p), |s| {
+                s.write().init(context.clone(), world.clone())?;
+
+                Ok(())
+            })?;
+        }
 
         Ok(())
     }
@@ -53,24 +59,31 @@ impl SystemManager {
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
-        self.par(|(_, p)| {
-            for s in p {
-                s.update(control.clone(), context.clone(), world.clone())?;
-            }
+        let control = control.clone();
+        let context = context.clone();
+        let world = world.clone();
 
-            Ok(())
-        })?;
+        for (id, p) in &self.pipelines {
+            self.queue((*id, p), |s| {
+                s.write().update(control.clone(), context.clone(), world.clone())?;
+
+                Ok(())
+            })?;
+        }
 
         Ok(())
     }
 
-    fn par<F: Fn((&u32, &mut Vec<Box<dyn System>>)) -> anyhow::Result<()> + Send + Sync>(
+    fn queue<F: FnOnce(Arc<RwLock<Box<dyn System>>>) -> anyhow::Result<()> + Send + Sync> (
         &mut self,
+        ref mut pipeline @ (id, p): (Id, &Vec<Arc<RwLock<Box<dyn System>>>>),
         f: F,
     ) -> anyhow::Result<()> {
-        let res: anyhow::Result<Vec<_>> = self.pipelines.par_iter_mut().map(f).collect();
-
-        res?;
+        self.pool.execute(|| {
+            for s in p {
+                f(s.clone());
+            }
+        });
 
         Ok(())
     }

@@ -14,7 +14,6 @@ pub use drawable::Drawable;
 pub use id::Id;
 pub use nalgebra;
 pub use parking_lot;
-pub use rayon;
 pub use vulkano;
 pub use vulkano_shaders;
 pub use winit;
