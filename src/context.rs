@@ -187,7 +187,7 @@ impl Context {
         {
             let sm = world.read().sm.clone();
 
-            sm.write().init(context.clone(), world.clone());
+            sm.write().init(context.clone(), world.clone())?;
         }
 
         let mut recreate_swapchain = false;
@@ -215,7 +215,7 @@ impl Context {
         let sm = world.read().sm.clone();
 
         sm.write()
-            .update(control.clone(), context.clone(), world.clone());
+            .update(control.clone(), context.clone(), world.clone())?;
 
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
