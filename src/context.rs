@@ -138,9 +138,9 @@ impl Context {
                 },
                 depth_stencil: {
                     format: Format::D16_UNORM,
-                samples: 1,
-                load_op: Clear,
-                store_op: DontCare,
+                    samples: 1,
+                    load_op: Clear,
+                    store_op: DontCare,
                 },
             },
             pass: {
