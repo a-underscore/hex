@@ -218,13 +218,12 @@ impl Context {
             .update(control.clone(), context.clone(), world.clone())?;
 
         let event = control.read().event.clone();
-        let id = context.read().window.id();
 
         match event {
             Event::WindowEvent {
                 event: WindowEvent::RedrawRequested,
                 window_id,
-            } if window_id == id => {
+            } if window_id == { context.read().window.id() } => {
                 let (mut builder, rs, suboptimal, acquire_future, image_index) = {
                     let mut context = context.write();
                     let image_extent: [u32; 2] = context.window.inner_size().into();
