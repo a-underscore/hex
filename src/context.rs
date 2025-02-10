@@ -217,10 +217,12 @@ impl Context {
         sm.write()
             .update(control.clone(), context.clone(), world.clone())?;
 
+        let event = control.read().event.clone();
+
         if let Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
             ..
-        } = control.read().event
+        } = event
         {
             let (mut builder, rs, suboptimal, acquire_future, image_index) = {
                 let mut context = context.write();
