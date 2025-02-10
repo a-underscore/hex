@@ -218,135 +218,139 @@ impl Context {
             .update(control.clone(), context.clone(), world.clone())?;
 
         let event = control.read().event.clone();
+        let id = context.read().window.id();
 
-        if let Event::WindowEvent {
-            event: WindowEvent::RedrawRequested,
-            ..
-        } = event
-        {
-            let (mut builder, rs, suboptimal, acquire_future, image_index) = {
-                let mut context = context.write();
-                let image_extent: [u32; 2] = context.window.inner_size().into();
+        match event {
+            Event::WindowEvent {
+                event: WindowEvent::RedrawRequested,
+                window_id,
+            } if window_id == id => {
+                let (mut builder, rs, suboptimal, acquire_future, image_index) = {
+                    let mut context = context.write();
+                    let image_extent: [u32; 2] = context.window.inner_size().into();
 
-                if image_extent.contains(&0) {
-                    return Ok(());
-                }
+                    if image_extent.contains(&0) {
+                        return Ok(());
+                    }
 
-                context
-                    .previous_frame_end
-                    .as_mut()
-                    .unwrap()
-                    .cleanup_finished();
+                    context
+                        .previous_frame_end
+                        .as_mut()
+                        .unwrap()
+                        .cleanup_finished();
 
-                let mut builder = AutoCommandBufferBuilder::primary(
-                    &context.command_buffer_allocator,
-                    context.queue.queue_family_index(),
-                    CommandBufferUsage::OneTimeSubmit,
-                )?;
-
-                let rs = *recreate_swapchain;
-
-                if *recreate_swapchain {
-                    let (new_swapchain, new_images) =
-                        context.swapchain.recreate(SwapchainCreateInfo {
-                            image_extent,
-                            ..context.swapchain.create_info()
-                        })?;
-                    context.swapchain = new_swapchain;
-                    context.images = new_images;
-
-                    let (framebuffers, viewport) = Self::window_size_dependent_setup(
-                        context.memory_allocator.clone(),
-                        &context.images,
-                        context.render_pass.clone(),
+                    let mut builder = AutoCommandBufferBuilder::primary(
+                        &context.command_buffer_allocator,
+                        context.queue.queue_family_index(),
+                        CommandBufferUsage::OneTimeSubmit,
                     )?;
 
-                    context.framebuffers = framebuffers;
-                    context.viewport = viewport;
+                    let rs = *recreate_swapchain;
 
-                    *recreate_swapchain = false;
+                    if *recreate_swapchain {
+                        let (new_swapchain, new_images) =
+                            context.swapchain.recreate(SwapchainCreateInfo {
+                                image_extent,
+                                ..context.swapchain.create_info()
+                            })?;
+                        context.swapchain = new_swapchain;
+                        context.images = new_images;
+
+                        let (framebuffers, viewport) = Self::window_size_dependent_setup(
+                            context.memory_allocator.clone(),
+                            &context.images,
+                            context.render_pass.clone(),
+                        )?;
+
+                        context.framebuffers = framebuffers;
+                        context.viewport = viewport;
+
+                        *recreate_swapchain = false;
+                    }
+
+                    let (image_index, suboptimal, acquire_future) =
+                        match acquire_next_image(context.swapchain.clone(), None)
+                            .map_err(Validated::unwrap)
+                        {
+                            Ok(r) => r,
+                            Err(VulkanError::OutOfDate) => {
+                                *recreate_swapchain = true;
+
+                                return Ok(());
+                            }
+                            Err(e) => return Err(e.into()),
+                        };
+
+                    builder
+                        .begin_render_pass(
+                            RenderPassBeginInfo {
+                                clear_values: vec![
+                                    Some(<[f32; 4]>::from(context.bg).into()),
+                                    Some(1f32.into()),
+                                ],
+                                ..RenderPassBeginInfo::framebuffer(
+                                    context.framebuffers[image_index as usize].clone(),
+                                )
+                            },
+                            Default::default(),
+                        )?
+                        .set_viewport(0, [context.viewport.clone()].into_iter().collect())?;
+
+                    (builder, rs, suboptimal, acquire_future, image_index)
+                };
+
+                let rm = world.read().rm.clone();
+
+                rm.write().draw(
+                    &mut (control.clone(), &mut builder, rs),
+                    context.clone(),
+                    world.clone(),
+                )?;
+
+                builder.end_render_pass(Default::default())?;
+
+                let command_buffer = builder.build()?;
+                let mut context = context.write();
+
+                if suboptimal {
+                    *recreate_swapchain = true;
                 }
 
-                let (image_index, suboptimal, acquire_future) =
-                    match acquire_next_image(context.swapchain.clone(), None)
-                        .map_err(Validated::unwrap)
-                    {
-                        Ok(r) => r,
+                {
+                    let future = context
+                        .previous_frame_end
+                        .take()
+                        .unwrap()
+                        .join(acquire_future)
+                        .then_execute(context.queue.clone(), command_buffer)?
+                        .then_swapchain_present(
+                            context.queue.clone(),
+                            SwapchainPresentInfo::swapchain_image_index(
+                                context.swapchain.clone(),
+                                image_index,
+                            ),
+                        )
+                        .then_signal_fence_and_flush();
+
+                    match future.map_err(Validated::unwrap) {
+                        Ok(future) => {
+                            context.previous_frame_end = Some(future.boxed_send_sync());
+                        }
                         Err(VulkanError::OutOfDate) => {
                             *recreate_swapchain = true;
 
-                            return Ok(());
+                            context.previous_frame_end =
+                                Some(sync::now(context.device.clone()).boxed_send_sync());
                         }
-                        Err(e) => return Err(e.into()),
-                    };
-
-                builder
-                    .begin_render_pass(
-                        RenderPassBeginInfo {
-                            clear_values: vec![
-                                Some(<[f32; 4]>::from(context.bg).into()),
-                                Some(1f32.into()),
-                            ],
-                            ..RenderPassBeginInfo::framebuffer(
-                                context.framebuffers[image_index as usize].clone(),
-                            )
-                        },
-                        Default::default(),
-                    )?
-                    .set_viewport(0, [context.viewport.clone()].into_iter().collect())?;
-
-                (builder, rs, suboptimal, acquire_future, image_index)
-            };
-
-            let rm = world.read().rm.clone();
-
-            rm.write().draw(
-                &mut (control.clone(), &mut builder, rs),
-                context.clone(),
-                world.clone(),
-            )?;
-
-            builder.end_render_pass(Default::default())?;
-
-            let command_buffer = builder.build()?;
-            let mut context = context.write();
-
-            if suboptimal {
-                *recreate_swapchain = true;
-            }
-
-            {
-                let future = context
-                    .previous_frame_end
-                    .take()
-                    .unwrap()
-                    .join(acquire_future)
-                    .then_execute(context.queue.clone(), command_buffer)?
-                    .then_swapchain_present(
-                        context.queue.clone(),
-                        SwapchainPresentInfo::swapchain_image_index(
-                            context.swapchain.clone(),
-                            image_index,
-                        ),
-                    )
-                    .then_signal_fence_and_flush();
-
-                match future.map_err(Validated::unwrap) {
-                    Ok(future) => {
-                        context.previous_frame_end = Some(future.boxed_send_sync());
-                    }
-                    Err(VulkanError::OutOfDate) => {
-                        *recreate_swapchain = true;
-
-                        context.previous_frame_end =
-                            Some(sync::now(context.device.clone()).boxed_send_sync());
-                    }
-                    Err(_) => {
-                        context.previous_frame_end =
-                            Some(sync::now(context.device.clone()).boxed_send_sync());
+                        Err(_) => {
+                            context.previous_frame_end =
+                                Some(sync::now(context.device.clone()).boxed_send_sync());
+                        }
                     }
                 }
             }
+
+            _ => {}
         }
 
         let control = control.read();
