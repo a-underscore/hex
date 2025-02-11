@@ -19,7 +19,8 @@ use vulkano::{
     pipeline::graphics::viewport::Viewport,
     render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass},
     swapchain::{
-        acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
+        acquire_next_image, PresentMode, Surface, Swapchain, SwapchainCreateInfo,
+        SwapchainPresentInfo,
     },
     sync::{self, GpuFuture},
     Validated, VulkanError, VulkanLibrary,
@@ -113,6 +114,7 @@ impl Context {
                 device.clone(),
                 surface,
                 SwapchainCreateInfo {
+                    present_mode: PresentMode::Immediate,
                     min_image_count: surface_capabilities.min_image_count.max(2),
                     image_format,
                     image_extent: window.inner_size().into(),
