@@ -45,6 +45,7 @@ pub struct Context {
     pub window: Arc<Window>,
     pub viewport: Viewport,
     pub previous_frame_end: Option<Box<dyn GpuFuture + Send + Sync>>,
+    pub present_mode: PresentMode,
     pub bg: Vector4<f32>,
 }
 
@@ -103,6 +104,7 @@ impl Context {
             },
         )?;
         let queue = queues.next().unwrap();
+        let present_mode = PresentMode::Immediate;
         let (swapchain, images) = {
             let surface_capabilities = device
                 .physical_device()
@@ -115,7 +117,7 @@ impl Context {
                 device.clone(),
                 surface.clone(),
                 SwapchainCreateInfo {
-                    present_mode: PresentMode::Immediate,
+                    present_mode,
                     min_image_count: surface_capabilities.min_image_count.max(2),
                     image_format,
                     image_extent: window.inner_size().into(),
@@ -166,6 +168,7 @@ impl Context {
         )?;
 
         Ok(Arc::new(RwLock::new(Self {
+            present_mode,
             framebuffers,
             images,
             surface,
@@ -253,6 +256,7 @@ impl Context {
                         let (new_swapchain, new_images) =
                             context.swapchain.recreate(SwapchainCreateInfo {
                                 image_extent,
+                                present_mode: context.present_mode,
                                 ..context.swapchain.create_info()
                             })?;
 
