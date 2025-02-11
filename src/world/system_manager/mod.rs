@@ -49,7 +49,7 @@ impl SystemManager {
             let context = context.clone();
             let world = world.clone();
 
-            self.queue((*id, p.clone()), move |s| {
+            self.queue(&*self.pool.lock(), (*id, p.clone()), move |s| {
                 s.write().init(context.clone(), world.clone())
             })?;
         }
@@ -63,28 +63,33 @@ impl SystemManager {
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
+        let pool = self.pool.lock();
+
         for (id, p) in &self.pipelines {
             let control = control.clone();
             let context = context.clone();
             let world = world.clone();
 
-            self.queue((*id, p.clone()), move |s| {
+            self.queue(&*pool, (*id, p.clone()), move |s| {
                 s.write()
                     .update(control.clone(), context.clone(), world.clone())
             })?;
         }
+
+        pool.join();
 
         Ok(())
     }
 
     fn queue<F: Fn(Arc<RwLock<Box<dyn System>>>) -> anyhow::Result<()> + Send + Sync + 'static>(
         &self,
+        pool: &ThreadPool,
         (_, p): (Id, Pipeline),
         f: F,
     ) -> anyhow::Result<()> {
         let p = p.clone();
 
-        self.pool.lock().execute(move || {
+        pool.execute(move || {
             for s in &*p.read() {
                 f(s.clone()).unwrap();
             }
