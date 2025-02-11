@@ -7,8 +7,10 @@ use parking_lot::{Mutex, RwLock};
 use std::{collections::HashMap, sync::Arc};
 use threadpool::ThreadPool;
 
+type Pipeline = Arc<RwLock<Vec<Arc<RwLock<Box<dyn System>>>>>>;
+
 pub struct SystemManager {
-    pipelines: HashMap<Id, Arc<RwLock<Vec<Arc<RwLock<Box<dyn System>>>>>>>,
+    pipelines: HashMap<Id, Pipeline>,
     pool: Mutex<ThreadPool>,
 }
 
@@ -48,9 +50,7 @@ impl SystemManager {
             let world = world.clone();
 
             self.queue((*id, p.clone()), move |s| {
-                s.write().init(context.clone(), world.clone())?;
-
-                Ok(())
+                s.write().init(context.clone(), world.clone())
             })?;
         }
 
@@ -70,9 +70,7 @@ impl SystemManager {
 
             self.queue((*id, p.clone()), move |s| {
                 s.write()
-                    .update(control.clone(), context.clone(), world.clone())?;
-
-                Ok(())
+                    .update(control.clone(), context.clone(), world.clone())
             })?;
         }
 
@@ -81,7 +79,7 @@ impl SystemManager {
 
     fn queue<F: Fn(Arc<RwLock<Box<dyn System>>>) -> anyhow::Result<()> + Send + Sync + 'static>(
         &self,
-        (_, p): (Id, Arc<RwLock<Vec<Arc<RwLock<Box<dyn System>>>>>>),
+        (_, p): (Id, Pipeline),
         f: F,
     ) -> anyhow::Result<()> {
         let p = p.clone();
