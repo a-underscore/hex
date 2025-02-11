@@ -197,14 +197,13 @@ impl Context {
         let mut recreate_swapchain = false;
 
         event_loop.run(move |event, elwt| {
-            if let Err(e) = Self::update(
+            Self::update(
                 context.clone(),
                 world.clone(),
                 Control::new(event),
                 (elwt, &mut recreate_swapchain),
-            ) {
-                eprintln!("{}", e);
-            }
+            )
+            .unwrap();
         })?;
 
         Ok(())
@@ -256,6 +255,7 @@ impl Context {
                                 image_extent,
                                 ..context.swapchain.create_info()
                             })?;
+
                         context.swapchain = new_swapchain;
                         context.images = new_images;
 
