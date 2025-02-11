@@ -38,6 +38,7 @@ pub struct Context {
     pub command_buffer_allocator: Arc<StandardCommandBufferAllocator>,
     pub descriptor_set_allocator: Arc<StandardDescriptorSetAllocator>,
     pub render_pass: Arc<RenderPass>,
+    pub surface: Arc<Surface>,
     pub images: Vec<Arc<Image>>,
     pub framebuffers: Vec<Arc<Framebuffer>>,
     pub swapchain: Arc<Swapchain>,
@@ -112,7 +113,7 @@ impl Context {
                 .0;
             Swapchain::new(
                 device.clone(),
-                surface,
+                surface.clone(),
                 SwapchainCreateInfo {
                     present_mode: PresentMode::Immediate,
                     min_image_count: surface_capabilities.min_image_count.max(2),
@@ -167,6 +168,7 @@ impl Context {
         Ok(Arc::new(RwLock::new(Self {
             framebuffers,
             images,
+            surface,
             previous_frame_end: Some(sync::now(device.clone()).boxed_send_sync()),
             render_pass,
             viewport,
