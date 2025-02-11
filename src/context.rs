@@ -358,15 +358,19 @@ impl Context {
             elwt.exit();
         }
 
-        match control.event {
-            Event::WindowEvent {
-                event: WindowEvent::Resized(_),
-                ..
-            } => {
-                *recreate_swapchain = true;
+        {
+            let id = context.read().window.id();
+
+            match control.event {
+                Event::WindowEvent {
+                    event: WindowEvent::Resized(_),
+                    window_id,
+                } if window_id == id => {
+                    *recreate_swapchain = true;
+                }
+                Event::AboutToWait => context.read().window.request_redraw(),
+                _ => {}
             }
-            Event::AboutToWait => context.read().window.request_redraw(),
-            _ => {}
         }
 
         Ok(())
