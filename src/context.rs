@@ -53,6 +53,7 @@ impl Context {
     pub fn new(
         event_loop: &EventLoop<()>,
         window: Arc<Window>,
+        present_mode: PresentMode,
         bg: Vector4<f32>,
     ) -> anyhow::Result<Arc<RwLock<Self>>> {
         let library = VulkanLibrary::new()?;
@@ -104,7 +105,6 @@ impl Context {
             },
         )?;
         let queue = queues.next().unwrap();
-        let present_mode = PresentMode::Immediate;
         let (swapchain, images) = {
             let surface_capabilities = device
                 .physical_device()
