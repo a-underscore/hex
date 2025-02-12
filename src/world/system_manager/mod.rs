@@ -13,6 +13,12 @@ pub struct SystemManager {
     pipelines: HashMap<Id, Pipeline>,
 }
 
+impl Default for SystemManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SystemManager {
     pub fn new() -> Self {
         Self {
@@ -48,7 +54,7 @@ impl SystemManager {
             let pool = world.read().pool.clone();
             let world = world.clone();
 
-            self.queue(&*pool.lock(), (*id, p.clone()), move |s| {
+            self.queue(&pool.lock(), (*id, p.clone()), move |s| {
                 s.write().init(context.clone(), world.clone())
             })?;
         }
@@ -70,7 +76,7 @@ impl SystemManager {
             let context = context.clone();
             let world = world.clone();
 
-            self.queue(&*pool, (*id, p.clone()), move |s| {
+            self.queue(&pool, (*id, p.clone()), move |s| {
                 s.write()
                     .update(control.clone(), context.clone(), world.clone())
             })?;
