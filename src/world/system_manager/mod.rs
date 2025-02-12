@@ -3,7 +3,7 @@ pub mod system;
 pub use system::System;
 
 use crate::{Context, Control, Id, World};
-use parking_lot::{Mutex, RwLock};
+use parking_lot::RwLock;
 use std::{collections::HashMap, sync::Arc};
 use threadpool::ThreadPool;
 
@@ -11,14 +11,12 @@ type Pipeline = Arc<RwLock<Vec<Arc<RwLock<Box<dyn System>>>>>>;
 
 pub struct SystemManager {
     pipelines: HashMap<Id, Pipeline>,
-    pool: Mutex<ThreadPool>,
 }
 
 impl SystemManager {
-    pub fn new(num_threads: usize) -> Self {
+    pub fn new() -> Self {
         Self {
             pipelines: Default::default(),
-            pool: Mutex::new(ThreadPool::new(num_threads)),
         }
     }
 
@@ -47,9 +45,10 @@ impl SystemManager {
     ) -> anyhow::Result<()> {
         for (id, p) in &self.pipelines {
             let context = context.clone();
+            let pool = world.read().pool.clone();
             let world = world.clone();
 
-            self.queue(&*self.pool.lock(), (*id, p.clone()), move |s| {
+            self.queue(&*pool.lock(), (*id, p.clone()), move |s| {
                 s.write().init(context.clone(), world.clone())
             })?;
         }
@@ -63,7 +62,8 @@ impl SystemManager {
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
-        let pool = self.pool.lock();
+        let pool = world.read().pool.clone();
+        let pool = pool.lock();
 
         for (id, p) in &self.pipelines {
             let control = control.clone();

@@ -207,6 +207,8 @@ impl Context {
                 (elwt, &mut recreate_swapchain),
             )
             .unwrap();
+
+            world.read().update_num_threads();
         })?;
 
         Ok(())
