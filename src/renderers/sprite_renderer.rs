@@ -40,7 +40,9 @@ impl Renderer for SpriteRenderer {
                             })
                             .collect();
 
-                        sprites.sort_by_key(|(_, s, _)| s.read().layer);
+                        sprites.sort_by(|(_, s1, _), (_, s2, _)| {
+                            s2.read().layer.cmp(&s1.read().layer)
+                        });
 
                         sprites
                     };
