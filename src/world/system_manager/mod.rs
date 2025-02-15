@@ -51,7 +51,7 @@ impl SystemManager {
     ) -> anyhow::Result<()> {
         for (id, p) in &self.pipelines {
             let context = context.clone();
-            let pool = world.read().pool.clone();
+            let pool = context.read().pool.clone();
             let world = world.clone();
 
             self.queue(&pool, (*id, p.clone()), move |s| {
@@ -68,7 +68,7 @@ impl SystemManager {
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
-        let pool = world.read().pool.clone();
+        let pool = context.read().pool.clone();
 
         for (id, p) in &self.pipelines {
             let control = control.clone();

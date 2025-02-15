@@ -2,6 +2,7 @@ use crate::{Control, World};
 use nalgebra::Vector4;
 use parking_lot::RwLock;
 use std::sync::Arc;
+use threadpool::ThreadPool;
 use vulkano::{
     command_buffer::{
         allocator::StandardCommandBufferAllocator, AutoCommandBufferBuilder, CommandBufferUsage,
@@ -46,6 +47,7 @@ pub struct Context {
     pub viewport: Viewport,
     pub previous_frame_end: Option<Box<dyn GpuFuture + Send + Sync>>,
     pub present_mode: PresentMode,
+    pub pool: ThreadPool,
     pub bg: Vector4<f32>,
 }
 
@@ -54,6 +56,7 @@ impl Context {
         event_loop: &EventLoop<()>,
         window: Arc<Window>,
         present_mode: PresentMode,
+        pool: ThreadPool,
         bg: Vector4<f32>,
     ) -> anyhow::Result<Arc<RwLock<Self>>> {
         let library = VulkanLibrary::new()?;
@@ -182,6 +185,7 @@ impl Context {
             queue,
             memory_allocator,
             swapchain,
+            pool,
             bg,
         })))
     }
