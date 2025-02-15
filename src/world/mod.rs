@@ -10,7 +10,6 @@ use parking_lot::RwLock;
 use std::sync::Arc;
 
 pub struct World {
-    pub num_threads: usize,
     pub em: Arc<RwLock<EntityManager>>,
     pub(crate) sm: Arc<RwLock<SystemManager>>,
     pub(crate) rm: Arc<RwLock<RendererManager>>,
@@ -18,13 +17,11 @@ pub struct World {
 
 impl World {
     pub fn new(
-        num_threads: usize,
         em: Arc<RwLock<EntityManager>>,
         sm: SystemManager,
         rm: RendererManager,
     ) -> Arc<RwLock<Self>> {
         Arc::new(RwLock::new(Self {
-            num_threads,
             em,
             sm: Arc::new(RwLock::new(sm)),
             rm: Arc::new(RwLock::new(rm)),
