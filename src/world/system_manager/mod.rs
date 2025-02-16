@@ -49,15 +49,17 @@ impl SystemManager {
         context: Arc<RwLock<Context>>,
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
-        for (id, p) in &self.pipelines {
-            let context = context.clone();
-            let pool = context.read().pool.clone();
-            let world = world.clone();
+        let pool = context.read().pool.clone();
 
-            self.queue(&pool, (*id, p.clone()), move |s| {
+        let context = context.clone();
+        let world = world.clone();
+
+        self.queue(
+            &pool,
+            Arc::new(move |s: Arc<RwLock<Box<dyn System>>>| {
                 s.write().init(context.clone(), world.clone())
-            })?;
-        }
+            }),
+        )?;
 
         Ok(())
     }
@@ -69,19 +71,17 @@ impl SystemManager {
         world: Arc<RwLock<World>>,
     ) -> anyhow::Result<()> {
         let pool = context.read().pool.clone();
+        let control = control.clone();
+        let context = context.clone();
+        let world = world.clone();
 
-        for (id, p) in &self.pipelines {
-            let control = control.clone();
-            let context = context.clone();
-            let world = world.clone();
-
-            self.queue(&pool, (*id, p.clone()), move |s| {
+        self.queue(
+            &pool,
+            Arc::new(move |s: Arc<RwLock<Box<dyn System>>>| {
                 s.write()
                     .update(control.clone(), context.clone(), world.clone())
-            })?;
-        }
-
-        pool.join();
+            }),
+        )?;
 
         Ok(())
     }
@@ -89,16 +89,20 @@ impl SystemManager {
     fn queue<F: Fn(Arc<RwLock<Box<dyn System>>>) -> anyhow::Result<()> + Send + Sync + 'static>(
         &self,
         pool: &ThreadPool,
-        (_, p): (Id, Pipeline),
-        f: F,
+        f: Arc<F>,
     ) -> anyhow::Result<()> {
-        let p = p.clone();
+        for p in self.pipelines.values() {
+            let f = f.clone();
+            let p = p.clone();
 
-        pool.execute(move || {
-            for s in &*p.read() {
-                f(s.clone()).unwrap();
-            }
-        });
+            pool.execute(move || {
+                for s in &*p.read() {
+                    f(s.clone()).unwrap();
+                }
+            });
+        }
+
+        pool.join();
 
         Ok(())
     }
